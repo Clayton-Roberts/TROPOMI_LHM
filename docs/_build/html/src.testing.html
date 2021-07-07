@@ -93,7 +93,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="src.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#module-src.main">src.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.html#src-main-module">src.main module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="src.html#module-src">Module contents</a></li>
 </ul>
 </li>
@@ -175,10 +175,22 @@
 <section id="module-src.testing.functions">
 <span id="src-testing-functions-module"></span><h2>src.testing.functions module<a class="headerlink" href="#module-src.testing.functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="src.testing.functions.generate_sample_mu_Sigma">
-<span class="sig-prename descclassname"><span class="pre">src.testing.functions.</span></span><span class="sig-name descname"><span class="pre">generate_sample_mu_Sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.testing.functions.generate_sample_mu_Sigma" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="src.testing.functions.generate_alphas_betas_and_gammas">
+<span class="sig-prename descclassname"><span class="pre">src.testing.functions.</span></span><span class="sig-name descname"><span class="pre">generate_alphas_betas_and_gammas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">days</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.testing.functions.generate_alphas_betas_and_gammas" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates a .csv file containing a set sample set of values for alpha, beta and gamma for however
+many days we choose. These three parameters can be used to generate a set of fake observations of NO2 and CH4.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>days</strong> (<em>int</em>) – The number of days we want to generate a set of alpha, beta and gamma for.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.testing.functions.generate_mu_and_Sigma">
+<span class="sig-prename descclassname"><span class="pre">src.testing.functions.</span></span><span class="sig-name descname"><span class="pre">generate_mu_and_Sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.testing.functions.generate_mu_and_Sigma" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates a .csv file that defines the “ground truth” values for <span class="math notranslate nohighlight">\(\mu\)</span> and
-<span class="math notranslate nohighlight">\(\Sigma\)</span> that we will use to generate our set of test data.</p>
+<span class="math notranslate nohighlight">\(\Sigma\)</span> that we use to generate a set of test data.</p>
 </dd></dl>
 
 </section>
