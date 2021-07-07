@@ -7,10 +7,10 @@ Welcome to TROPOMI_LHM's documentation!
 =======================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
    :caption: Contents:
 
-   testing
+   modules
 
 Indices and tables
 ==================

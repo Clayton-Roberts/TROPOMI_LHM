@@ -1,13 +1,13 @@
-TROPOMI\_LHM package
-====================
+src.testing package
+===================
 
 Submodules
 ----------
 
-TROPOMI\_LHM.main module
-------------------------
+src.testing.functions module
+----------------------------
 
-.. automodule:: TROPOMI_LHM.main
+.. automodule:: src.testing.functions
    :members:
    :undoc-members:
    :show-inheritance:
@@ -15,7 +15,7 @@ TROPOMI\_LHM.main module
 Module contents
 ---------------
 
-.. automodule:: TROPOMI_LHM
+.. automodule:: src.testing
    :members:
    :undoc-members:
    :show-inheritance:
