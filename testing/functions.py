@@ -7,3 +7,6 @@ def generate_sample_mu_Sigma():
 
 def made_change():
     print("I made a change.")
+
+def another_change():
+    print("thing")
