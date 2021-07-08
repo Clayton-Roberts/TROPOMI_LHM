@@ -20,9 +20,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/data.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/data.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/alphas_betas_gammas.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/cov.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/dataset.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/mu.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,11 +53,12 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/models" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/inits" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/inits" />
       <recent name="$PROJECT_DIR$/src/models" />
       <recent name="$PROJECT_DIR$/docs" />
     </key>
@@ -136,22 +142,22 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625733090960">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625735455998">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625733090960" />
-    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625733090958">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625735455998" />
+    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625735455996">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625733090958" />
-    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625733090957">
+    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625735455996" />
+    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625735455995">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625733090957" />
-    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625733090959">
+    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625735455995" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625735455997">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625733090959" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625735455997" />
     <state x="469" y="179" key="SettingsEditor" timestamp="1625663293573">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
