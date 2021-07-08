@@ -20,29 +20,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/src.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/doctrees/src.doctree" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/src.dummy_directory.doctree" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/src.testing.doctree" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/_sources/src.dummy_directory.rst.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/_sources/src.rst.txt" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/_sources/src.rst.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/_sources/src.testing.rst.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/genindex.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/genindex.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/modules.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/modules.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/objects.inv" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/objects.inv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/py-modindex.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/py-modindex.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/searchindex.js" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/searchindex.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.dummy_directory.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/src.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.test_suite.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/src.test_suite.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.testing.html" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/src.dummy_directory.rst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/src.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/src.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/summarise_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/summarise_results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/data.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test_suite/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/alphas_betas_gammas.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/cov.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/dataset.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/mu.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -161,38 +147,38 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="611" y="501" key="#xdebugger.evaluate/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740562633" />
-    <state width="1899" height="376" key="GridCell.Tab.0.bottom" timestamp="1625740527330">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625742871786">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740527330" />
-    <state width="1899" height="376" key="GridCell.Tab.0.center" timestamp="1625740527329">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871786" />
+    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625742871785">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740527329" />
-    <state width="1899" height="376" key="GridCell.Tab.0.left" timestamp="1625740527328">
+    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871785" />
+    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625742871784">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740527328" />
-    <state width="1899" height="376" key="GridCell.Tab.0.right" timestamp="1625740527329">
+    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871784" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625742871786">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740527329" />
-    <state width="1899" height="376" key="GridCell.Tab.1.bottom" timestamp="1625740528914">
+    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871786" />
+    <state width="1899" height="376" key="GridCell.Tab.1.bottom" timestamp="1625741184527">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.1.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740528914" />
-    <state width="1899" height="376" key="GridCell.Tab.1.center" timestamp="1625740528913">
+    <state width="1899" height="376" key="GridCell.Tab.1.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625741184527" />
+    <state width="1899" height="376" key="GridCell.Tab.1.center" timestamp="1625741184526">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.1.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740528913" />
-    <state width="1899" height="376" key="GridCell.Tab.1.left" timestamp="1625740528912">
+    <state width="1899" height="376" key="GridCell.Tab.1.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625741184526" />
+    <state width="1899" height="376" key="GridCell.Tab.1.left" timestamp="1625741184525">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.1.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740528912" />
-    <state width="1899" height="376" key="GridCell.Tab.1.right" timestamp="1625740528914">
+    <state width="1899" height="376" key="GridCell.Tab.1.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625741184525" />
+    <state width="1899" height="376" key="GridCell.Tab.1.right" timestamp="1625741184526">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="376" key="GridCell.Tab.1.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740528914" />
+    <state width="1899" height="376" key="GridCell.Tab.1.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625741184526" />
     <state x="469" y="179" key="SettingsEditor" timestamp="1625663293573">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>

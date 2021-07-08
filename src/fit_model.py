@@ -6,8 +6,9 @@ import os
 
 def install_cmdstan(cmdstan_path=None):
     '''After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
+    This only needs to be done once.
 
-    :param cmdstan_path: The location that you want to install CmdStan to. If left blank it will install to a default locaiton.
+    :param cmdstan_path: The location that you want to install CmdStan to. If left blank it will install to a default location.
     :type cmdstan_path: string
     '''
 
@@ -29,9 +30,6 @@ def fit_model(data_path, model_path, output_directory, cmdstan_path=None):
     :param cmdstan_path: Directory that the CmdStan download is located in.
     :type cmdstan_path: string
     '''
-
-    # Make the directory to save the outputs in.
-    os.mkdir('outputs/' + output_directory)
 
     # Record the start time in order to write elapsed time for fitting to the output file.
     start_time = time.time()
