@@ -24,4 +24,5 @@ if PERFORM_RUN:
         fm.install_cmdstan()
     fm.fit_model('test_suite/data/' + TEST_RUN_NAME + '/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME)
 
-sr.FittedModel(TEST_RUN_NAME)
+fitted_results = sr.FittedModel(TEST_RUN_NAME)
+fitted_results.display_results()
