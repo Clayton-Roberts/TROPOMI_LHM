@@ -9,7 +9,7 @@
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>src.testing package &mdash; TROPOMI_LHM  documentation</title>
+  <title>src.test_suite package &mdash; TROPOMI_LHM  documentation</title>
   
 
   
@@ -26,6 +26,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -88,7 +89,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="src.html">src package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="src.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="src.dummy_directory.html">src.dummy_directory package</a></li>
-<li class="toctree-l4 current"><a class="current reference internal" href="#">src.testing package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">src.test_suite package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="src.html#submodules">Submodules</a></li>
@@ -147,13 +148,13 @@
         
           <li><a href="src.html">src package</a> &raquo;</li>
         
-      <li>src.testing package</li>
+      <li>src.test_suite package</li>
     
     
       <li class="wy-breadcrumbs-aside">
         
             
-            <a href="_sources/src.testing.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/src.test_suite.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -166,16 +167,52 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="src-testing-package">
-<h1>src.testing package<a class="headerlink" href="#src-testing-package" title="Permalink to this headline">¶</a></h1>
+  <section id="src-test-suite-package">
+<h1>src.test_suite package<a class="headerlink" href="#src-test-suite-package" title="Permalink to this headline">¶</a></h1>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </section>
-<section id="src-testing-functions-module">
-<h2>src.testing.functions module<a class="headerlink" href="#src-testing-functions-module" title="Permalink to this headline">¶</a></h2>
+<section id="module-src.test_suite.functions">
+<span id="src-test-suite-functions-module"></span><h2>src.test_suite.functions module<a class="headerlink" href="#module-src.test_suite.functions" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.test_suite.functions.generate_alphas_betas_and_gammas">
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_alphas_betas_and_gammas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">days</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_alphas_betas_and_gammas" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates a .csv file containing a set sample set of ground truth values of <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span>
+and <span class="math notranslate nohighlight">\(\gamma\)</span> for however many days we choose. These three parameters can be used to generate a set of fake
+observations of NO2 and CH4 for the given day.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>days</strong> (<em>int</em>) – The number of days we want to generate a set of alpha, beta and gamma for.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.test_suite.functions.generate_dataset">
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates a .csv file that contains the total set of fake observations over all of the fake days
+that we wanted, using the ground truth values of <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span> and <span class="math notranslate nohighlight">\(\gamma\)</span> contained in
+“ground_truths/alphas_betas_gammas.csv”</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.test_suite.functions.generate_mu_and_Sigma">
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_mu_and_Sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_mu_and_Sigma" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function generates a .csv file that defines the “ground truth” values for <span class="math notranslate nohighlight">\(\mu\)</span> and
+<span class="math notranslate nohighlight">\(\Sigma\)</span> that we use to generate a set of test data.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.test_suite.functions.prepare_dataset_for_cmdstanpy">
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">prepare_dataset_for_cmdstanpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.prepare_dataset_for_cmdstanpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes the “dataset.cvs” file located at “test_suite/ground_truths” and turns it into json
+that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
+fit our models).</p>
+</dd></dl>
+
 </section>
-<section id="module-contents">
-<h2>Module contents<a class="headerlink" href="#module-contents" title="Permalink to this headline">¶</a></h2>
+<section id="module-src.test_suite">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src.test_suite" title="Permalink to this headline">¶</a></h2>
 </section>
 </section>
 

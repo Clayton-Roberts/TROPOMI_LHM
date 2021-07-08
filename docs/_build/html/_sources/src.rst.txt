@@ -8,7 +8,7 @@ Subpackages
    :maxdepth: 4
 
    src.dummy_directory
-   src.testing
+   src.test_suite
 
 Submodules
 ----------

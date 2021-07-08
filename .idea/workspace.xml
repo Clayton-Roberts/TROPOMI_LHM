@@ -20,9 +20,29 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/models/linear_hierarchical_model.stan" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test_suite/functions.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/doctrees/environment.pickle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/src.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/doctrees/src.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/doctrees/src.testing.doctree" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/doctrees/src.testing.doctree" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/_sources/src.rst.txt" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/_sources/src.rst.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/genindex.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/genindex.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/modules.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/modules.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/objects.inv" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/objects.inv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/py-modindex.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/py-modindex.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/searchindex.js" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/searchindex.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.dummy_directory.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/src.dummy_directory.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/src.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/_build/html/src.testing.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_build/html/src.testing.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/src.rst" beforeDir="false" afterPath="$PROJECT_DIR$/docs/src.rst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/src.testing.rst" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/testing/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/testing/functions.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/testing/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/testing/functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/testing/ground_truths/alphas_betas_gammas.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/testing/ground_truths/cov.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/testing/ground_truths/mu.csv" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,11 +68,12 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/docs" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/models" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/models" />
       <recent name="$PROJECT_DIR$/docs" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
@@ -135,22 +156,22 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625674157135">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625679288322">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625674157135" />
-    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625674157134">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625679288322" />
+    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625679288318">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625674157134" />
-    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625674157132">
+    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625679288318" />
+    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625679288316">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625674157132" />
-    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625674157134">
+    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625679288316" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625679288320">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625674157134" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625679288320" />
     <state x="469" y="179" key="SettingsEditor" timestamp="1625663293573">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
