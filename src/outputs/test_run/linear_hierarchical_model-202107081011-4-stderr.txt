@@ -1,0 +1,65 @@
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
+Informational Message: The current Metropolis proposal is about to be rejected because of the following issue:
+Exception: lkj_corr_lpdf: y is not positive definite. (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)
+If this warning occurs sporadically, such as for highly constrained variable types like covariance matrices, then the sampler is fine,
+but if this warning occurs often then your model may be either severely ill-conditioned or misspecified.
+
