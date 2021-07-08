@@ -20,15 +20,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/linear_hierarchical_model.stan" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/linear_hierarchical_model.stan" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/data.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/data.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/alphas_betas_gammas.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/cov.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/dataset.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/mu.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
