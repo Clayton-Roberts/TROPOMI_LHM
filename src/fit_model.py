@@ -59,7 +59,7 @@ def fit_model(data_path, model_path, output_directory, cmdstan_path=None):
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
 
-    f = open("outputs/summary.txt", "a")
+    f = open("outputs/" + output_directory + "/summary.txt", "a")
     f.write("Elapsed time to fit model and save output: " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)) + '\n')
     f.write('---------------------------------------------------' + '\n')
     f.write(fit.diagnose())
