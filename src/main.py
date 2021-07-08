@@ -12,13 +12,16 @@ from src import summarise_results as sr
 TEST_RUN_NAME   = 'test_run_1'
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
+PERFORM_RUN     = False
 ##=======================================================
-tsf.make_directories(TEST_RUN_NAME)
-tsf.generate_mu_and_Sigma(TEST_RUN_NAME)
-tsf.generate_alphas_betas_and_gammas(10, TEST_RUN_NAME)
-tsf.generate_dataset(TEST_RUN_NAME)
-tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
-if INSTALL_CMDSTAN:
-    fm.install_cmdstan()
-fm.fit_model('test_suite/data/' + TEST_RUN_NAME + '/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME)
-#sr.FittedModel('test_run')
+if PERFORM_RUN:
+    tsf.make_directories(TEST_RUN_NAME)
+    tsf.generate_mu_and_Sigma(TEST_RUN_NAME)
+    tsf.generate_alphas_betas_and_gammas(10, TEST_RUN_NAME)
+    tsf.generate_dataset(TEST_RUN_NAME)
+    tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
+    if INSTALL_CMDSTAN:
+        fm.install_cmdstan()
+    fm.fit_model('test_suite/data/' + TEST_RUN_NAME + '/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME)
+
+sr.FittedModel(TEST_RUN_NAME)

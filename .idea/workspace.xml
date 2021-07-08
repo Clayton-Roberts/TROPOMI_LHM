@@ -20,15 +20,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/functions.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/alphas_betas_gammas.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/cov.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/dataset.csv" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/ground_truths/mu.csv" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/summarise_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/summarise_results.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,22 +141,22 @@
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
     <state x="611" y="501" key="#xdebugger.evaluate/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625740562633" />
-    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625742871786">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom" timestamp="1625743473213">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871786" />
-    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625742871785">
+    <state width="1899" height="305" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625743473213" />
+    <state width="1899" height="305" key="GridCell.Tab.0.center" timestamp="1625743473211">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871785" />
-    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625742871784">
+    <state width="1899" height="305" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625743473211" />
+    <state width="1899" height="305" key="GridCell.Tab.0.left" timestamp="1625743473210">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871784" />
-    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625742871786">
+    <state width="1899" height="305" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625743473210" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right" timestamp="1625743473212">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625742871786" />
+    <state width="1899" height="305" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1625743473212" />
     <state width="1899" height="376" key="GridCell.Tab.1.bottom" timestamp="1625741184527">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
@@ -189,7 +183,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/summarise_results.py</url>
-          <line>41</line>
+          <line>47</line>
           <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>

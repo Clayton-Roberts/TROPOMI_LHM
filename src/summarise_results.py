@@ -36,6 +36,12 @@ class FittedModel:
             full_trace[parameter] = np.concatenate((chain_1[parameter].array,chain_2[parameter].array,
                                                    chain_3[parameter].array,chain_4[parameter].array))
 
+        # Calculated 95% CI for all parameter values
+        credible_intervals = {}
+        for parameter in full_trace.keys():
+            credible_intervals[parameter] = [np.percentile(full_trace[parameter], 2.5),
+                                             np.percentile(full_trace[parameter], 97.5)]
+
         # Assign accessible attributes
         self.full_trace = full_trace
 
