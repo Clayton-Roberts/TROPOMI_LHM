@@ -1,0 +1,18 @@
+Elapsed time to fit model and save output: 00:02:19
+---------------------------------------------------
+Processing csv files: /Users/claytonroberts/Documents/TROPOMI_LHM/src/outputs/test_run/linear_hierarchical_model-202107081019-1.csv, /Users/claytonroberts/Documents/TROPOMI_LHM/src/outputs/test_run/linear_hierarchical_model-202107081019-2.csv, /Users/claytonroberts/Documents/TROPOMI_LHM/src/outputs/test_run/linear_hierarchical_model-202107081019-3.csv, /Users/claytonroberts/Documents/TROPOMI_LHM/src/outputs/test_run/linear_hierarchical_model-202107081019-4.csv
+
+Checking sampler transitions treedepth.
+Treedepth satisfactory for all transitions.
+
+Checking sampler transitions for divergences.
+No divergent transitions found.
+
+Checking E-BFMI - sampler transitions HMC potential energy.
+E-BFMI satisfactory.
+
+Effective sample size satisfactory.
+
+Split R-hat values satisfactory all parameters.
+
+Processing complete, no problems detected.
