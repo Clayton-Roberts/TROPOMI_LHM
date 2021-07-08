@@ -165,3 +165,4 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     with open('test_suite/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
+

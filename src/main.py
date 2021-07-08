@@ -5,15 +5,17 @@ from src import summarise_results as sr
 # Important: all things will be run from here, file paths defined as such.
 
 #=======================================================
-#    --- Testing suite ---
-#=======================================================
 #    --- Flags for testing suite ---
-#-------------------------
+#-----------------------------------
+PERFORM_RUN     = False
 TEST_RUN_NAME   = 'test_run_1'
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
-PERFORM_RUN     = False
+#-----------------------------------
+#    --- Flags for plotting ---
+#-----------------------------------
 ##=======================================================
+
 if PERFORM_RUN:
     tsf.make_directories(TEST_RUN_NAME)
     tsf.generate_mu_and_Sigma(TEST_RUN_NAME)
