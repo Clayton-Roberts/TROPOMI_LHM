@@ -3,6 +3,10 @@ import pandas as pd
 import csv
 import json
 
+def make_directories():
+    '''This function checks that all the relevant directories are made.'''
+    
+
 def generate_mu_and_Sigma():
     '''This function generates a .csv file that defines the "ground truth" values for :math:`\\mu` and
      :math:`\\Sigma` that we use to generate a set of test data.'''
