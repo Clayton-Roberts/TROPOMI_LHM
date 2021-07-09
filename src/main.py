@@ -9,11 +9,11 @@ from src import plotting as p
 #    --- Flags for testing suite ---
 #-----------------------------------
 PERFORM_RUN     = True
-SHOW_RESULTS    = False
+SHOW_RESULTS    = True
+TEST_RUN_NAME   = 'test_20_days'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-TEST_RUN_NAME   = 'test_10_days'
 NUM_DAYS        = 10
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
@@ -21,8 +21,8 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'gamma'
-DATE              = 10000007
+PARAM             = 'alpha'
+DATE              = 10000003
 ##=======================================================
 
 if PERFORM_RUN:
