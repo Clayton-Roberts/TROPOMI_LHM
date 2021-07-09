@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
+import numpy as np
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
@@ -105,3 +106,57 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.gcf().tight_layout()
     plt.legend()
     plt.show()
+
+def scatterplot(date, fitted_model, compare_to_ground_truth=False):
+    '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.
+
+    :param date: Date of observations that you want to plot, formatted YYYYMMDD
+    :type date: int
+    :param fitted_model: FittedModel object that contains the results for the day we're interested in
+    :type fitted_model: FittedModel
+    :param compare_to_ground_truth: A boolean to include a comparison to the ground truth regression if this
+        model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
+    :type compare_to_ground_truth: Boolean
+    '''
+
+    sns.set()
+    np.random.seed(101)
+
+    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    date_df    = dataset_df[dataset_df.Date == date]
+
+    # Needed to plot the regression lines
+    x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
+    x_domain = np.linspace(x_min, x_max, 100)
+
+    day_id = date_df.Day_ID.iloc[0]
+
+    # Plot a subset of sampled regression lines
+    randomize = np.arange(len(fitted_model.full_trace['alpha.' + str(day_id)]))
+    np.random.shuffle(randomize)
+    alpha = fitted_model.full_trace['alpha.' + str(day_id)][randomize]
+    beta = fitted_model.full_trace['beta.' + str(day_id)][randomize]
+    for i in range(500):
+        plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='lightcoral',
+                 alpha=0.05, zorder=2)
+
+    if compare_to_ground_truth:
+        alphas_betas_gammmas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+                                              '/alphas_betas_gammas.csv', header=0, index_col=0) # Index by date
+
+        ground_truth_alpha = alphas_betas_gammmas_df.loc[date, 'alpha']
+        ground_truth_beta  = alphas_betas_gammmas_df.loc[date, 'beta']
+
+        plt.plot(x_domain, ground_truth_alpha + ground_truth_beta * x_domain, color='red', ls='--',
+                 label='True line', zorder=3)
+
+    plt.scatter(date_df.obs_NO2, date_df.obs_CH4, s=5, alpha=0.8, zorder=1)
+
+    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
+    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+
+    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.legend(loc='lower right')
+    plt.tight_layout()
+    plt.show()
+

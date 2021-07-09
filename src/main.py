@@ -8,21 +8,21 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-PERFORM_RUN     = True
+PERFORM_RUN     = False
 SHOW_RESULTS    = True
 TEST_RUN_NAME   = 'test_20_days'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 10
+NUM_DAYS        = 20
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'alpha'
-DATE              = 10000003
+PARAM             = 'rho'
+DATE              = 10000007
 ##=======================================================
 
 if PERFORM_RUN:
@@ -38,4 +38,5 @@ if PERFORM_RUN:
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
     #fitted_model.display_results()
-    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    #p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
