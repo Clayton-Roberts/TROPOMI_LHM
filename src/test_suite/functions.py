@@ -14,10 +14,10 @@ def make_directories(run_name):
     '''
 
     try:
-        os.mkdir('test_suite/data/' + run_name)
+        os.mkdir('data/' + run_name)
     except FileExistsError:
-        shutil.rmtree('test_suite/data/' + run_name)
-        os.mkdir('test_suite/data/' + run_name)
+        shutil.rmtree('data/' + run_name)
+        os.mkdir('data/' + run_name)
 
     try:
         os.mkdir('test_suite/ground_truths/' + run_name)
@@ -101,9 +101,9 @@ def generate_dataset(run_name):
     '''
 
     df = pd.read_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
-                     delimiter=",", header=0, index_col=0)
+                     delimiter=",", header=0, index_col=0) # Indexing by date, column 0
 
-    with open('test_suite/ground_truths/' + run_name + '/dataset.csv', 'w') as csvfile:
+    with open('data/' + run_name + '/dataset.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'true_NO2', 'true_CH4'))
 
@@ -143,7 +143,7 @@ def prepare_dataset_for_cmdstanpy(run_name):
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
     fit our models).'''
 
-    df = pd.read_csv('test_suite/ground_truths/' + run_name + '/dataset.csv', delimiter=',',
+    df = pd.read_csv('data/' + run_name + '/dataset.csv', delimiter=',',
                      header=0, index_col=1)  # Indexing by Date instead of Day_ID
 
     obs_no2 = list(df.obs_NO2)
@@ -163,6 +163,6 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['sigma_N'] = sigma_N
     data['sigma_C'] = sigma_C
 
-    with open('test_suite/data/' + run_name + '/data.json', 'w') as outfile:
+    with open('data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
 

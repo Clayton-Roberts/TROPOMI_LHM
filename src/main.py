@@ -8,10 +8,10 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-PERFORM_RUN     = True
-SHOW_RESULTS    = False
-TEST_RUN_NAME   = 'generating_mu_alpha_mu_beta_20_days'
-NUM_DAYS        = 20
+PERFORM_RUN     = False
+SHOW_RESULTS    = True
+TEST_RUN_NAME   = 'generating_mu_alpha_mu_beta_10_days'
+NUM_DAYS        = 10
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
 #-----------------------------------
@@ -27,9 +27,9 @@ if PERFORM_RUN:
     tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
     if INSTALL_CMDSTAN:
         fm.install_cmdstan()
-    fm.fit_model('test_suite/data/' + TEST_RUN_NAME + '/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME)
+    fm.fit_model('data/' + TEST_RUN_NAME + '/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME)
 
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
     fitted_model.display_results()
-    p.trace(fitted_model, 'mu.2', 10000011, compare_to_ground_truth=True)
+    p.trace(fitted_model, 'Sigma.2.1', compare_to_ground_truth=True)

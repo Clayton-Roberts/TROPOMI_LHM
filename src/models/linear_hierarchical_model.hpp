@@ -17,7 +17,7 @@ using namespace stan::math;
 
 
 stan::math::profile_map profiles__;
-static constexpr std::array<const char*, 43> locations_array__ = 
+static constexpr std::array<const char*, 47> locations_array__ = 
 {" (found before start of program)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 14, column 4 to column 29)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 15, column 4 to column 35)",
@@ -27,14 +27,18 @@ static constexpr std::array<const char*, 43> locations_array__ =
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 39, column 4 to column 23)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 40, column 4 to column 23)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 41, column 4 to column 22)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 43, column 4 to column 41)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 44, column 4 to column 64)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 45, column 4 to column 64)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 46, column 4 to column 41)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 49, column 8 to column 31)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 50, column 8 to column 31)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 48, column 19 to line 51, column 5)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 48, column 4 to line 51, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 42, column 4 to column 26)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 43, column 4 to column 25)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 45, column 4 to column 41)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 46, column 4 to column 64)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 47, column 4 to column 64)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 48, column 4 to column 41)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 51, column 8 to column 31)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 52, column 8 to column 31)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 50, column 19 to line 53, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 50, column 4 to line 53, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 55, column 4 to column 21)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 56, column 4 to column 21)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 23, column 4 to column 29)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 24, column 4 to column 33)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/linear_hierarchical_model.stan', line 27, column 4 to column 65)",
@@ -106,48 +110,48 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       pos__ = std::numeric_limits<int>::min();
       
       pos__ = 1;
-      current_statement__ = 27;
+      current_statement__ = 31;
       context__.validate_dims("data initialization","M","int",
            std::vector<size_t>{});
       M = std::numeric_limits<int>::min();
       
-      current_statement__ = 27;
+      current_statement__ = 31;
       M = context__.vals_i("M")[(1 - 1)];
-      current_statement__ = 27;
+      current_statement__ = 31;
       check_greater_or_equal(function__, "M", M, 0);
-      current_statement__ = 28;
+      current_statement__ = 32;
       context__.validate_dims("data initialization","D","int",
            std::vector<size_t>{});
       D = std::numeric_limits<int>::min();
       
-      current_statement__ = 28;
+      current_statement__ = 32;
       D = context__.vals_i("D")[(1 - 1)];
-      current_statement__ = 28;
+      current_statement__ = 32;
       check_greater_or_equal(function__, "D", D, 0);
-      current_statement__ = 29;
+      current_statement__ = 33;
       validate_non_negative_index("day_id", "M", M);
-      current_statement__ = 30;
+      current_statement__ = 34;
       context__.validate_dims("data initialization","day_id","int",
            std::vector<size_t>{static_cast<size_t>(M)});
       day_id = std::vector<int>(M, std::numeric_limits<int>::min());
       
-      current_statement__ = 30;
+      current_statement__ = 34;
       day_id = context__.vals_i("day_id");
-      current_statement__ = 30;
+      current_statement__ = 34;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 30;
+        current_statement__ = 34;
         check_greater_or_equal(function__, "day_id[sym1__]",
                                day_id[(sym1__ - 1)], 1);
       }
-      current_statement__ = 30;
+      current_statement__ = 34;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 30;
+        current_statement__ = 34;
         check_less_or_equal(function__, "day_id[sym1__]",
                             day_id[(sym1__ - 1)], D);
       }
-      current_statement__ = 31;
+      current_statement__ = 35;
       validate_non_negative_index("NO2_obs", "M", M);
-      current_statement__ = 32;
+      current_statement__ = 36;
       context__.validate_dims("data initialization","NO2_obs","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       NO2_obs__ = Eigen::Matrix<double, -1, 1>(M);
@@ -156,22 +160,22 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       
       {
         std::vector<local_scalar_t__> NO2_obs_flat__;
-        current_statement__ = 32;
+        current_statement__ = 36;
         NO2_obs_flat__ = context__.vals_r("NO2_obs");
-        current_statement__ = 32;
+        current_statement__ = 36;
         pos__ = 1;
-        current_statement__ = 32;
+        current_statement__ = 36;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 32;
+          current_statement__ = 36;
           assign(NO2_obs, NO2_obs_flat__[(pos__ - 1)],
             "assigning variable NO2_obs", index_uni(sym1__));
-          current_statement__ = 32;
+          current_statement__ = 36;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 33;
+      current_statement__ = 37;
       validate_non_negative_index("CH4_obs", "M", M);
-      current_statement__ = 34;
+      current_statement__ = 38;
       context__.validate_dims("data initialization","CH4_obs","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       CH4_obs__ = Eigen::Matrix<double, -1, 1>(M);
@@ -180,22 +184,22 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       
       {
         std::vector<local_scalar_t__> CH4_obs_flat__;
-        current_statement__ = 34;
+        current_statement__ = 38;
         CH4_obs_flat__ = context__.vals_r("CH4_obs");
-        current_statement__ = 34;
+        current_statement__ = 38;
         pos__ = 1;
-        current_statement__ = 34;
+        current_statement__ = 38;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 34;
+          current_statement__ = 38;
           assign(CH4_obs, CH4_obs_flat__[(pos__ - 1)],
             "assigning variable CH4_obs", index_uni(sym1__));
-          current_statement__ = 34;
+          current_statement__ = 38;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 35;
+      current_statement__ = 39;
       validate_non_negative_index("sigma_N", "M", M);
-      current_statement__ = 36;
+      current_statement__ = 40;
       context__.validate_dims("data initialization","sigma_N","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       sigma_N__ = Eigen::Matrix<double, -1, 1>(M);
@@ -204,28 +208,28 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       
       {
         std::vector<local_scalar_t__> sigma_N_flat__;
-        current_statement__ = 36;
+        current_statement__ = 40;
         sigma_N_flat__ = context__.vals_r("sigma_N");
-        current_statement__ = 36;
+        current_statement__ = 40;
         pos__ = 1;
-        current_statement__ = 36;
+        current_statement__ = 40;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 36;
+          current_statement__ = 40;
           assign(sigma_N, sigma_N_flat__[(pos__ - 1)],
             "assigning variable sigma_N", index_uni(sym1__));
-          current_statement__ = 36;
+          current_statement__ = 40;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 36;
+      current_statement__ = 40;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 36;
+        current_statement__ = 40;
         check_greater_or_equal(function__, "sigma_N[sym1__]",
                                sigma_N[(sym1__ - 1)], 0);
       }
-      current_statement__ = 37;
+      current_statement__ = 41;
       validate_non_negative_index("sigma_C", "M", M);
-      current_statement__ = 38;
+      current_statement__ = 42;
       context__.validate_dims("data initialization","sigma_C","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       sigma_C__ = Eigen::Matrix<double, -1, 1>(M);
@@ -234,32 +238,32 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       
       {
         std::vector<local_scalar_t__> sigma_C_flat__;
-        current_statement__ = 38;
+        current_statement__ = 42;
         sigma_C_flat__ = context__.vals_r("sigma_C");
-        current_statement__ = 38;
+        current_statement__ = 42;
         pos__ = 1;
-        current_statement__ = 38;
+        current_statement__ = 42;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 38;
+          current_statement__ = 42;
           assign(sigma_C, sigma_C_flat__[(pos__ - 1)],
             "assigning variable sigma_C", index_uni(sym1__));
-          current_statement__ = 38;
+          current_statement__ = 42;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 38;
+      current_statement__ = 42;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 38;
+        current_statement__ = 42;
         check_greater_or_equal(function__, "sigma_C[sym1__]",
                                sigma_C[(sym1__ - 1)], 0);
       }
-      current_statement__ = 39;
+      current_statement__ = 43;
       validate_non_negative_index("kappa", "D", D);
-      current_statement__ = 40;
+      current_statement__ = 44;
       validate_non_negative_index("gamma", "D", D);
-      current_statement__ = 41;
+      current_statement__ = 45;
       validate_non_negative_index("alpha", "D", D);
-      current_statement__ = 42;
+      current_statement__ = 46;
       validate_non_negative_index("beta", "D", D);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
@@ -324,11 +328,11 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       gamma = in__.template read_constrain_lb<Eigen::Matrix<local_scalar_t__, -1, 1>, jacobian__>(
                 0, lp__, D);
       {
-        current_statement__ = 17;
+        current_statement__ = 21;
         lp_accum__.add(lkj_corr_lpdf<propto__>(Omega, 2));
-        current_statement__ = 18;
+        current_statement__ = 22;
         lp_accum__.add(exponential_lpdf<propto__>(sigma_kappa, 1));
-        current_statement__ = 19;
+        current_statement__ = 23;
         lp_accum__.add(
           multi_normal_lpdf<propto__>(kappa, mu,
             quad_form_diag(Omega, sigma_kappa)));
@@ -338,9 +342,9 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
         local_scalar_t__ Q;
         Q = DUMMY_VAR__;
         
-        current_statement__ = 26;
+        current_statement__ = 30;
         for (int i = 1; i <= M; ++i) {
-          current_statement__ = 22;
+          current_statement__ = 26;
           CH4_hat = (rvalue(kappa, "kappa",
                        index_uni(rvalue(day_id, "day_id", index_uni(i))),
                          index_uni(1)) +
@@ -348,7 +352,7 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
                          index_uni(rvalue(day_id, "day_id", index_uni(i))),
                            index_uni(2)) *
                         rvalue(NO2_obs, "NO2_obs", index_uni(i))));
-          current_statement__ = 23;
+          current_statement__ = 27;
           Q = stan::math::sqrt(
                 ((square(
                     (rvalue(kappa, "kappa",
@@ -363,7 +367,7 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
                   square(
                     rvalue(sigma_C, "sigma_C",
                       index_uni(rvalue(day_id, "day_id", index_uni(i)))))));
-          current_statement__ = 24;
+          current_statement__ = 28;
           lp_accum__.add(
             normal_lpdf<propto__>(rvalue(CH4_obs, "CH4_obs", index_uni(i)),
               CH4_hat, Q));
@@ -477,33 +481,43 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       beta = Eigen::Matrix<double, -1, 1>(D);
       stan::math::fill(beta, std::numeric_limits<double>::quiet_NaN());
       
-      current_statement__ = 9;
+      double mu_alpha;
+      mu_alpha = std::numeric_limits<double>::quiet_NaN();
+      
+      double mu_beta;
+      mu_beta = std::numeric_limits<double>::quiet_NaN();
+      
+      current_statement__ = 11;
       assign(Sigma, square(rvalue(sigma_kappa, "sigma_kappa", index_uni(1))),
         "assigning variable Sigma", index_uni(1), index_uni(1));
-      current_statement__ = 10;
+      current_statement__ = 12;
       assign(Sigma,
         ((rvalue(sigma_kappa, "sigma_kappa", index_uni(1)) *
            rvalue(sigma_kappa, "sigma_kappa", index_uni(2))) *
           rvalue(Omega, "Omega", index_uni(1), index_uni(2))),
         "assigning variable Sigma", index_uni(1), index_uni(2));
-      current_statement__ = 11;
+      current_statement__ = 13;
       assign(Sigma,
         ((rvalue(sigma_kappa, "sigma_kappa", index_uni(2)) *
            rvalue(sigma_kappa, "sigma_kappa", index_uni(1))) *
           rvalue(Omega, "Omega", index_uni(2), index_uni(1))),
         "assigning variable Sigma", index_uni(2), index_uni(1));
-      current_statement__ = 12;
+      current_statement__ = 14;
       assign(Sigma, square(rvalue(sigma_kappa, "sigma_kappa", index_uni(2))),
         "assigning variable Sigma", index_uni(2), index_uni(2));
-      current_statement__ = 16;
+      current_statement__ = 18;
       for (int d = 1; d <= D; ++d) {
-        current_statement__ = 13;
+        current_statement__ = 15;
         assign(alpha, rvalue(kappa, "kappa", index_uni(d), index_uni(1)),
           "assigning variable alpha", index_uni(d));
-        current_statement__ = 14;
+        current_statement__ = 16;
         assign(beta, rvalue(kappa, "kappa", index_uni(d), index_uni(2)),
           "assigning variable beta", index_uni(d));
       }
+      current_statement__ = 19;
+      mu_alpha = rvalue(mu, "mu", index_uni(1));
+      current_statement__ = 20;
+      mu_beta = rvalue(mu, "mu", index_uni(2));
       for (int sym1__ = 1; sym1__ <= 2; ++sym1__) {
         for (int sym2__ = 1; sym2__ <= 2; ++sym2__) {
           vars__.emplace_back(
@@ -516,6 +530,8 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
         vars__.emplace_back(beta[(sym1__ - 1)]);
       }
+      vars__.emplace_back(mu_alpha);
+      vars__.emplace_back(mu_beta);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
       // Next line prevents compiler griping about no return
@@ -726,7 +742,7 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
   inline void get_param_names(std::vector<std::string>& names__) const {
     
     names__ = std::vector<std::string>{"Omega", "sigma_kappa", "mu", "kappa",
-      "gamma", "Sigma", "alpha", "beta"};
+      "gamma", "Sigma", "alpha", "beta", "mu_alpha", "mu_beta"};
     
     } // get_param_names() 
     
@@ -743,7 +759,8 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
       std::vector<size_t>{static_cast<size_t>(D)},
       std::vector<size_t>{static_cast<size_t>(2), static_cast<size_t>(2)},
       std::vector<size_t>{static_cast<size_t>(D)},
-      std::vector<size_t>{static_cast<size_t>(D)}};
+      std::vector<size_t>{static_cast<size_t>(D)}, std::vector<size_t>{
+      }, std::vector<size_t>{}};
     
     } // get_dims() 
     
@@ -810,6 +827,8 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
           param_names__.emplace_back(std::string() + "beta" + '.' + std::to_string(sym1__));
         } 
       }
+      param_names__.emplace_back(std::string() + "mu_alpha");
+      param_names__.emplace_back(std::string() + "mu_beta");
     }
     
     } // constrained_param_names() 
@@ -873,19 +892,21 @@ class linear_hierarchical_model_model final : public model_base_crtp<linear_hier
           param_names__.emplace_back(std::string() + "beta" + '.' + std::to_string(sym1__));
         } 
       }
+      param_names__.emplace_back(std::string() + "mu_alpha");
+      param_names__.emplace_back(std::string() + "mu_beta");
     }
     
     } // unconstrained_param_names() 
     
   inline std::string get_constrained_sizedtypes() const {
     
-    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"},{\"name\":\"Sigma\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"generated_quantities\"},{\"name\":\"alpha\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"beta\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"}]");
+    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"},{\"name\":\"Sigma\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"generated_quantities\"},{\"name\":\"alpha\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"beta\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"mu_alpha\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"mu_beta\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"}]");
     
     } // get_constrained_sizedtypes() 
     
   inline std::string get_unconstrained_sizedtypes() const {
     
-    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(((2 * (2 - 1)) / 2)) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"},{\"name\":\"Sigma\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"generated_quantities\"},{\"name\":\"alpha\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"beta\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"}]");
+    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(((2 * (2 - 1)) / 2)) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"},{\"name\":\"Sigma\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"generated_quantities\"},{\"name\":\"alpha\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"beta\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"mu_alpha\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"mu_beta\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"}]");
     
     } // get_unconstrained_sizedtypes() 
     

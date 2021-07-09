@@ -14,7 +14,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         'alpha', 'beta' or 'gamma'.
     :type date: int
     :param compare_to_ground_truth: A boolean to include a comparison to the ground truth value for this parameter
-        if this model run was a test run with fake data, which is why it defaults to False.
+        if this model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
     :type compare_to_ground_truth: Boolean
     """
 
@@ -32,9 +32,11 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
             col = int(parameter.split('.')[2]) - 1
             ground_truth = cov_df.iloc[row, col]
 
-        if parameter.split('.')[0] == 'mu':
-            row = int(parameter.split('.')[1]) - 1
-            ground_truth = mu_df.iloc[row, 0]
+        if parameter == 'mu_alpha':
+            ground_truth = mu_df.iloc[0, 0]
+
+        if parameter == 'mu_beta':
+            ground_truth = mu_df.iloc[1, 0]
 
     # Create the plots
     plt.subplot(2, 1, 1)

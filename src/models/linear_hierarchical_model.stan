@@ -39,6 +39,8 @@ generated quantities {
     matrix[2, 2] Sigma;
     vector[D]    alpha;
     vector[D]    beta;
+    real         mu_alpha;
+    real         mu_beta;
 
     Sigma[1, 1] = square(sigma_kappa[1]);
     Sigma[1, 2] = sigma_kappa[1] * sigma_kappa[2] * Omega[1, 2];
@@ -49,4 +51,7 @@ generated quantities {
         alpha[d] = kappa[d, 1];
         beta[d]  = kappa[d, 2];
     }
+
+    mu_alpha = mu[1];
+    mu_beta  = mu[2];
 }
