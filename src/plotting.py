@@ -18,6 +18,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     :type compare_to_ground_truth: Boolean
     """
 
+    # Need to get the ground truth value for comparison if we're plotting a test dataset.
     if compare_to_ground_truth:
         daily_parameters_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
                                           '/alphas_betas_gammas.csv', delimiter=",", header=0, index_col=0) # Index by date
@@ -37,6 +38,19 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
         if parameter == 'mu_beta':
             ground_truth = mu_df.iloc[1, 0]
+
+    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    day_id = {}
+
+    # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
+    # using the passed date.
+    for i in range(len(dataset_df.Date)):
+        if dataset_df.Date[i] not in day_id.keys():
+            day_id[dataset_df.Date[i]] = dataset_df.Day_ID[i]
+
+    # Daily parameter are saved in stan as parameter.day_id.
+    if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
+        parameter = parameter + '.' + str(day_id[date])
 
     # Create the plots
     plt.subplot(2, 1, 1)

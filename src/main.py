@@ -32,4 +32,4 @@ if PERFORM_RUN:
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
     fitted_model.display_results()
-    p.trace(fitted_model, 'Sigma.2.1', compare_to_ground_truth=True)
+    p.trace(fitted_model, 'beta', date=10000003, compare_to_ground_truth=True)
