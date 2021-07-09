@@ -94,7 +94,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.fit_model">src.fit_model module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.summarise_results">src.summarise_results module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-src.main">src.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#src-main-module">src.main module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src">Module contents</a></li>
 </ul>
 </li>
@@ -206,10 +206,11 @@ distributions over the model parameters.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.fit_model.install_cmdstan">
 <span class="sig-prename descclassname"><span class="pre">src.fit_model.</span></span><span class="sig-name descname"><span class="pre">install_cmdstan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmdstan_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.fit_model.install_cmdstan" title="Permalink to this definition">¶</a></dt>
-<dd><p>After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).</p>
+<dd><p>After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
+This only needs to be done once.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cmdstan_path</strong> (<em>string</em>) – The location that you want to install CmdStan to. If left blank it will install to a default locaiton.</p>
+<dd class="field-odd"><p><strong>cmdstan_path</strong> (<em>string</em>) – The location that you want to install CmdStan to. If left blank it will install to a default location.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -219,13 +220,21 @@ distributions over the model parameters.</p>
 <span id="src-summarise-results-module"></span><h2>src.summarise_results module<a class="headerlink" href="#module-src.summarise_results" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="src.summarise_results.FittedModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">src.summarise_results.</span></span><span class="sig-name descname"><span class="pre">FittedModel</span></span><a class="headerlink" href="#src.summarise_results.FittedModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">src.summarise_results.</span></span><span class="sig-name descname"><span class="pre">FittedModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.summarise_results.FittedModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class loads the results of a fitted model and organises the results in a useful way. When initialised it
+needs to be pointed towards the correct subdirectory in the /outputs folder.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.summarise_results.FittedModel.display_results">
+<span class="sig-name descname"><span class="pre">display_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.summarise_results.FittedModel.display_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function displays a pretty table of estimated quantities for all model parameters.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
-<section id="module-src.main">
-<span id="src-main-module"></span><h2>src.main module<a class="headerlink" href="#module-src.main" title="Permalink to this headline">¶</a></h2>
+<section id="src-main-module">
+<h2>src.main module<a class="headerlink" href="#src-main-module" title="Permalink to this headline">¶</a></h2>
 </section>
 <section id="module-src">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>

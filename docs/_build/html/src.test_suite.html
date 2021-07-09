@@ -94,7 +94,7 @@
 <li class="toctree-l3"><a class="reference internal" href="src.html#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="src.html#module-src.fit_model">src.fit_model module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="src.html#module-src.summarise_results">src.summarise_results module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="src.html#module-src.main">src.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="src.html#src-main-module">src.main module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="src.html#module-src">Module contents</a></li>
 </ul>
 </li>
@@ -177,36 +177,62 @@
 <span id="src-test-suite-functions-module"></span><h2>src.test_suite.functions module<a class="headerlink" href="#module-src.test_suite.functions" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.test_suite.functions.generate_alphas_betas_and_gammas">
-<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_alphas_betas_and_gammas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">days</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_alphas_betas_and_gammas" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_alphas_betas_and_gammas</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">days</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_alphas_betas_and_gammas" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates a .csv file containing a set sample set of ground truth values of <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span>
 and <span class="math notranslate nohighlight">\(\gamma\)</span> for however many days we choose. These three parameters can be used to generate a set of fake
 observations of NO2 and CH4 for the given day.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>days</strong> (<em>int</em>) – The number of days we want to generate a set of alpha, beta and gamma for.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>days</strong> (<em>int</em>) – The number of days we want to generate a set of alpha, beta and gamma for.</p></li>
+<li><p><strong>run_name</strong> (<em>string</em>) – The name of the run.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.test_suite.functions.generate_dataset">
-<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_dataset" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates a .csv file that contains the total set of fake observations over all of the fake days
 that we wanted, using the ground truth values of <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span> and <span class="math notranslate nohighlight">\(\gamma\)</span> contained in
-“ground_truths/alphas_betas_gammas.csv”</p>
+“ground_truths/run_name/alphas_betas_gammas.csv”</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run_name</strong> (<em>string</em>) – The name of the run.</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.test_suite.functions.generate_mu_and_Sigma">
-<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_mu_and_Sigma</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_mu_and_Sigma" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_mu_and_Sigma</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_mu_and_Sigma" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates a .csv file that defines the “ground truth” values for <span class="math notranslate nohighlight">\(\mu\)</span> and
 <span class="math notranslate nohighlight">\(\Sigma\)</span> that we use to generate a set of test data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run_name</strong> (<em>string</em>) – The name of the run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.test_suite.functions.make_directories">
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">make_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.make_directories" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function checks that all the relevant directories are made. If you re-use a run name, the directory and
+previous contents will be deleted, and the directory will be created again WITHOUT WARNING.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run_name</strong> – The name of the run, will also be the name of the folders that is created.</p>
+</dd>
+</dl>
+<p>:type run_name string</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.test_suite.functions.prepare_dataset_for_cmdstanpy">
-<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">prepare_dataset_for_cmdstanpy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.prepare_dataset_for_cmdstanpy" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function takes the “dataset.cvs” file located at “test_suite/ground_truths” and turns it into json
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">prepare_dataset_for_cmdstanpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.prepare_dataset_for_cmdstanpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes the “dataset.cvs” file located at “test_suite/ground_truths/run_name” and turns it into json
 that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
 fit our models).</p>
 </dd></dl>

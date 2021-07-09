@@ -24,12 +24,12 @@ class FittedModel:
 
 
 
-    def __init__(self, results_location):
+    def __init__(self, run_name):
         '''Constructor method.'''
 
         # First need to get the 'identifiers' of the files in the indicated outputs folder.
 
-        output_file_list = os.listdir('outputs/' + results_location)
+        output_file_list = os.listdir('outputs/' + run_name)
         output_file_list.remove('summary.txt')
         for file in output_file_list:
             if 'stderr' or 'stdout' or 'diagnostic' in file:
@@ -39,10 +39,10 @@ class FittedModel:
         model     = output_file_list[0].split('-')[0]
 
         # Read in the chains from the .csv files
-        chain_1 = pd.read_csv('outputs/' + results_location +  '/' + model + '-' + date_time + '-1.csv', comment='#')
-        chain_2 = pd.read_csv('outputs/' + results_location +  '/' + model + '-' + date_time + '-2.csv', comment='#')
-        chain_3 = pd.read_csv('outputs/' + results_location +  '/' + model + '-' + date_time + '-3.csv', comment='#')
-        chain_4 = pd.read_csv('outputs/' + results_location +  '/' + model + '-' + date_time + '-4.csv', comment='#')
+        chain_1 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-1.csv', comment='#')
+        chain_2 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-2.csv', comment='#')
+        chain_3 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
+        chain_4 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
 
         # Make a list of all model parameters
         parameter_list = chain_1.columns
@@ -74,6 +74,7 @@ class FittedModel:
         self.chain_2             = chain_2
         self.chain_3             = chain_3
         self.chain_4             = chain_4
+        self.run_name            = run_name
 
 
 
