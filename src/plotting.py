@@ -52,7 +52,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
         parameter = parameter + '.' + str(day_id[date])
 
-    # Create the plots
+    # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
     plt.plot(fitted_model.chain_1[parameter])
     plt.plot(fitted_model.chain_2[parameter])
@@ -67,6 +67,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.axhline(fitted_model.credible_intervals[parameter][1], linestyle=':', color='k', alpha=0.2)
     plt.title(r'Trace and Posterior Distribution for ' + parameter)
 
+    # Create the bottom panel showing the distribution of the parameter.
     plt.subplot(2, 1, 2)
     plt.hist(fitted_model.full_trace[parameter], 50, density=True)
     sns.kdeplot(fitted_model.full_trace[parameter], shade=True)

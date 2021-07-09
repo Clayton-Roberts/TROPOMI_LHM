@@ -41,11 +41,9 @@ generated quantities {
     vector[D]    beta;
     real         mu_alpha;
     real         mu_beta;
-
-    Sigma[1, 1] = square(sigma_kappa[1]);
-    Sigma[1, 2] = sigma_kappa[1] * sigma_kappa[2] * Omega[1, 2];
-    Sigma[2, 1] = sigma_kappa[2] * sigma_kappa[1] * Omega[2, 1];
-    Sigma[2, 2] = square(sigma_kappa[2]);
+    real         rho;
+    real         sigma_alpha;
+    real         sigma_beta;
 
     for (d in 1:D) {
         alpha[d] = kappa[d, 1];
@@ -54,4 +52,9 @@ generated quantities {
 
     mu_alpha = mu[1];
     mu_beta  = mu[2];
+
+    rho = Omega[1, 2];
+
+    sigma_alpha = sigma_kappa[1];
+    sigma_beta  = sigma_kappa[2];
 }

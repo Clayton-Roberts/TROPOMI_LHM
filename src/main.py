@@ -8,15 +8,21 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-PERFORM_RUN     = False
-SHOW_RESULTS    = True
-TEST_RUN_NAME   = 'generating_mu_alpha_mu_beta_10_days'
+PERFORM_RUN     = True
+SHOW_RESULTS    = False
+#-----------------------------------
+#   --- Flags for test runs ---
+#-----------------------------------
+TEST_RUN_NAME   = 'test_10_days'
 NUM_DAYS        = 10
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
+SHOW_GROUND_TRUTH = True
+PARAM             = 'gamma'
+DATE              = 10000007
 ##=======================================================
 
 if PERFORM_RUN:
@@ -31,5 +37,5 @@ if PERFORM_RUN:
 
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
-    fitted_model.display_results()
-    p.trace(fitted_model, 'beta', date=10000003, compare_to_ground_truth=True)
+    #fitted_model.display_results()
+    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
