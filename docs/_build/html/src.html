@@ -92,6 +92,7 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.plotting">src.plotting module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.fit_model">src.fit_model module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.summarise_results">src.summarise_results module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#src-main-module">src.main module</a></li>
@@ -183,6 +184,44 @@
 </section>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-src.plotting">
+<span id="src-plotting-module"></span><h2>src.plotting module<a class="headerlink" href="#module-src.plotting" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> (<em>int</em>) – Date of observations that you want to plot, formatted YYYYMMDD</p></li>
+<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – FittedModel object that contains the results for the day we’re interested in</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth regression if this
+model run was a test run with fake data, which is why it defaults to False. Do not use with real data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.trace">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.trace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the trace and posterior distribution of a sampled scalar parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – The object contained the results from a fitted model.</p></li>
+<li><p><strong>parameter</strong> (<em>string</em>) – The name of the parameter. Must be one of ‘alpha’, ‘beta’ or ‘gamma’ with the appropriate date
+argument, or ‘mu_alpha’, ‘mu_beta’, ‘sigma_alpha’, ‘sigma_beta’ or ‘rho’.</p></li>
+<li><p><strong>date</strong> – Date you want to see parameter of interest for, in format YYYYMMDD. Only needed for parameter =
+‘alpha’, ‘beta’ or ‘gamma’.</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth value for this parameter
+if this model run was a test run with fake data, which is why it defaults to False. Do not use with real data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-src.fit_model">
 <span id="src-fit-model-module"></span><h2>src.fit_model module<a class="headerlink" href="#module-src.fit_model" title="Permalink to this headline">¶</a></h2>

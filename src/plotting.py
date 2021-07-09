@@ -138,7 +138,7 @@ def scatterplot(date, fitted_model, compare_to_ground_truth=False):
     beta = fitted_model.full_trace['beta.' + str(day_id)][randomize]
     for i in range(500):
         plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='lightcoral',
-                 alpha=0.05, zorder=2)
+                 alpha=0.05, zorder=1)
 
     if compare_to_ground_truth:
         alphas_betas_gammmas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
@@ -147,10 +147,17 @@ def scatterplot(date, fitted_model, compare_to_ground_truth=False):
         ground_truth_alpha = alphas_betas_gammmas_df.loc[date, 'alpha']
         ground_truth_beta  = alphas_betas_gammmas_df.loc[date, 'beta']
 
-        plt.plot(x_domain, ground_truth_alpha + ground_truth_beta * x_domain, color='red', ls='--',
+        plt.plot(x_domain, ground_truth_alpha + ground_truth_beta * x_domain, color='lime', ls='--',
                  label='True line', zorder=3)
 
-    plt.scatter(date_df.obs_NO2, date_df.obs_CH4, s=5, alpha=0.8, zorder=1)
+    plt.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
+                 ecolor="blue",
+                 capsize=3,
+                 fmt='D',
+                 mfc='w',
+                 color='red',
+                 ms=4,
+                 zorder=2)
 
     plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
     plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
@@ -159,4 +166,6 @@ def scatterplot(date, fitted_model, compare_to_ground_truth=False):
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.show()
+
+# Time series plotting function that plots alpha or beta against flare stack data, needs "real" data to develop.
 

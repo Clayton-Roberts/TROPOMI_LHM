@@ -22,7 +22,7 @@ INSTALL_CMDSTAN = False
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
 PARAM             = 'rho'
-DATE              = 10000007
+DATE              = 10000019
 ##=======================================================
 
 if PERFORM_RUN:

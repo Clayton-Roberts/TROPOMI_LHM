@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+src.plotting module
+--------------------
+
+.. automodule:: src.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 src.fit_model module
 --------------------
 
