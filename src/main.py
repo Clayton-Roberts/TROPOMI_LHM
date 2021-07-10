@@ -37,6 +37,7 @@ if GENERATE_TEST_DATA:
 
 if PERFORM_DROPOUT:
     dt.make_directory(TEST_RUN_NAME)
+    dt.create_csvs(TEST_RUN_NAME)
 
 if FIT_FULL_TEST_DATA:
     if INSTALL_CMDSTAN:
