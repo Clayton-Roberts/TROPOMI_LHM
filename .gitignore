@@ -1,4 +1,4 @@
 .idea/*
 src/outputs/*
-src/test_suite/data/*
 src/test_suite/ground_truths/*
+src/data/*
