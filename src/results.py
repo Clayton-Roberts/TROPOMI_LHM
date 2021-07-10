@@ -2,10 +2,75 @@ import os
 import pandas as pd
 import numpy as np
 from tabulate import tabulate
+import random
 
 class FittedModel:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
     needs to be pointed towards the correct subdirectory in the /outputs folder.'''
+
+    def write_reduced_chi_squared_csv(self):
+        '''
+        This function goes through all days fitted in the model and calculates a reduced chi-squred statistic for that day,
+        and then writes it to a .csv file. This is performed only as part of the dropout testing.
+        '''
+
+    
+
+
+
+    def predict_ch4(self, obs_no2, sigma_N, date=None, day_id=None):
+        '''
+        This function is for predicting an observed value of CH4 with an associated standard deviation on the estimate.
+
+        :param date: Optional, date that we want to make the prediction on, must be in the format YYYYMMDD.
+        :type date: int
+        :param obs_no2: The observed value of NO2 in micro mol / m^2
+        :type obs_no2: float
+        :param sigma_N: The reported error on the observation of NO2, also in micro mol / m^2.
+        :type sigma_N: float
+        :param day_id: Optional, Day ID that can be optionally provided.
+        :type day_id: int
+        :return: A value for predicted CH4 and associated uncertainty.
+        '''
+
+
+        # Open the full dataset.csv to see which day id we need.
+        if date:
+            if 'dropout' in self.run_name:
+                dataset_df = pd.read_csv('data/' + self.run_name.split('/')[0] + '/dataset.csv')
+            else:
+                dataset_df = pd.read_csv('data/' + self.run_name + '/dataset.csv')
+
+            day_id     = dataset_df[dataset_df.Date == date].Day_ID.iloc[0]
+
+        alphas = self.full_trace['alpha.' + str(day_id)]
+        betas  = self.full_trace['beta.' + str(day_id)]
+        gammas = self.full_trace['gamma.' + str(day_id)]
+
+        num_sims = len(alphas)
+
+        predictions = []
+
+        for i in range(1000):
+
+            index    = random.randint(0, num_sims-1)
+
+            # Randomly choose a "true" value of NO2 from the given observation and uncertainty.
+            true_no2 = np.random.normal(obs_no2, sigma_N)
+
+            # Choose a set of model parameters from the full trace (all from the same simulation)
+            alpha = alphas[index]
+            beta  = betas[index]
+            gamma = gammas[index]
+
+            # Predict the "true" value of CH4 given the true value of NO2 and the model parameters.
+            predictions.append(np.random.normal(alpha + beta * true_no2, gamma))
+
+        mean_observation = np.mean(predictions)
+        standard_deviation = np.std(predictions)
+
+        return mean_observation, standard_deviation
+
 
     def display_results(self):
         '''This function displays a pretty table of estimated quantities for all model parameters.'''

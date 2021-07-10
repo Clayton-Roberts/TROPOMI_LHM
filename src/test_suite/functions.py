@@ -148,7 +148,11 @@ def generate_dataset(run_name):
 def prepare_dataset_for_cmdstanpy(run_name):
     '''This function takes the "dataset.cvs" file located at "test_suite/ground_truths/run_name" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
-    fit our models).'''
+    fit our models).
+
+    :param run_name: Name of the model run.
+    :type run_name:str
+    '''
 
     df = pd.read_csv('data/' + run_name + '/dataset.csv', delimiter=',',
                      header=0, index_col=1)  # Indexing by Date instead of Day_ID

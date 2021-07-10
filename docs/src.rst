@@ -12,6 +12,14 @@ Subpackages
 Submodules
 ----------
 
+src.dropout_tests module
+--------------------
+
+.. automodule:: src.dropout_tests
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 src.plotting module
 --------------------
 

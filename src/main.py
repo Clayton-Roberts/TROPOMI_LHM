@@ -10,10 +10,10 @@ from src import plotting as p
 #    --- Flags for testing suite ---
 #-----------------------------------
 GENERATE_TEST_DATA  = False
-PERFORM_DROPOUT     = False
-FIT_FULL_TEST_DATA  = False
-SHOW_RESULTS        = True
-TEST_RUN_NAME       = '10_days_N_100'
+PERFORM_DROPOUT_FIT = True
+PERFORM_FULL_FIT    = False
+SHOW_RESULTS        = False
+TEST_RUN_NAME       = '10_days'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
@@ -25,7 +25,7 @@ INSTALL_CMDSTAN = False
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
 PARAM             = 'beta'
-DATE              = 10000008
+DATE              = 10000003
 ##=======================================================
 
 if GENERATE_TEST_DATA:
@@ -35,18 +35,23 @@ if GENERATE_TEST_DATA:
     tsf.generate_dataset(TEST_RUN_NAME)
     tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
 
-if PERFORM_DROPOUT:
-    dt.make_directory(TEST_RUN_NAME)
-    dt.create_csvs(TEST_RUN_NAME)
+if PERFORM_DROPOUT_FIT:
+    # dt.make_directories(TEST_RUN_NAME)
+    # dt.create_csvs(TEST_RUN_NAME)
+    # dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
+    # fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME + '/dropout')
+    fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
+    fitted_model.write_reduced_chi_squared_csv()
 
-if FIT_FULL_TEST_DATA:
+if PERFORM_FULL_FIT:
     if INSTALL_CMDSTAN:
         fm.install_cmdstan()
     fm.fit_model('data/' + TEST_RUN_NAME + '/data.json', 'models/linear_hierarchical_model.stan', TEST_RUN_NAME)
 
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
-#    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.observations_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    #p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-   # p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.dropout_scatterplot(DATE, TEST_RUN_NAME)
+    p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)

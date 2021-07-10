@@ -109,15 +109,15 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.legend()
     plt.show()
 
-def observations_scatterplot(date, fitted_model, compare_to_ground_truth=False):
+def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
     '''
     This function is for plotting a simple scatterplot of observations. It will always include errorbars on the observations,
     and if it is a test dataset than you can select to have the latent values shown as well.
 
     :param date: Date of observations that you want to plot, formatted YYYYMMDD
     :type date: int
-    :param fitted_model: FittedModel object that contains the results for the day we're interested in
-    :type fitted_model: FittedModel
+    :param run_name: Name of the model run.
+    :type run_name: string
     :param compare_to_ground_truth: A boolean to include a comparison to the latent values if this
         model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
     :type compare_to_ground_truth: Boolean
@@ -127,7 +127,7 @@ def observations_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     sns.set()
     np.random.seed(101)
 
-    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv('data/' + run_name + '/dataset.csv', header=0)
     date_df = dataset_df[dataset_df.Date == date]
 
     if compare_to_ground_truth:
@@ -152,6 +152,34 @@ def observations_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     plt.tight_layout()
     plt.show()
 
+def dropout_scatterplot(date, run_name):
+    '''
+    This function is for plotting a scatterplot showing which observations were dropped out on a given day.
+    :param date: Date of observations that you want to plot, formatted YYYYMMDD
+    :type date: int
+    :param run_name: Name of the model run.
+    :type run_name: string
+    '''
+
+    sns.set()
+    np.random.seed(101)
+
+    full_dropout_df   = pd.read_csv('data/' + run_name + '/dropout/dropout_dataset.csv')
+    full_remaining_df = pd.read_csv('data/' + run_name + '/dropout/remaining_dataset.csv')
+
+    date_dropout_df   = full_dropout_df[full_dropout_df.Date == date]
+    date_remaining_df = full_remaining_df[full_remaining_df.Date == date]
+
+    plt.scatter(date_dropout_df.obs_NO2, date_dropout_df.obs_CH4, color='red', label='Dropped observations', marker='D', zorder=2)
+    plt.scatter(date_remaining_df.obs_NO2, date_remaining_df.obs_CH4, color='black', label='Remaining observations', marker='D', zorder=1)
+
+    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
+    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+
+    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    plt.show()
 
 def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.

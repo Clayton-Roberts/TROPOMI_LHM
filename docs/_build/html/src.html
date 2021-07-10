@@ -93,9 +93,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#src-dropout-tests-module">src.dropout_tests module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.plotting">src.plotting module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.fit_model">src.fit_model module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-src.summarise_results">src.summarise_results module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#src-summarise-results-module">src.summarise_results module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#src-main-module">src.main module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src">Module contents</a></li>
 </ul>
@@ -186,6 +187,57 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </section>
+<section id="src-dropout-tests-module">
+<h2>src.dropout_tests module<a class="headerlink" href="#src-dropout-tests-module" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-src.dropout_tests"></span><dl class="py function">
+<dt class="sig sig-object py" id="src.dropout_tests.calculated_reduced_chi_squared">
+<span class="sig-prename descclassname"><span class="pre">src.dropout_tests.</span></span><span class="sig-name descname"><span class="pre">calculated_reduced_chi_squared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dropout_tests.calculated_reduced_chi_squared" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fitted_model</strong> (<em>FittedModel</em>) – Model that was fit on the dataset that has had 20% of observations dropped out on each day.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.dropout_tests.create_csvs">
+<span class="sig-prename descclassname"><span class="pre">src.dropout_tests.</span></span><span class="sig-name descname"><span class="pre">create_csvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dropout_tests.create_csvs" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will open the file named “dataset.csv” located at data/run_name and then drop out 20% of observations
+for each day listed in “dataset.csv”. This function then creates two .csv files: one containing the remaining 80%
+of observations, and the other containing the 10% that have been dropped out.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run_name</strong> (<em>string</em>) – The name of this model run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.dropout_tests.make_directories">
+<span class="sig-prename descclassname"><span class="pre">src.dropout_tests.</span></span><span class="sig-name descname"><span class="pre">make_directories</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dropout_tests.make_directories" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function checks that the relevant directory is made in data/run_name for the subdivided dropout datasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run_name</strong> (<em>string</em>) – The name of this model run.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.dropout_tests.prepare_dataset_for_cmdstanpy">
+<span class="sig-prename descclassname"><span class="pre">src.dropout_tests.</span></span><span class="sig-name descname"><span class="pre">prepare_dataset_for_cmdstanpy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dropout_tests.prepare_dataset_for_cmdstanpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function takes the “remaining_dataset.csv” file located at “data/run_name/dropout” and turns it into json
+that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
+fit our models).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>run_name</strong> – Name of the model run.</p>
+</dd>
+</dl>
+<p>:type run_name:str</p>
+</dd></dl>
+
+</section>
 <section id="module-src.plotting">
 <span id="src-plotting-module"></span><h2>src.plotting module<a class="headerlink" href="#module-src.plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
@@ -196,7 +248,7 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – The fitted model that contains the range of days you want <span class="math notranslate nohighlight">\(\alpha_d\)</span>
+<li><p><strong>fitted_model</strong> (<em>FittedModel</em>) – The fitted model that contains the range of days you want <span class="math notranslate nohighlight">\(\alpha_d\)</span>
 vs <span class="math notranslate nohighlight">\(\beta_d\)</span> plotted for.</p></li>
 <li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth values of <span class="math notranslate nohighlight">\(\alpha_d\)</span>
 and <span class="math notranslate nohighlight">\(\beta_d\)</span> if this model run was a test run with fake data, which is why it defaults to False.
@@ -204,6 +256,16 @@ Do not use with real data.</p></li>
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.dropout_scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">dropout_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.dropout_scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting a scatterplot showing which observations were dropped out on a given day.
+:param date: Date of observations that you want to plot, formatted YYYYMMDD
+:type date: int
+:param run_name: Name of the model run.
+:type run_name: string</p>
 </dd></dl>
 
 <dl class="py function">
@@ -229,13 +291,33 @@ estimated in our model as <span class="math notranslate nohighlight">\(\rho\)</s
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.plotting.observations_scatterplot">
-<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">observations_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.observations_scatterplot" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">observations_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.observations_scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting a simple scatterplot of observations. It will always include errorbars on the observations,
+and if it is a test dataset than you can select to have the latent values shown as well.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> (<em>int</em>) – Date of observations that you want to plot, formatted YYYYMMDD</p></li>
+<li><p><strong>run_name</strong> (<em>string</em>) – Name of the model run.</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the latent values if this
+model run was a test run with fake data, which is why it defaults to False. Do not use with real data.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.regression_scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">regression_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.regression_scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>date</strong> (<em>int</em>) – Date of observations that you want to plot, formatted YYYYMMDD</p></li>
-<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – FittedModel object that contains the results for the day we’re interested in</p></li>
+<li><p><strong>fitted_model</strong> (<em>FittedModel</em>) – FittedModel object that contains the results for the day we’re interested in</p></li>
 <li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth regression if this
 model run was a test run with fake data, which is why it defaults to False. Do not use with real data.</p></li>
 </ul>
@@ -250,7 +332,7 @@ model run was a test run with fake data, which is why it defaults to False. Do n
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – The object contained the results from a fitted model.</p></li>
+<li><p><strong>fitted_model</strong> (<em>FittedModel</em>) – The object contained the results from a fitted model.</p></li>
 <li><p><strong>parameter</strong> (<em>string</em>) – The name of the parameter. Must be one of ‘alpha’, ‘beta’ or ‘gamma’ with the appropriate date
 argument, or ‘mu_alpha’, ‘mu_beta’, ‘sigma_alpha’, ‘sigma_beta’ or ‘rho’.</p></li>
 <li><p><strong>date</strong> – Date you want to see parameter of interest for, in format YYYYMMDD. Only needed for parameter =
@@ -295,22 +377,8 @@ This only needs to be done once.</p>
 </dd></dl>
 
 </section>
-<section id="module-src.summarise_results">
-<span id="src-summarise-results-module"></span><h2>src.summarise_results module<a class="headerlink" href="#module-src.summarise_results" title="Permalink to this headline">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="src.summarise_results.FittedModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">src.summarise_results.</span></span><span class="sig-name descname"><span class="pre">FittedModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.summarise_results.FittedModel" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>This class loads the results of a fitted model and organises the results in a useful way. When initialised it
-needs to be pointed towards the correct subdirectory in the /outputs folder.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="src.summarise_results.FittedModel.display_results">
-<span class="sig-name descname"><span class="pre">display_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.summarise_results.FittedModel.display_results" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function displays a pretty table of estimated quantities for all model parameters.</p>
-</dd></dl>
-
-</dd></dl>
-
+<section id="src-summarise-results-module">
+<h2>src.summarise_results module<a class="headerlink" href="#src-summarise-results-module" title="Permalink to this headline">¶</a></h2>
 </section>
 <section id="src-main-module">
 <h2>src.main module<a class="headerlink" href="#src-main-module" title="Permalink to this headline">¶</a></h2>
