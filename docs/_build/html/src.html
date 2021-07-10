@@ -26,6 +26,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -188,8 +189,47 @@
 <section id="module-src.plotting">
 <span id="src-plotting-module"></span><h2>src.plotting module<a class="headerlink" href="#module-src.plotting" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="src.plotting.scatterplot">
-<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.scatterplot" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="src.plotting.alpha_beta_scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">alpha_beta_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.alpha_beta_scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting estimated values of <span class="math notranslate nohighlight">\(\alpha_d\)</span> vs <span class="math notranslate nohighlight">\(\beta_d\)</span> for a range of days
+<span class="math notranslate nohighlight">\(d\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – The fitted model that contains the range of days you want <span class="math notranslate nohighlight">\(\alpha_d\)</span>
+vs <span class="math notranslate nohighlight">\(\beta_d\)</span> plotted for.</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth values of <span class="math notranslate nohighlight">\(\alpha_d\)</span>
+and <span class="math notranslate nohighlight">\(\beta_d\)</span> if this model run was a test run with fake data, which is why it defaults to False.
+Do not use with real data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.ellipse">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">correlation_coefficient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.ellipse" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function to add an ellipse to scatterplots (used only in plots of <span class="math notranslate nohighlight">\(\alpha_d\)</span> vs <span class="math notranslate nohighlight">\(\beta_d\)</span>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>correlation_coefficient</strong> (<em>float</em>) – The Pearson correlation coefficient between <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span>,
+estimated in our model as <span class="math notranslate nohighlight">\(\rho\)</span>.</p></li>
+<li><p><strong>sigma_alpha</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\sigma_\alpha\)</span>.</p></li>
+<li><p><strong>sigma_beta</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\sigma_\beta\)</span>.</p></li>
+<li><p><strong>mu_alpha</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\mu_\alpha\)</span>.</p></li>
+<li><p><strong>mu_beta</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\mu_\beta\)</span>.</p></li>
+<li><p><strong>ax</strong> (<em>Axes</em>) – The plot to add the ellipse patch to.</p></li>
+<li><p><strong>n_std</strong> (<em>float</em>) – The number of standard deviations to scale the ellipse out to, defaults to 3.</p></li>
+<li><p><strong>facecolor</strong> (<em>string</em>) – Color of the ellipse.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.observations_scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">observations_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.observations_scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>

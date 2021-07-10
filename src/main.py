@@ -40,4 +40,4 @@ if SHOW_RESULTS:
     #fitted_model.display_results()
     #p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     #p.observations_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=True)
+    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
