@@ -26,6 +26,7 @@
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
         <script src="_static/doctools.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -92,9 +93,10 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-src.plotting">src.plotting module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.fit_model">src.fit_model module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src.summarise_results">src.summarise_results module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-src.main">src.main module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#src-main-module">src.main module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-src">Module contents</a></li>
 </ul>
 </li>
@@ -184,6 +186,83 @@
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
 </section>
+<section id="module-src.plotting">
+<span id="src-plotting-module"></span><h2>src.plotting module<a class="headerlink" href="#module-src.plotting" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.alpha_beta_scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">alpha_beta_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.alpha_beta_scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting estimated values of <span class="math notranslate nohighlight">\(\alpha_d\)</span> vs <span class="math notranslate nohighlight">\(\beta_d\)</span> for a range of days
+<span class="math notranslate nohighlight">\(d\)</span>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – The fitted model that contains the range of days you want <span class="math notranslate nohighlight">\(\alpha_d\)</span>
+vs <span class="math notranslate nohighlight">\(\beta_d\)</span> plotted for.</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth values of <span class="math notranslate nohighlight">\(\alpha_d\)</span>
+and <span class="math notranslate nohighlight">\(\beta_d\)</span> if this model run was a test run with fake data, which is why it defaults to False.
+Do not use with real data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.ellipse">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">ellipse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">correlation_coefficient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sigma_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_beta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_std</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">facecolor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'none'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.ellipse" title="Permalink to this definition">¶</a></dt>
+<dd><p>A function to add an ellipse to scatterplots (used only in plots of <span class="math notranslate nohighlight">\(\alpha_d\)</span> vs <span class="math notranslate nohighlight">\(\beta_d\)</span>).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>correlation_coefficient</strong> (<em>float</em>) – The Pearson correlation coefficient between <span class="math notranslate nohighlight">\(\alpha\)</span> and <span class="math notranslate nohighlight">\(\beta\)</span>,
+estimated in our model as <span class="math notranslate nohighlight">\(\rho\)</span>.</p></li>
+<li><p><strong>sigma_alpha</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\sigma_\alpha\)</span>.</p></li>
+<li><p><strong>sigma_beta</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\sigma_\beta\)</span>.</p></li>
+<li><p><strong>mu_alpha</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\mu_\alpha\)</span>.</p></li>
+<li><p><strong>mu_beta</strong> (<em>float</em>) – Estimated model parameter <span class="math notranslate nohighlight">\(\mu_\beta\)</span>.</p></li>
+<li><p><strong>ax</strong> (<em>Axes</em>) – The plot to add the ellipse patch to.</p></li>
+<li><p><strong>n_std</strong> (<em>float</em>) – The number of standard deviations to scale the ellipse out to, defaults to 3.</p></li>
+<li><p><strong>facecolor</strong> (<em>string</em>) – Color of the ellipse.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.observations_scatterplot">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">observations_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.observations_scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>date</strong> (<em>int</em>) – Date of observations that you want to plot, formatted YYYYMMDD</p></li>
+<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – FittedModel object that contains the results for the day we’re interested in</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth regression if this
+model run was a test run with fake data, which is why it defaults to False. Do not use with real data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.trace">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">trace</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parameter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">date</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.trace" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot the trace and posterior distribution of a sampled scalar parameter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fitted_model</strong> (<a class="reference internal" href="#src.summarise_results.FittedModel" title="src.summarise_results.FittedModel"><em>FittedModel</em></a>) – The object contained the results from a fitted model.</p></li>
+<li><p><strong>parameter</strong> (<em>string</em>) – The name of the parameter. Must be one of ‘alpha’, ‘beta’ or ‘gamma’ with the appropriate date
+argument, or ‘mu_alpha’, ‘mu_beta’, ‘sigma_alpha’, ‘sigma_beta’ or ‘rho’.</p></li>
+<li><p><strong>date</strong> – Date you want to see parameter of interest for, in format YYYYMMDD. Only needed for parameter =
+‘alpha’, ‘beta’ or ‘gamma’.</p></li>
+<li><p><strong>compare_to_ground_truth</strong> (<em>Boolean</em>) – A boolean to include a comparison to the ground truth value for this parameter
+if this model run was a test run with fake data, which is why it defaults to False. Do not use with real data.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
 <section id="module-src.fit_model">
 <span id="src-fit-model-module"></span><h2>src.fit_model module<a class="headerlink" href="#module-src.fit_model" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
@@ -206,10 +285,11 @@ distributions over the model parameters.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.fit_model.install_cmdstan">
 <span class="sig-prename descclassname"><span class="pre">src.fit_model.</span></span><span class="sig-name descname"><span class="pre">install_cmdstan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmdstan_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.fit_model.install_cmdstan" title="Permalink to this definition">¶</a></dt>
-<dd><p>After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).</p>
+<dd><p>After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
+This only needs to be done once.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cmdstan_path</strong> (<em>string</em>) – The location that you want to install CmdStan to. If left blank it will install to a default locaiton.</p>
+<dd class="field-odd"><p><strong>cmdstan_path</strong> (<em>string</em>) – The location that you want to install CmdStan to. If left blank it will install to a default location.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -219,13 +299,21 @@ distributions over the model parameters.</p>
 <span id="src-summarise-results-module"></span><h2>src.summarise_results module<a class="headerlink" href="#module-src.summarise_results" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="src.summarise_results.FittedModel">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">src.summarise_results.</span></span><span class="sig-name descname"><span class="pre">FittedModel</span></span><a class="headerlink" href="#src.summarise_results.FittedModel" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">src.summarise_results.</span></span><span class="sig-name descname"><span class="pre">FittedModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.summarise_results.FittedModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class loads the results of a fitted model and organises the results in a useful way. When initialised it
+needs to be pointed towards the correct subdirectory in the /outputs folder.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="src.summarise_results.FittedModel.display_results">
+<span class="sig-name descname"><span class="pre">display_results</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.summarise_results.FittedModel.display_results" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function displays a pretty table of estimated quantities for all model parameters.</p>
+</dd></dl>
+
 </dd></dl>
 
 </section>
-<section id="module-src.main">
-<span id="src-main-module"></span><h2>src.main module<a class="headerlink" href="#module-src.main" title="Permalink to this headline">¶</a></h2>
+<section id="src-main-module">
+<h2>src.main module<a class="headerlink" href="#src-main-module" title="Permalink to this headline">¶</a></h2>
 </section>
 <section id="module-src">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-src" title="Permalink to this headline">¶</a></h2>

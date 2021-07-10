@@ -14,10 +14,10 @@ def make_directories(run_name):
     '''
 
     try:
-        os.mkdir('test_suite/data/' + run_name)
+        os.mkdir('data/' + run_name)
     except FileExistsError:
-        shutil.rmtree('test_suite/data/' + run_name)
-        os.mkdir('test_suite/data/' + run_name)
+        shutil.rmtree('data/' + run_name)
+        os.mkdir('data/' + run_name)
 
     try:
         os.mkdir('test_suite/ground_truths/' + run_name)
@@ -32,36 +32,43 @@ def make_directories(run_name):
         os.mkdir('outputs/' + run_name)
 
 def generate_mu_and_Sigma(run_name):
-    '''This function generates a .csv file that defines the "ground truth" values for :math:`\\mu` and
-     :math:`\\Sigma` that we use to generate a set of test data.
+    '''This function generates a .csv file that defines the "ground truth" values that we use to generate a set of test data.
 
      :param run_name: The name of the run.
      :type run_name: string
      '''
 
-    mean_alpha = 1865.0  # ppbv
-    mean_beta  = 0.8     # ppbv / micro mol m^-2
+    mu_alpha = 1865.0  # ppbv
+    mu_beta  = 0.8     # ppbv / micro mol m^-2
 
     # In our model, gamma is a independently estimated daily variance parameter, and is not drawn from the same
     # bivariate normal distribution that alpha and beta are. We will include it in the covariance matrix but set it to
     # have zero covariance with alpha and beta.
-    mean_gamma = 10.0  # ppbv
+    mu_gamma = 10.0  # ppbv
 
     # Define the mean vector mu
-    mu = np.array((mean_alpha, mean_beta, mean_gamma))
+    mu = np.array((mu_alpha, mu_beta, mu_gamma))
 
     # Give each mean value some variance.
     sigma_alpha = 10.0  # ppbv
     sigma_beta  = 0.2   # ppbv / micro mol m^-2
     sigma_gamma = 3.0   # ppbv
 
+    # Define the extent of correlation between alpha and beta
+    rho = -0.8
+
     # Define the covariance matrix Sigma
-    sigma = np.array(((sigma_alpha ** 2, -sigma_alpha * sigma_beta * 0.8, sigma_alpha * sigma_gamma * 0),
-                    (-sigma_alpha * sigma_beta * 0.8, sigma_beta ** 2, sigma_beta * sigma_gamma * 0),
+    sigma = np.array(((sigma_alpha ** 2, sigma_alpha * sigma_beta * rho, sigma_alpha * sigma_gamma * 0),
+                    (sigma_alpha * sigma_beta * rho, sigma_beta ** 2, sigma_beta * sigma_gamma * 0),
                     (sigma_alpha * sigma_gamma * 0, sigma_beta * sigma_gamma * 0, sigma_gamma ** 2)))
 
     np.savetxt("test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",")
     np.savetxt("test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",")
+
+    with open('test_suite/ground_truths/' + run_name + '/hyperparameter_truths.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile, delimiter=',')
+        writer.writerow(('rho','mu_alpha','mu_beta','sigma_alpha','sigma_beta'))
+        writer.writerow((rho, mu_alpha, mu_beta, sigma_alpha, sigma_beta))
 
 def generate_alphas_betas_and_gammas(days, run_name):
     '''This function generates a .csv file containing a set sample set of ground truth values of :math:`\\alpha`, :math:`\\beta`
@@ -101,9 +108,9 @@ def generate_dataset(run_name):
     '''
 
     df = pd.read_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
-                     delimiter=",", header=0, index_col=0)
+                     delimiter=",", header=0, index_col=0) # Indexing by date, column 0
 
-    with open('test_suite/ground_truths/' + run_name + '/dataset.csv', 'w') as csvfile:
+    with open('data/' + run_name + '/dataset.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'true_NO2', 'true_CH4'))
 
@@ -143,7 +150,7 @@ def prepare_dataset_for_cmdstanpy(run_name):
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
     fit our models).'''
 
-    df = pd.read_csv('test_suite/ground_truths/' + run_name + '/dataset.csv', delimiter=',',
+    df = pd.read_csv('data/' + run_name + '/dataset.csv', delimiter=',',
                      header=0, index_col=1)  # Indexing by Date instead of Day_ID
 
     obs_no2 = list(df.obs_NO2)
@@ -163,6 +170,6 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['sigma_N'] = sigma_N
     data['sigma_C'] = sigma_C
 
-    with open('test_suite/data/' + run_name + '/data.json', 'w') as outfile:
+    with open('data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
 
