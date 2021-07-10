@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.patches import Ellipse
+import matplotlib.transforms as transforms
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -107,7 +109,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.legend()
     plt.show()
 
-def scatterplot(date, fitted_model, compare_to_ground_truth=False):
+def observations_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.
 
     :param date: Date of observations that you want to plot, formatted YYYYMMDD
@@ -168,4 +170,150 @@ def scatterplot(date, fitted_model, compare_to_ground_truth=False):
     plt.show()
 
 # Time series plotting function that plots alpha or beta against flare stack data, needs "real" data to develop.
+def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
+    '''This function is for plotting estimated values of :math:`\\alpha_d` vs :math:`\\beta_d` for a range of days
+    :math:`d`.
+
+    :param fitted_model: The fitted model that contains the range of days you want :math:`\\alpha_d`
+        vs :math:`\\beta_d` plotted for.
+    :type fitted_model: FittedModel
+    :param compare_to_ground_truth: A boolean to include a comparison to the ground truth values of :math:`\\alpha_d`
+        and :math:`\\beta_d` if this model run was a test run with fake data, which is why it defaults to False.
+        Do not use with real data.
+    :type compare_to_ground_truth: Boolean
+    '''
+
+    # Create the figure with the specified size
+    fig = plt.figure()
+    spec = fig.add_gridspec(1, 1)
+
+    # Add the subplot axes
+    ax0 = fig.add_subplot(spec[:, :])
+
+    # Add ground truth values if you want to and this is a test dataset.
+    if compare_to_ground_truth:
+
+        # Get ground truth values for alpha and beta
+        alphas_betas_gammas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name + '/alphas_betas_gammas.csv')
+
+        ground_truth_alphas = alphas_betas_gammas_df.alpha
+        ground_truth_betas  = alphas_betas_gammas_df.beta
+
+        ax0.scatter(ground_truth_alphas,
+                    ground_truth_betas,
+                    color='lime',
+                    marker='D',
+                    zorder=-1)
+
+        # Get ground truth values for the bivariate distribution.
+        hyperparameters_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name + '/hyperparameter_truths.csv',
+                                         header=0)
+
+        ellipse(hyperparameters_df.rho[0],
+                hyperparameters_df.sigma_alpha[0],
+                hyperparameters_df.sigma_beta[0],
+                hyperparameters_df.mu_alpha[0],
+                hyperparameters_df.mu_beta[0],
+                ax0,
+                n_std=2.0,
+                edgecolor='blue',
+                facecolor='blue',
+                alpha=0.3)
+
+    beta_values       = []
+    beta_error_bounds = []
+
+    alpha_values = []
+    alpha_error_bounds = []
+
+    for parameter in fitted_model.mean_values.keys():
+        if 'beta.' in parameter:
+            beta_values.append(fitted_model.mean_values[parameter])
+            beta_error_bounds.append([fitted_model.mean_values[parameter] - fitted_model.credible_intervals[parameter][0],
+                                      fitted_model.credible_intervals[parameter][1] - fitted_model.mean_values[parameter]])
+        elif 'alpha.' in parameter:
+            alpha_values.append(fitted_model.mean_values[parameter])
+            alpha_error_bounds.append(
+                [fitted_model.mean_values[parameter] - fitted_model.credible_intervals[parameter][0],
+                 fitted_model.credible_intervals[parameter][1] - fitted_model.mean_values[parameter]])
+
+    ax0.errorbar(alpha_values,
+                 beta_values,
+                 yerr=np.array(beta_error_bounds).T,
+                 xerr=np.array(alpha_error_bounds).T,
+                 ecolor="blue",
+                 capsize=3,
+                 fmt='D',
+                 mfc='w',
+                 color='red',
+                 ms=4)
+
+    pearson = fitted_model.mean_values['rho']
+
+    sigma_alpha = fitted_model.mean_values['sigma_alpha']
+    mu_alpha    = fitted_model.mean_values['mu_alpha']
+
+    sigma_beta = fitted_model.mean_values['sigma_beta']
+    mu_beta    = fitted_model.mean_values['mu_beta']
+
+    ellipse(pearson,
+            sigma_alpha,
+            sigma_beta,
+            mu_alpha,
+            mu_beta,
+            ax0,
+            n_std=2.0,
+            edgecolor='red',
+            facecolor='red',
+            alpha=0.3)
+
+    ax0.set_ylabel(r'$\beta$ [ppbv/$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
+    ax0.set_xlabel(r'$\alpha$ [ppbv]')
+    plt.title('Test dataset')
+    plt.tight_layout()
+    plt.show()
+
+def ellipse(correlation_coefficient, sigma_alpha, sigma_beta, mu_alpha, mu_beta, ax, n_std=3.0, facecolor='none', **kwargs):
+    '''A function to add an ellipse to scatterplots (used only in plots of :math:`\\alpha_d` vs :math:`\\beta_d`).
+
+    :param correlation_coefficient: The Pearson correlation coefficient between :math:`\\alpha` and :math:`\\beta`,
+        estimated in our model as :math:`\\rho`.
+    :type correlation_coefficient: float
+    :param sigma_alpha: Estimated model parameter :math:`\\sigma_\\alpha`.
+    :type sigma_alpha: float
+    :param sigma_beta: Estimated model parameter :math:`\\sigma_\\beta`.
+    :type sigma_beta: float
+    :param mu_alpha: Estimated model parameter :math:`\\mu_\\alpha`.
+    :type mu_alpha: float
+    :param mu_beta: Estimated model parameter :math:`\\mu_\\beta`.
+    :type mu_beta: float
+    :param ax: The plot to add the ellipse patch to.
+    :type ax: Axes
+    :param n_std: The number of standard deviations to scale the ellipse out to, defaults to 3.
+    :type n_std: float
+    :param facecolor: Color of the ellipse.
+    :type facecolor: string
+    '''
+
+    ell_radius_x = np.sqrt(1 + correlation_coefficient)
+    ell_radius_y = np.sqrt(1 - correlation_coefficient)
+    ellipse = Ellipse((0, 0),
+                      width=ell_radius_x * 2,
+                      height=ell_radius_y * 2,
+                      facecolor=facecolor,
+                      **kwargs)
+
+    scale_x = sigma_alpha * n_std
+    mean_x  = mu_alpha
+
+    scale_y = sigma_beta * n_std
+    mean_y  = mu_beta
+
+    transf = transforms.Affine2D() \
+        .rotate_deg(45) \
+        .scale(scale_x, scale_y) \
+        .translate(mean_x, mean_y)
+
+    ellipse.set_transform(transf + ax.transData)
+    return ax.add_patch(ellipse)
 
