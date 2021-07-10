@@ -30,9 +30,8 @@ class FittedModel:
         # First need to get the 'identifiers' of the files in the indicated outputs folder.
 
         output_file_list = os.listdir('outputs/' + run_name)
-        output_file_list.remove('summary.txt')
         for file in output_file_list:
-            if 'stderr' or 'stdout' or 'diagnostic' in file:
+            if 'stderr' or 'stdout' or 'diagnostic' or 'summary' in file:
                 output_file_list.remove(file)
 
         date_time = output_file_list[0].split('-')[1]

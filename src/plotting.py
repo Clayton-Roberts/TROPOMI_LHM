@@ -110,6 +110,50 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.show()
 
 def observations_scatterplot(date, fitted_model, compare_to_ground_truth=False):
+    '''
+    This function is for plotting a simple scatterplot of observations. It will always include errorbars on the observations,
+    and if it is a test dataset than you can select to have the latent values shown as well.
+
+    :param date: Date of observations that you want to plot, formatted YYYYMMDD
+    :type date: int
+    :param fitted_model: FittedModel object that contains the results for the day we're interested in
+    :type fitted_model: FittedModel
+    :param compare_to_ground_truth: A boolean to include a comparison to the latent values if this
+        model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
+    :type compare_to_ground_truth: Boolean
+    :return:
+    '''
+
+    sns.set()
+    np.random.seed(101)
+
+    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    date_df = dataset_df[dataset_df.Date == date]
+
+    if compare_to_ground_truth:
+        plt.scatter(date_df.true_NO2, date_df.true_CH4, s=12, c='lime', edgecolors='black',
+                    marker='D', label="Latent values", zorder=2)
+
+    plt.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
+                 ecolor="blue",
+                 capsize=3,
+                 fmt='D',
+                 mfc='w',
+                 color='red',
+                 ms=4,
+                 zorder=1,
+                 label='Observed values')
+
+    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
+    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+
+    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
+
+def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.
 
     :param date: Date of observations that you want to plot, formatted YYYYMMDD

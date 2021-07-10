@@ -1,6 +1,6 @@
 from src.test_suite import functions as tsf
 from src import fit_model as fm
-from src import summarise_results as sr
+from src import results as sr
 from src import dropout_tests as dt
 from src import plotting as p
 
@@ -10,9 +10,9 @@ from src import plotting as p
 #    --- Flags for testing suite ---
 #-----------------------------------
 GENERATE_TEST_DATA  = False
-PERFORM_DROPOUT     = True
+PERFORM_DROPOUT     = False
 FIT_FULL_TEST_DATA  = False
-SHOW_RESULTS        = False
+SHOW_RESULTS        = True
 TEST_RUN_NAME       = '10_days_N_100'
 #-----------------------------------
 #   --- Flags for test runs ---
@@ -24,8 +24,8 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'sigma_beta'
-DATE              = 10000019
+PARAM             = 'beta'
+DATE              = 10000008
 ##=======================================================
 
 if GENERATE_TEST_DATA:
@@ -46,7 +46,7 @@ if FIT_FULL_TEST_DATA:
 
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
-    fitted_model.display_results()
-    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+#    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.observations_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    #p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+   # p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
