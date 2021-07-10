@@ -1,6 +1,7 @@
 from src.test_suite import functions as tsf
 from src import fit_model as fm
 from src import summarise_results as sr
+from src import dropout_tests as dt
 from src import plotting as p
 
 # Important: all things will be run from here, file paths defined as such.
@@ -8,8 +9,8 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA  = True
-PERFORM_DROPOUT     = False
+GENERATE_TEST_DATA  = False
+PERFORM_DROPOUT     = True
 FIT_FULL_TEST_DATA  = False
 SHOW_RESULTS        = False
 TEST_RUN_NAME       = '10_days_N_100'
@@ -33,6 +34,9 @@ if GENERATE_TEST_DATA:
     tsf.generate_alphas_betas_and_gammas(NUM_DAYS, TEST_RUN_NAME)
     tsf.generate_dataset(TEST_RUN_NAME)
     tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
+
+if PERFORM_DROPOUT:
+    dt.make_directory(TEST_RUN_NAME)
 
 if FIT_FULL_TEST_DATA:
     if INSTALL_CMDSTAN:
