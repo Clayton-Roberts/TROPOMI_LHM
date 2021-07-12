@@ -109,7 +109,79 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.legend()
     plt.show()
 
-def observations_scatterplot(date, fitted_model, compare_to_ground_truth=False):
+def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
+    '''
+    This function is for plotting a simple scatterplot of observations. It will always include errorbars on the observations,
+    and if it is a test dataset than you can select to have the latent values shown as well.
+
+    :param date: Date of observations that you want to plot, formatted YYYYMMDD
+    :type date: int
+    :param run_name: Name of the model run.
+    :type run_name: string
+    :param compare_to_ground_truth: A boolean to include a comparison to the latent values if this
+        model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
+    :type compare_to_ground_truth: Boolean
+    :return:
+    '''
+
+    sns.set()
+    np.random.seed(101)
+
+    dataset_df = pd.read_csv('data/' + run_name + '/dataset.csv', header=0)
+    date_df = dataset_df[dataset_df.Date == date]
+
+    if compare_to_ground_truth:
+        plt.scatter(date_df.true_NO2, date_df.true_CH4, s=12, c='lime', edgecolors='black',
+                    marker='D', label="Latent values", zorder=2)
+
+    plt.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
+                 ecolor="blue",
+                 capsize=3,
+                 fmt='D',
+                 mfc='w',
+                 color='red',
+                 ms=4,
+                 zorder=1,
+                 label='Observed values')
+
+    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
+    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+
+    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
+def dropout_scatterplot(date, run_name):
+    '''
+    This function is for plotting a scatterplot showing which observations were dropped out on a given day.
+    :param date: Date of observations that you want to plot, formatted YYYYMMDD
+    :type date: int
+    :param run_name: Name of the model run.
+    :type run_name: string
+    '''
+
+    sns.set()
+    np.random.seed(101)
+
+    full_dropout_df   = pd.read_csv('data/' + run_name + '/dropout/dropout_dataset.csv')
+    full_remaining_df = pd.read_csv('data/' + run_name + '/dropout/remaining_dataset.csv')
+
+    date_dropout_df   = full_dropout_df[full_dropout_df.Date == date]
+    date_remaining_df = full_remaining_df[full_remaining_df.Date == date]
+
+    plt.scatter(date_dropout_df.obs_NO2, date_dropout_df.obs_CH4, color='red', label='Dropped observations', marker='D', zorder=2)
+    plt.scatter(date_remaining_df.obs_NO2, date_remaining_df.obs_CH4, color='black', label='Remaining observations', marker='D', zorder=1)
+
+    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
+    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+
+    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.legend(loc='upper left')
+    plt.tight_layout()
+    plt.show()
+
+def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.
 
     :param date: Date of observations that you want to plot, formatted YYYYMMDD
@@ -317,3 +389,17 @@ def ellipse(correlation_coefficient, sigma_alpha, sigma_beta, mu_alpha, mu_beta,
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
 
+def reduced_chi_squared(model_run):
+    '''
+    This function is for plotting a histogram of reduced :math:`\\chi^2` values for each day that was included in the model
+    run when observations were dropped out.
+    :param model_run: The name of the model run (must include "/dropout").
+    :type model_run: string
+    '''
+
+    reduced_chi_square_df = pd.read_csv('outputs/' + model_run + '/reduced_chi_squared.csv')
+
+    sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
+    plt.xlabel(r'$\chi^2_{\nu}$')
+    plt.title('Reduced chi-squared values for 2019')
+    plt.show()

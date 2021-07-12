@@ -98,13 +98,15 @@ def generate_alphas_betas_and_gammas(days, run_name):
     df = pd.DataFrame.from_dict(group_params, orient='index', columns=['alpha', 'beta', 'gamma'])
     df.to_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv')
 
-def generate_dataset(run_name):
+def generate_dataset(run_name, n_Obs):
     '''This function generates a .csv file that contains the total set of fake observations over all of the fake days
     that we wanted, using the ground truth values of :math:`\\alpha`, :math:`\\beta` and :math:`\\gamma` contained in
     "ground_truths/run_name/alphas_betas_gammas.csv"
 
     :param run_name: The name of the run.
     :type run_name: string
+    :param n_Obs: Number of observations you want on each day.
+    :type n_Obs: int
     '''
 
     df = pd.read_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
@@ -123,8 +125,8 @@ def generate_dataset(run_name):
             beta = df.loc[date, 'beta']
             gamma = df.loc[date, 'gamma']
 
-            # Generate 100 values of latent NO2 for each day.
-            latent_no2 = np.random.uniform(0.0, 175.0, 100)  # Micro mol / square meter
+            # Generate values of latent NO2 for each day.
+            latent_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
 
             # Define our observational errors.
             sigma_N = 7.0  # Micro mol / square meter
@@ -148,7 +150,11 @@ def generate_dataset(run_name):
 def prepare_dataset_for_cmdstanpy(run_name):
     '''This function takes the "dataset.cvs" file located at "test_suite/ground_truths/run_name" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
-    fit our models).'''
+    fit our models).
+
+    :param run_name: Name of the model run.
+    :type run_name:str
+    '''
 
     df = pd.read_csv('data/' + run_name + '/dataset.csv', delimiter=',',
                      header=0, index_col=1)  # Indexing by Date instead of Day_ID
