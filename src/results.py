@@ -18,7 +18,7 @@ class FittedModel:
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv('data/' + self.run_name + '/dropout_dataset.csv')
 
-        with open('data/' + self.run_name + '/reduced_chi_squared.csv', 'w') as csvfile:
+        with open('outputs/' + self.run_name + '/reduced_chi_squared.csv', 'w') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter=',')
             csv_writer.writerow(('Day_ID', 'Date', 'Reduced_chi_squared', 'N_observations'))
 
@@ -133,7 +133,7 @@ class FittedModel:
 
         output_file_list = os.listdir('outputs/' + run_name)
         for file in output_file_list:
-            if 'stderr' or 'stdout' or 'diagnostic' or 'summary' in file:
+            if 'stderr' or 'stdout' or 'diagnostic' or 'summary' or 'chi' in file:
                 output_file_list.remove(file)
 
         date_time = output_file_list[0].split('-')[1]

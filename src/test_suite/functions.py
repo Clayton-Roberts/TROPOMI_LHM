@@ -98,13 +98,15 @@ def generate_alphas_betas_and_gammas(days, run_name):
     df = pd.DataFrame.from_dict(group_params, orient='index', columns=['alpha', 'beta', 'gamma'])
     df.to_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv')
 
-def generate_dataset(run_name):
+def generate_dataset(run_name, n_Obs):
     '''This function generates a .csv file that contains the total set of fake observations over all of the fake days
     that we wanted, using the ground truth values of :math:`\\alpha`, :math:`\\beta` and :math:`\\gamma` contained in
     "ground_truths/run_name/alphas_betas_gammas.csv"
 
     :param run_name: The name of the run.
     :type run_name: string
+    :param n_Obs: Number of observations you want on each day.
+    :type n_Obs: int
     '''
 
     df = pd.read_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
@@ -123,8 +125,8 @@ def generate_dataset(run_name):
             beta = df.loc[date, 'beta']
             gamma = df.loc[date, 'gamma']
 
-            # Generate 100 values of latent NO2 for each day.
-            latent_no2 = np.random.uniform(0.0, 175.0, 100)  # Micro mol / square meter
+            # Generate values of latent NO2 for each day.
+            latent_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
 
             # Define our observational errors.
             sigma_N = 7.0  # Micro mol / square meter

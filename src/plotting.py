@@ -389,3 +389,17 @@ def ellipse(correlation_coefficient, sigma_alpha, sigma_beta, mu_alpha, mu_beta,
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
 
+def reduced_chi_squared(model_run):
+    '''
+    This function is for plotting a histogram of reduced :math:`\\chi^2` values for each day that was included in the model
+    run when observations were dropped out.
+    :param model_run: The name of the model run (must include "/dropout").
+    :type model_run: string
+    '''
+
+    reduced_chi_square_df = pd.read_csv('outputs/' + model_run + '/reduced_chi_squared.csv')
+
+    sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
+    plt.xlabel(r'$\chi^2_{\nu}$')
+    plt.title('Reduced chi-squared values for 2019')
+    plt.show()
