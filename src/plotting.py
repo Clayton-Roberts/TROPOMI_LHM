@@ -4,6 +4,7 @@ import matplotlib.transforms as transforms
 import seaborn as sns
 import pandas as pd
 import numpy as np
+from src import constants as ct
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
@@ -22,9 +23,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Need to get the ground truth value for comparison if we're plotting a test dataset.
     if compare_to_ground_truth:
-        daily_parameters_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+        daily_parameters_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
                                           '/alphas_betas_gammas.csv', delimiter=",", header=0, index_col=0) # Index by date
-        hyperparameter_truths_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+        hyperparameter_truths_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
                                                '/hyperparameter_truths.csv', delimiter=',', header=0)
 
         if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
@@ -33,7 +34,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         else:
             ground_truth = hyperparameter_truths_df[parameter][0]
 
-    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
     day_id = {}
 
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
@@ -127,7 +128,7 @@ def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
     sns.set()
     np.random.seed(101)
 
-    dataset_df = pd.read_csv('data/' + run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', header=0)
     date_df = dataset_df[dataset_df.Date == date]
 
     if compare_to_ground_truth:
@@ -164,8 +165,8 @@ def dropout_scatterplot(date, run_name):
     sns.set()
     np.random.seed(101)
 
-    full_dropout_df   = pd.read_csv('data/' + run_name + '/dropout/dropout_dataset.csv')
-    full_remaining_df = pd.read_csv('data/' + run_name + '/dropout/remaining_dataset.csv')
+    full_dropout_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/dropout_dataset.csv')
+    full_remaining_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv')
 
     date_dropout_df   = full_dropout_df[full_dropout_df.Date == date]
     date_remaining_df = full_remaining_df[full_remaining_df.Date == date]
@@ -196,7 +197,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     sns.set()
     np.random.seed(101)
 
-    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
     date_df    = dataset_df[dataset_df.Date == date]
 
     # Needed to plot the regression lines
@@ -215,7 +216,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
                  alpha=0.05, zorder=1)
 
     if compare_to_ground_truth:
-        alphas_betas_gammmas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+        alphas_betas_gammmas_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
                                               '/alphas_betas_gammas.csv', header=0, index_col=0) # Index by date
 
         ground_truth_alpha = alphas_betas_gammmas_df.loc[date, 'alpha']
@@ -266,7 +267,7 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
     if compare_to_ground_truth:
 
         # Get ground truth values for alpha and beta
-        alphas_betas_gammas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name + '/alphas_betas_gammas.csv')
+        alphas_betas_gammas_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name + '/alphas_betas_gammas.csv')
 
         ground_truth_alphas = alphas_betas_gammas_df.alpha
         ground_truth_betas  = alphas_betas_gammas_df.beta
@@ -278,7 +279,7 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
                     zorder=-1)
 
         # Get ground truth values for the bivariate distribution.
-        hyperparameters_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name + '/hyperparameter_truths.csv',
+        hyperparameters_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name + '/hyperparameter_truths.csv',
                                          header=0)
 
         ellipse(hyperparameters_df.rho[0],
@@ -397,7 +398,7 @@ def reduced_chi_squared(model_run):
     :type model_run: string
     '''
 
-    reduced_chi_square_df = pd.read_csv('outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
+    reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
     plt.xlabel(r'$\chi^2_{\nu}$')

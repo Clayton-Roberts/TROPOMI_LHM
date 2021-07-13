@@ -4,6 +4,7 @@ import numpy as np
 from tabulate import tabulate
 import random
 import csv
+from src import constants as ct
 
 class FittedModel:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
@@ -16,9 +17,9 @@ class FittedModel:
         '''
 
         # Open the dropout_dataset.csv file
-        dropout_df = pd.read_csv('data/' + self.run_name + '/dropout_dataset.csv')
+        dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
-        with open('outputs/' + self.run_name + '/reduced_chi_squared.csv', 'w') as csvfile:
+        with open(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv', 'w') as csvfile:
             csv_writer = csv.writer(csvfile, delimiter=',')
             csv_writer.writerow(('Day_ID', 'Date', 'Reduced_chi_squared', 'N_observations'))
 
@@ -52,7 +53,7 @@ class FittedModel:
 
                 csv_writer.writerow([day_id, date, reduced_chi_squared, n_Observations])
 
-    def predict_ch4(self, obs_no2, sigma_N, idientifier, value):
+    def predict_ch4(self, obs_no2, sigma_N, identifier, value):
         '''
         This function is for predicting an observed value of CH4 with an associated standard deviation on the estimate.
 
@@ -61,7 +62,7 @@ class FittedModel:
         :param sigma_N: The reported error on the observation of NO2, also in micro mol / m^2.
         :type sigma_N: float
         :param identifier: Either 'date' or 'day_id'.
-        :type idientifier: str
+        :type identifier: str
         :param value: Value of either 'date' or 'day_id'. If year, then value must be in format YYYYMMDD.
         :type value: int
         :return: A value for predicted CH4 and associated uncertainty.
@@ -69,15 +70,15 @@ class FittedModel:
 
         # Open the full dataset.csv to see which day id we need.
 
-        if idientifier == 'date':
+        if identifier == 'date':
             if 'dropout' in self.run_name:
-                dataset_df = pd.read_csv('data/' + self.run_name.split('/')[0] + '/dataset.csv')
+                dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name.split('/')[0] + '/dataset.csv')
             else:
-                dataset_df = pd.read_csv('data/' + self.run_name + '/dataset.csv')
+                dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dataset.csv')
 
             day_id     = dataset_df[dataset_df.Date == value].Day_ID.iloc[0]
 
-        elif idientifier == 'day_id':
+        elif identifier == 'day_id':
             day_id = value
 
         alphas = self.full_trace['alpha.' + str(day_id)]
@@ -131,7 +132,7 @@ class FittedModel:
 
         # First need to get the 'identifiers' of the files in the indicated outputs folder.
 
-        output_file_list = os.listdir('outputs/' + run_name)
+        output_file_list = os.listdir(ct.FILE_PREFIX + '/outputs/' + run_name)
         for file in output_file_list:
             if 'stderr' or 'stdout' or 'diagnostic' or 'summary' or 'chi' in file:
                 output_file_list.remove(file)
@@ -140,10 +141,10 @@ class FittedModel:
         model     = output_file_list[0].split('-')[0]
 
         # Read in the chains from the .csv files
-        chain_1 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-1.csv', comment='#')
-        chain_2 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-2.csv', comment='#')
-        chain_3 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
-        chain_4 = pd.read_csv('outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
+        chain_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-1.csv', comment='#')
+        chain_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-2.csv', comment='#')
+        chain_3 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
+        chain_4 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
 
         # Make a list of all model parameters
         parameter_list = chain_1.columns

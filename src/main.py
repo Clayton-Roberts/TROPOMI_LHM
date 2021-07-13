@@ -9,9 +9,9 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA  = False
-PERFORM_DROPOUT_FIT = False
-PERFORM_FULL_FIT    = False
+GENERATE_TEST_DATA  = True
+PERFORM_DROPOUT_FIT = True
+PERFORM_FULL_FIT    = True
 SHOW_RESULTS        = False
 TEST_RUN_NAME       = '10_days_N_100'
 #-----------------------------------
@@ -21,7 +21,6 @@ NUM_DAYS        = 10
 NUM_OBS         = 100
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
-CMDSTAN_PATH    = '/Users/claytonroberts/.cmdstanpy/cmdstan-2.27.0'
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
@@ -31,7 +30,7 @@ DATE              = 10000007
 ##=======================================================
 
 if INSTALL_CMDSTAN:
-    fm.install_cmdstan(CMDSTAN_PATH)
+    fm.install_cmdstan()
 
 if GENERATE_TEST_DATA:
     tsf.make_directories(TEST_RUN_NAME)
@@ -47,16 +46,14 @@ if PERFORM_DROPOUT_FIT:
     #p.dropout_scatterplot(DATE, TEST_RUN_NAME)
     fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json',
                  'models/linear_hierarchical_model.stan',
-                 TEST_RUN_NAME + '/dropout',
-                 CMDSTAN_PATH)
-    fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
-    fitted_model.write_reduced_chi_squared_csv()
+                 TEST_RUN_NAME + '/dropout')
+    #fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
+    #fitted_model.write_reduced_chi_squared_csv()
 
 if PERFORM_FULL_FIT:
     fm.fit_model('data/' + TEST_RUN_NAME + '/data.json',
                  'models/linear_hierarchical_model.stan',
-                 TEST_RUN_NAME,
-                 CMDSTAN_PATH)
+                 TEST_RUN_NAME)
 
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)

@@ -2,19 +2,16 @@ import time
 import numpy as np
 import cmdstanpy
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
-import os
+from   src import constants as ct
 
-def install_cmdstan(cmdstan_path):
+def install_cmdstan():
     '''After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
     This only needs to be done once.
-
-    :param cmdstan_path: The location that you want to install CmdStan to. If left blank it will install to a default location.
-    :type cmdstan_path: string
     '''
 
-    cmdstanpy.install_cmdstan(cmdstan_path)
+    cmdstanpy.install_cmdstan(ct.CMDSTAN_PATH)
 
-def fit_model(data_path, model_path, output_directory, cmdstan_path):
+def fit_model(data_path, model_path, output_directory):
     '''This function will fit a probability model to a set of data and then save outputs that summarise probability
     distributions over the model parameters.
 
@@ -34,25 +31,25 @@ def fit_model(data_path, model_path, output_directory, cmdstan_path):
     # Set the random seed for replicability.
     np.random.seed(101)
 
-    set_cmdstan_path(cmdstan_path)
+    set_cmdstan_path(ct.CMDSTAN_PATH)
 
-    model = CmdStanModel(stan_file=model_path)
+    model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path)
 
     # Fit the model.
-    fit = model.sample(chains=4, data=data_path, iter_warmup=500,
+    fit = model.sample(chains=4, data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
                        iter_sampling=4000, seed=101, show_progress=False,
-                       output_dir='outputs/' + output_directory,
+                       output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=15,
-                       inits=['inits/chain_1.json',
-                              'inits/chain_2.json',
-                              'inits/chain_3.json',
-                              'inits/chain_4.json'])
+                       inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
+                              ct.FILE_PREFIX + '/inits/chain_2.json',
+                              ct.FILE_PREFIX + '/inits/chain_3.json',
+                              ct.FILE_PREFIX + '/inits/chain_4.json'])
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
 
-    f = open("outputs/" + output_directory + "/summary.txt", "a")
+    f = open(ct.FILE_PREFIX + "/outputs/" + output_directory + "/summary.txt", "a")
     f.write("Elapsed time to fit model and save output: " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)) + '\n')
     f.write('---------------------------------------------------' + '\n')
     f.write(fit.diagnose())
