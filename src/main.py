@@ -12,7 +12,7 @@ from src import plotting as p
 GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = False
-SHOW_RESULTS        = True
+SHOW_RESULTS        = False
 TEST_RUN_NAME       = '10_days_N_100'
 #-----------------------------------
 #   --- Flags for test runs ---
