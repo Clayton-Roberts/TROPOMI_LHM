@@ -397,7 +397,7 @@ def reduced_chi_squared(model_run):
     :type model_run: string
     '''
 
-    reduced_chi_square_df = pd.read_csv('outputs/' + model_run + '/reduced_chi_squared.csv')
+    reduced_chi_square_df = pd.read_csv('outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
     plt.xlabel(r'$\chi^2_{\nu}$')

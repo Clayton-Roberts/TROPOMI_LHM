@@ -13,16 +13,16 @@ def make_directories(run_name):
     '''
 
     try:
-        os.mkdir('data/' + run_name + '/dropout')
+        os.makedirs('data/' + run_name + '/dropout')
     except FileExistsError:
         shutil.rmtree('data/' + run_name + '/dropout')
-        os.mkdir('data/' + run_name + '/dropout')
+        os.makedirs('data/' + run_name + '/dropout')
 
     try:
-        os.mkdir('outputs/' + run_name + '/dropout')
+        os.makedirs('outputs/' + run_name + '/dropout')
     except FileExistsError:
         shutil.rmtree('outputs/' + run_name + '/dropout')
-        os.mkdir('outputs/' + run_name + '/dropout')
+        os.makedirs('outputs/' + run_name + '/dropout')
 
 def create_csvs(run_name):
     '''This function will open the file named "dataset.csv" located at data/run_name and then drop out 20% of observations

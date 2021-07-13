@@ -4,7 +4,7 @@ import cmdstanpy
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
 import os
 
-def install_cmdstan(cmdstan_path=None):
+def install_cmdstan(cmdstan_path):
     '''After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
     This only needs to be done once.
 
@@ -12,12 +12,9 @@ def install_cmdstan(cmdstan_path=None):
     :type cmdstan_path: string
     '''
 
-    if cmdstan_path:
-        cmdstanpy.install_cmdstan(cmdstan_path)
-    else:
-        cmdstanpy.install_cmdstan()
+    cmdstanpy.install_cmdstan(cmdstan_path)
 
-def fit_model(data_path, model_path, output_directory, cmdstan_path=None):
+def fit_model(data_path, model_path, output_directory, cmdstan_path):
     '''This function will fit a probability model to a set of data and then save outputs that summarise probability
     distributions over the model parameters.
 
@@ -37,9 +34,7 @@ def fit_model(data_path, model_path, output_directory, cmdstan_path=None):
     # Set the random seed for replicability.
     np.random.seed(101)
 
-    if cmdstan_path:
-        # If not set manually, will use default download location.
-        set_cmdstan_path(cmdstan_path)
+    set_cmdstan_path(cmdstan_path)
 
     model = CmdStanModel(stan_file=model_path)
 

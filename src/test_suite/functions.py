@@ -14,22 +14,22 @@ def make_directories(run_name):
     '''
 
     try:
-        os.mkdir('data/' + run_name)
+        os.makedirs('data/' + run_name)
     except FileExistsError:
         shutil.rmtree('data/' + run_name)
-        os.mkdir('data/' + run_name)
+        os.makedirs('data/' + run_name)
 
     try:
-        os.mkdir('test_suite/ground_truths/' + run_name)
+        os.makedirs('test_suite/ground_truths/' + run_name)
     except FileExistsError:
         shutil.rmtree('test_suite/ground_truths/' + run_name)
-        os.mkdir('test_suite/ground_truths/' + run_name)
+        os.makedirs('test_suite/ground_truths/' + run_name)
 
     try:
-        os.mkdir('outputs/' + run_name)
+        os.makedirs('outputs/' + run_name)
     except FileExistsError:
         shutil.rmtree('outputs/' + run_name)
-        os.mkdir('outputs/' + run_name)
+        os.makedirs('outputs/' + run_name)
 
 def generate_mu_and_Sigma(run_name):
     '''This function generates a .csv file that defines the "ground truth" values that we use to generate a set of test data.
