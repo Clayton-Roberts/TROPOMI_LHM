@@ -9,11 +9,11 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA  = True
+GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = True
-PERFORM_FULL_FIT    = True
-SHOW_RESULTS        = False
-TEST_RUN_NAME       = '10_days_N_100'
+PERFORM_FULL_FIT    = False
+SHOW_RESULTS        = True
+TEST_RUN_NAME       = '40_days_N_100'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
@@ -26,7 +26,7 @@ INSTALL_CMDSTAN = False
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
 PARAM             = 'beta'
-DATE              = 10000007
+DATE              = 10000028
 ##=======================================================
 
 if INSTALL_CMDSTAN:
@@ -40,15 +40,15 @@ if GENERATE_TEST_DATA:
     tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
 
 if PERFORM_DROPOUT_FIT:
-    dt.make_directories(TEST_RUN_NAME)
-    dt.create_csvs(TEST_RUN_NAME)
-    dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
+    #dt.make_directories(TEST_RUN_NAME)
+    #dt.create_csvs(TEST_RUN_NAME)
+    #dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
     #p.dropout_scatterplot(DATE, TEST_RUN_NAME)
-    fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json',
-                 'models/linear_hierarchical_model.stan',
-                 TEST_RUN_NAME + '/dropout')
-    #fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
-    #fitted_model.write_reduced_chi_squared_csv()
+    #fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json',
+     #            'models/linear_hierarchical_model.stan',
+      #           TEST_RUN_NAME + '/dropout')
+    fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
+    fitted_model.write_reduced_chi_squared_csv()
 
 if PERFORM_FULL_FIT:
     fm.fit_model('data/' + TEST_RUN_NAME + '/data.json',
