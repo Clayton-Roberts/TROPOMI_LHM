@@ -44,7 +44,19 @@ def fit_model(data_path, model_path, output_directory):
                        inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
                               ct.FILE_PREFIX + '/inits/chain_2.json',
                               ct.FILE_PREFIX + '/inits/chain_3.json',
-                              ct.FILE_PREFIX + '/inits/chain_4.json'])
+                              ct.FILE_PREFIX + '/inits/chain_4.json',
+                              ct.FILE_PREFIX + '/inits/chain_5.json',
+                              ct.FILE_PREFIX + '/inits/chain_6.json',
+                              ct.FILE_PREFIX + '/inits/chain_7.json',
+                              ct.FILE_PREFIX + '/inits/chain_8.json',
+                              ct.FILE_PREFIX + '/inits/chain_9.json',
+                              ct.FILE_PREFIX + '/inits/chain_10.json',
+                              ct.FILE_PREFIX + '/inits/chain_11.json',
+                              ct.FILE_PREFIX + '/inits/chain_12.json',
+                              ct.FILE_PREFIX + '/inits/chain_13.json',
+                              ct.FILE_PREFIX + '/inits/chain_14.json',
+                              ct.FILE_PREFIX + '/inits/chain_15.json',
+                              ct.FILE_PREFIX + '/inits/chain_16.json'])
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
