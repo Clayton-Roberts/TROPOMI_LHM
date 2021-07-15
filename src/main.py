@@ -9,15 +9,15 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA  = False
+GENERATE_TEST_DATA  = True
 PERFORM_DROPOUT_FIT = False
-PERFORM_FULL_FIT    = False
+PERFORM_FULL_FIT    = True
 SHOW_RESULTS        = True
-TEST_RUN_NAME       = '40_days_N_100'
+TEST_RUN_NAME       = '40_days_N_100_continuous_logging'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 10
+NUM_DAYS        = 40
 NUM_OBS         = 100
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
