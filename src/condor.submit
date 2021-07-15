@@ -1,6 +1,6 @@
-universe = vanilla
-executable = condor.sh
+universe       = vanilla
+executable     = condor.sh
 request_memory = 7000
-error = job.err
-
+error          = job.err
+request_cpus   = 16
 queue 1

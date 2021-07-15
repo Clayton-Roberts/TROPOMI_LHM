@@ -12,12 +12,12 @@ from src import plotting as p
 GENERATE_TEST_DATA  = True
 PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = True
-SHOW_RESULTS        = True
-TEST_RUN_NAME       = '40_days_N_100_continuous_logging'
+SHOW_RESULTS        = False
+TEST_RUN_NAME       = '10_days_N_100_chains_4'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 40
+NUM_DAYS        = 10
 NUM_OBS         = 100
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False

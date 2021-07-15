@@ -36,8 +36,8 @@ def fit_model(data_path, model_path, output_directory):
     model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path)
 
     # Fit the model.
-    fit = model.sample(chains=4, data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
-                       iter_sampling=4000, seed=101, show_progress=False,
+    fit = model.sample(chains=16, parallel_chains=16, data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
+                       iter_sampling=1000, seed=101, show_progress=False,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=15,
