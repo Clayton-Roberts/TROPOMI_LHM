@@ -4,6 +4,7 @@ import csv
 import json
 import os
 import shutil
+from src import constants as ct
 
 def make_directories(run_name):
     '''This function checks that all the relevant directories are made. If you re-use a run name, the directory and
@@ -14,22 +15,22 @@ def make_directories(run_name):
     '''
 
     try:
-        os.mkdir('data/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/data/' + run_name)
     except FileExistsError:
-        shutil.rmtree('data/' + run_name)
-        os.mkdir('data/' + run_name)
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/data/' + run_name)
 
     try:
-        os.mkdir('test_suite/ground_truths/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name)
     except FileExistsError:
-        shutil.rmtree('test_suite/ground_truths/' + run_name)
-        os.mkdir('test_suite/ground_truths/' + run_name)
+        shutil.rmtree(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name)
 
     try:
-        os.mkdir('outputs/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
     except FileExistsError:
-        shutil.rmtree('outputs/' + run_name)
-        os.mkdir('outputs/' + run_name)
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
 
 def generate_mu_and_Sigma(run_name):
     '''This function generates a .csv file that defines the "ground truth" values that we use to generate a set of test data.
@@ -62,10 +63,10 @@ def generate_mu_and_Sigma(run_name):
                     (sigma_alpha * sigma_beta * rho, sigma_beta ** 2, sigma_beta * sigma_gamma * 0),
                     (sigma_alpha * sigma_gamma * 0, sigma_beta * sigma_gamma * 0, sigma_gamma ** 2)))
 
-    np.savetxt("test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",")
-    np.savetxt("test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",")
+    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",")
+    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",")
 
-    with open('test_suite/ground_truths/' + run_name + '/hyperparameter_truths.csv', 'w') as csvfile:
+    with open(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/hyperparameter_truths.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(('rho','mu_alpha','mu_beta','sigma_alpha','sigma_beta'))
         writer.writerow((rho, mu_alpha, mu_beta, sigma_alpha, sigma_beta))
@@ -82,8 +83,8 @@ def generate_alphas_betas_and_gammas(days, run_name):
     '''
 
     # Load in the 'ground truth' values of mu and Sigma.
-    mu    = np.loadtxt("test_suite/ground_truths/" + run_name + "/mu.csv", delimiter=",")
-    sigma = np.loadtxt("test_suite/ground_truths/" + run_name + "/cov.csv", delimiter=",")
+    mu    = np.loadtxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", delimiter=",")
+    sigma = np.loadtxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", delimiter=",")
 
     # To simulate how we will handle real data, generate a fake date for each day.
     dates = []
@@ -96,7 +97,7 @@ def generate_alphas_betas_and_gammas(days, run_name):
         group_params[date] = np.random.multivariate_normal(mu, sigma)
 
     df = pd.DataFrame.from_dict(group_params, orient='index', columns=['alpha', 'beta', 'gamma'])
-    df.to_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv')
+    df.to_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv')
 
 def generate_dataset(run_name, n_Obs):
     '''This function generates a .csv file that contains the total set of fake observations over all of the fake days
@@ -109,10 +110,10 @@ def generate_dataset(run_name, n_Obs):
     :type n_Obs: int
     '''
 
-    df = pd.read_csv('test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
+    df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
                      delimiter=",", header=0, index_col=0) # Indexing by date, column 0
 
-    with open('data/' + run_name + '/dataset.csv', 'w') as csvfile:
+    with open(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
         writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'true_NO2', 'true_CH4'))
 
@@ -156,7 +157,7 @@ def prepare_dataset_for_cmdstanpy(run_name):
     :type run_name:str
     '''
 
-    df = pd.read_csv('data/' + run_name + '/dataset.csv', delimiter=',',
+    df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', delimiter=',',
                      header=0, index_col=1)  # Indexing by Date instead of Day_ID
 
     obs_no2 = list(df.obs_NO2)
@@ -176,6 +177,6 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['sigma_N'] = sigma_N
     data['sigma_C'] = sigma_C
 
-    with open('data/' + run_name + '/data.json', 'w') as outfile:
+    with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
 

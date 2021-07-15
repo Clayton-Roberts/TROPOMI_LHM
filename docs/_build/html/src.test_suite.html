@@ -195,13 +195,16 @@ observations of NO2 and CH4 for the given day.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.test_suite.functions.generate_dataset">
-<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_dataset" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.test_suite.functions.</span></span><span class="sig-name descname"><span class="pre">generate_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_Obs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.test_suite.functions.generate_dataset" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function generates a .csv file that contains the total set of fake observations over all of the fake days
 that we wanted, using the ground truth values of <span class="math notranslate nohighlight">\(\alpha\)</span>, <span class="math notranslate nohighlight">\(\beta\)</span> and <span class="math notranslate nohighlight">\(\gamma\)</span> contained in
 “ground_truths/run_name/alphas_betas_gammas.csv”</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>run_name</strong> (<em>string</em>) – The name of the run.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>run_name</strong> (<em>string</em>) – The name of the run.</p></li>
+<li><p><strong>n_Obs</strong> (<em>int</em>) – Number of observations you want on each day.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>

@@ -1,9 +1,14 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 import seaborn as sns
 import pandas as pd
 import numpy as np
+from src import constants as ct
+
+# Some global parameters for all plots.
+mpl.rcParams['font.family']    = 'Avenir'
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
@@ -22,9 +27,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Need to get the ground truth value for comparison if we're plotting a test dataset.
     if compare_to_ground_truth:
-        daily_parameters_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+        daily_parameters_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
                                           '/alphas_betas_gammas.csv', delimiter=",", header=0, index_col=0) # Index by date
-        hyperparameter_truths_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+        hyperparameter_truths_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
                                                '/hyperparameter_truths.csv', delimiter=',', header=0)
 
         if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
@@ -33,7 +38,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         else:
             ground_truth = hyperparameter_truths_df[parameter][0]
 
-    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
     day_id = {}
 
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
@@ -50,25 +55,25 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Greek letters for labels
     parameter_symbol = {
-        'beta': r"$\beta$",
-        'alpha': r"$\alpha$",
-        'gamma': r"$\gamma$",
-        'mu_alpha': r"$\mu_{\alpha}$",
-        'mu_beta': r"$\mu_{\beta}$",
-        'sigma_alpha': r"$\sigma_{\alpha}$",
-        'sigma_beta': r"$\sigma_{\beta}$",
-        'rho': r"$\rho$"
+        'beta': r"$\mathregular{\beta}$",
+        'alpha': r"$\mathregular{\alpha}$",
+        'gamma': r"$\mathregular{\gamma}$",
+        'mu_alpha': r"$\mathregular{\mu_{\alpha}}$",
+        'mu_beta': r"$\mathregular{\mu_{\beta}}$",
+        'sigma_alpha': r"$\mathregular{\sigma_{\alpha}}$",
+        'sigma_beta': r"$\mathregular{\sigma_{\beta}}$",
+        'rho': r"$\mathregular{\rho}$"
     }
 
     # Units
     parameter_units = {
-        'beta': r"[$\mathrm{ppbv}\,/\,\mu\,\mathrm{mol}\,\mathrm{m}^{-2}$]",
+        'beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'alpha': "[ppbv]",
         'gamma': "[ppbv]",
         'mu_alpha': "[ppbv]",
-        'mu_beta': r"[$\mathrm{ppbv}\,/\,\mu\,\mathrm{mol}\,\mathrm{m}^{-2}$]",
+        'mu_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'sigma_alpha': "[ppbv]",
-        'sigma_beta': r"[$\mathrm{ppbv}\,/\,\mu\,\mathrm{mol}\,\mathrm{m}^{-2}$]",
+        'sigma_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'rho': ''
     }
 
@@ -127,7 +132,7 @@ def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
     sns.set()
     np.random.seed(101)
 
-    dataset_df = pd.read_csv('data/' + run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', header=0)
     date_df = dataset_df[dataset_df.Date == date]
 
     if compare_to_ground_truth:
@@ -144,8 +149,8 @@ def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
                  zorder=1,
                  label='Observed values')
 
-    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+    plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
+    plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
     plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
     plt.legend(loc='upper left')
@@ -164,8 +169,8 @@ def dropout_scatterplot(date, run_name):
     sns.set()
     np.random.seed(101)
 
-    full_dropout_df   = pd.read_csv('data/' + run_name + '/dropout/dropout_dataset.csv')
-    full_remaining_df = pd.read_csv('data/' + run_name + '/dropout/remaining_dataset.csv')
+    full_dropout_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/dropout_dataset.csv')
+    full_remaining_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv')
 
     date_dropout_df   = full_dropout_df[full_dropout_df.Date == date]
     date_remaining_df = full_remaining_df[full_remaining_df.Date == date]
@@ -173,8 +178,8 @@ def dropout_scatterplot(date, run_name):
     plt.scatter(date_dropout_df.obs_NO2, date_dropout_df.obs_CH4, color='red', label='Dropped observations', marker='D', zorder=2)
     plt.scatter(date_remaining_df.obs_NO2, date_remaining_df.obs_CH4, color='black', label='Remaining observations', marker='D', zorder=1)
 
-    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+    plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
+    plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
     plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
     plt.legend(loc='upper left')
@@ -196,7 +201,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     sns.set()
     np.random.seed(101)
 
-    dataset_df = pd.read_csv('data/' + fitted_model.run_name + '/dataset.csv', header=0)
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
     date_df    = dataset_df[dataset_df.Date == date]
 
     # Needed to plot the regression lines
@@ -212,10 +217,10 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     beta = fitted_model.full_trace['beta.' + str(day_id)][randomize]
     for i in range(500):
         plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='lightcoral',
-                 alpha=0.05, zorder=1)
+                 alpha=0.05, zorder=2)
 
     if compare_to_ground_truth:
-        alphas_betas_gammmas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name +
+        alphas_betas_gammmas_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
                                               '/alphas_betas_gammas.csv', header=0, index_col=0) # Index by date
 
         ground_truth_alpha = alphas_betas_gammmas_df.loc[date, 'alpha']
@@ -231,10 +236,10 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
                  mfc='w',
                  color='red',
                  ms=4,
-                 zorder=2)
+                 zorder=1)
 
-    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+    plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
+    plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
     plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
     plt.legend(loc='lower right')
@@ -266,7 +271,7 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
     if compare_to_ground_truth:
 
         # Get ground truth values for alpha and beta
-        alphas_betas_gammas_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name + '/alphas_betas_gammas.csv')
+        alphas_betas_gammas_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name + '/alphas_betas_gammas.csv')
 
         ground_truth_alphas = alphas_betas_gammas_df.alpha
         ground_truth_betas  = alphas_betas_gammas_df.beta
@@ -278,7 +283,7 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
                     zorder=-1)
 
         # Get ground truth values for the bivariate distribution.
-        hyperparameters_df = pd.read_csv('test_suite/ground_truths/' + fitted_model.run_name + '/hyperparameter_truths.csv',
+        hyperparameters_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name + '/hyperparameter_truths.csv',
                                          header=0)
 
         ellipse(hyperparameters_df.rho[0],
@@ -339,8 +344,8 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
             facecolor='red',
             alpha=0.3)
 
-    ax0.set_ylabel(r'$\beta$ [ppbv/$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    ax0.set_xlabel(r'$\alpha$ [ppbv]')
+    ax0.set_ylabel(r'$\mathregular{\beta}$ [ppbv / $\mathregular{\mu}$ mol m$^{-2}$]')
+    ax0.set_xlabel(r'$\mathregular{\alpha}$ [ppbv]')
     plt.title('Test dataset')
     plt.tight_layout()
     plt.show()
@@ -397,9 +402,9 @@ def reduced_chi_squared(model_run):
     :type model_run: string
     '''
 
-    reduced_chi_square_df = pd.read_csv('outputs/' + model_run + '/reduced_chi_squared.csv')
+    reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
-    plt.xlabel(r'$\chi^2_{\nu}$')
+    plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
     plt.title('Reduced chi-squared values for 2019')
     plt.show()

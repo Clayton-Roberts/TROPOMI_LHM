@@ -190,16 +190,6 @@
 <section id="src-dropout-tests-module">
 <h2>src.dropout_tests module<a class="headerlink" href="#src-dropout-tests-module" title="Permalink to this headline">¶</a></h2>
 <span class="target" id="module-src.dropout_tests"></span><dl class="py function">
-<dt class="sig sig-object py" id="src.dropout_tests.calculated_reduced_chi_squared">
-<span class="sig-prename descclassname"><span class="pre">src.dropout_tests.</span></span><span class="sig-name descname"><span class="pre">calculated_reduced_chi_squared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dropout_tests.calculated_reduced_chi_squared" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>fitted_model</strong> (<em>FittedModel</em>) – Model that was fit on the dataset that has had 20% of observations dropped out on each day.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="src.dropout_tests.create_csvs">
 <span class="sig-prename descclassname"><span class="pre">src.dropout_tests.</span></span><span class="sig-name descname"><span class="pre">create_csvs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.dropout_tests.create_csvs" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will open the file named “dataset.csv” located at data/run_name and then drop out 20% of observations
@@ -310,6 +300,15 @@ model run was a test run with fake data, which is why it defaults to False. Do n
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="src.plotting.reduced_chi_squared">
+<span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">reduced_chi_squared</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_run</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.reduced_chi_squared" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function is for plotting a histogram of reduced <span class="math notranslate nohighlight">\(\chi^2\)</span> values for each day that was included in the model
+run when observations were dropped out.
+:param model_run: The name of the model run (must include “/dropout”).
+:type model_run: string</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="src.plotting.regression_scatterplot">
 <span class="sig-prename descclassname"><span class="pre">src.plotting.</span></span><span class="sig-name descname"><span class="pre">regression_scatterplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">date</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fitted_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">compare_to_ground_truth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.plotting.regression_scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.</p>
@@ -349,7 +348,7 @@ if this model run was a test run with fake data, which is why it defaults to Fal
 <span id="src-fit-model-module"></span><h2>src.fit_model module<a class="headerlink" href="#module-src.fit_model" title="Permalink to this headline">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="src.fit_model.fit_model">
-<span class="sig-prename descclassname"><span class="pre">src.fit_model.</span></span><span class="sig-name descname"><span class="pre">fit_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cmdstan_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.fit_model.fit_model" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.fit_model.</span></span><span class="sig-name descname"><span class="pre">fit_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.fit_model.fit_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function will fit a probability model to a set of data and then save outputs that summarise probability
 distributions over the model parameters.</p>
 <dl class="field-list simple">
@@ -366,14 +365,9 @@ distributions over the model parameters.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="src.fit_model.install_cmdstan">
-<span class="sig-prename descclassname"><span class="pre">src.fit_model.</span></span><span class="sig-name descname"><span class="pre">install_cmdstan</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cmdstan_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#src.fit_model.install_cmdstan" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">src.fit_model.</span></span><span class="sig-name descname"><span class="pre">install_cmdstan</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#src.fit_model.install_cmdstan" title="Permalink to this definition">¶</a></dt>
 <dd><p>After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
 This only needs to be done once.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>cmdstan_path</strong> (<em>string</em>) – The location that you want to install CmdStan to. If left blank it will install to a default location.</p>
-</dd>
-</dl>
 </dd></dl>
 
 </section>

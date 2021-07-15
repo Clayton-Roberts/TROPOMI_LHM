@@ -1,5 +1,6 @@
 .idea/*
-src/outputs/*
-src/test_suite/ground_truths/*
-src/data/*
+# Commenting these out so that test results are saved for now...
+#src/outputs/*
+#src/test_suite/ground_truths/*
+#src/data/*
 src/figures/*
