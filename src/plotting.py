@@ -1,3 +1,4 @@
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
@@ -5,6 +6,9 @@ import seaborn as sns
 import pandas as pd
 import numpy as np
 from src import constants as ct
+
+# Some global parameters for all plots.
+mpl.rcParams['font.family']    = 'Avenir'
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
@@ -51,25 +55,25 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Greek letters for labels
     parameter_symbol = {
-        'beta': r"$\beta$",
-        'alpha': r"$\alpha$",
-        'gamma': r"$\gamma$",
-        'mu_alpha': r"$\mu_{\alpha}$",
-        'mu_beta': r"$\mu_{\beta}$",
-        'sigma_alpha': r"$\sigma_{\alpha}$",
-        'sigma_beta': r"$\sigma_{\beta}$",
-        'rho': r"$\rho$"
+        'beta': r"$\mathregular{\beta}$",
+        'alpha': r"$\mathregular{\alpha}$",
+        'gamma': r"$\mathregular{\gamma}$",
+        'mu_alpha': r"$\mathregular{\mu_{\alpha}}$",
+        'mu_beta': r"$\mathregular{\mu_{\beta}}$",
+        'sigma_alpha': r"$\mathregular{\sigma_{\alpha}}$",
+        'sigma_beta': r"$\mathregular{\sigma_{\beta}}$",
+        'rho': r"$\mathregular{\rho}$"
     }
 
     # Units
     parameter_units = {
-        'beta': r"[$\mathrm{ppbv}\,/\,\mu\,\mathrm{mol}\,\mathrm{m}^{-2}$]",
+        'beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'alpha': "[ppbv]",
         'gamma': "[ppbv]",
         'mu_alpha': "[ppbv]",
-        'mu_beta': r"[$\mathrm{ppbv}\,/\,\mu\,\mathrm{mol}\,\mathrm{m}^{-2}$]",
+        'mu_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'sigma_alpha': "[ppbv]",
-        'sigma_beta': r"[$\mathrm{ppbv}\,/\,\mu\,\mathrm{mol}\,\mathrm{m}^{-2}$]",
+        'sigma_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'rho': ''
     }
 
@@ -145,8 +149,8 @@ def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
                  zorder=1,
                  label='Observed values')
 
-    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+    plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
+    plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
     plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
     plt.legend(loc='upper left')
@@ -174,8 +178,8 @@ def dropout_scatterplot(date, run_name):
     plt.scatter(date_dropout_df.obs_NO2, date_dropout_df.obs_CH4, color='red', label='Dropped observations', marker='D', zorder=2)
     plt.scatter(date_remaining_df.obs_NO2, date_remaining_df.obs_CH4, color='black', label='Remaining observations', marker='D', zorder=1)
 
-    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+    plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
+    plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
     plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
     plt.legend(loc='upper left')
@@ -213,7 +217,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     beta = fitted_model.full_trace['beta.' + str(day_id)][randomize]
     for i in range(500):
         plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='lightcoral',
-                 alpha=0.05, zorder=1)
+                 alpha=0.05, zorder=2)
 
     if compare_to_ground_truth:
         alphas_betas_gammmas_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
@@ -232,10 +236,10 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
                  mfc='w',
                  color='red',
                  ms=4,
-                 zorder=2)
+                 zorder=1)
 
-    plt.xlabel('$\mathrm{NO}_{2}^{\mathrm{obs}}$ [$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    plt.ylabel('$\mathrm{CH}_{4}^{\mathrm{obs}}$ [ppbv]')
+    plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
+    plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
     plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
     plt.legend(loc='lower right')
@@ -340,8 +344,8 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
             facecolor='red',
             alpha=0.3)
 
-    ax0.set_ylabel(r'$\beta$ [ppbv/$\mu\mathrm{mol}\,\mathrm{m}^{-2}$]')
-    ax0.set_xlabel(r'$\alpha$ [ppbv]')
+    ax0.set_ylabel(r'$\mathregular{\beta}$ [ppbv / $\mathregular{\mu}$ mol m$^{-2}$]')
+    ax0.set_xlabel(r'$\mathregular{\alpha}$ [ppbv]')
     plt.title('Test dataset')
     plt.tight_layout()
     plt.show()
@@ -401,6 +405,6 @@ def reduced_chi_squared(model_run):
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
-    plt.xlabel(r'$\chi^2_{\nu}$')
+    plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
     plt.title('Reduced chi-squared values for 2019')
     plt.show()

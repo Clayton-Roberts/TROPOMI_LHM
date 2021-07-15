@@ -10,7 +10,7 @@ from src import plotting as p
 #    --- Flags for testing suite ---
 #-----------------------------------
 GENERATE_TEST_DATA  = False
-PERFORM_DROPOUT_FIT = True
+PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = False
 SHOW_RESULTS        = True
 TEST_RUN_NAME       = '40_days_N_100'
@@ -25,7 +25,7 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'beta'
+PARAM             = 'rho'
 DATE              = 10000028
 ##=======================================================
 
