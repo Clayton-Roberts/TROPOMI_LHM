@@ -20,29 +20,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/models/reduce_sum.stan" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/vasishth.stan" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/models/vectorised_model.stan" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_10.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_11.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_12.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_13.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_14.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_15.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_16.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_2.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/inits/chain_2.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_3.json" beforeDir="false" afterPath="$PROJECT_DIR$/src/inits/chain_3.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_5.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_6.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_7.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_8.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/inits/chain_9.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/linear_hierarchical_model" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/linear_hierarchical_model.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/linear_hierarchical_model.stan" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/linear_hierarchical_model.stan" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test_suite/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/functions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />

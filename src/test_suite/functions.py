@@ -168,20 +168,13 @@ def prepare_dataset_for_cmdstanpy(run_name):
     D       = int(np.max(day_id))
     M       = len(obs_no2)
 
-    matrix_NO2     = []
-    matrix_sigma_N = []
-    for i in range(len(obs_no2)):
-        matrix_NO2.append([1.0, obs_no2[i]])
-        #matrix_sigma_N.append([0.0, sigma_N[i]])
-
-
     data = {}
     data['M']       = M
     data['D']       = D
     data['day_id']  = day_id
-    data['NO2_obs'] = matrix_NO2
+    data['NO2_obs'] = obs_no2
     data['CH4_obs'] = obs_ch4
-    data['sigma_N'] = sigma_N#matrix_sigma_N
+    data['sigma_N'] = sigma_N
     data['sigma_C'] = sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
