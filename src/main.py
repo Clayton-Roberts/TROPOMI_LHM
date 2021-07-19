@@ -9,15 +9,15 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA  = True
+GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = True
 SHOW_RESULTS        = False
-TEST_RUN_NAME       = '10_days_N_100_chains_4'
+TEST_RUN_NAME       = 'days_15_M_100_reduce_sum'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 10
+NUM_DAYS        = 15
 NUM_OBS         = 100
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
@@ -26,7 +26,7 @@ INSTALL_CMDSTAN = False
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
 PARAM             = 'rho'
-DATE              = 10000028
+DATE              = 10000003
 ##=======================================================
 
 if INSTALL_CMDSTAN:
@@ -52,7 +52,7 @@ if PERFORM_DROPOUT_FIT:
 
 if PERFORM_FULL_FIT:
     fm.fit_model('data/' + TEST_RUN_NAME + '/data.json',
-                 'models/linear_hierarchical_model.stan',
+                 'models/reduce_sum.stan',
                  TEST_RUN_NAME)
 
 if SHOW_RESULTS:

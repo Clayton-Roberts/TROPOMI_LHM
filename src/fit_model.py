@@ -33,30 +33,21 @@ def fit_model(data_path, model_path, output_directory):
 
     set_cmdstan_path(ct.CMDSTAN_PATH)
 
-    model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path)
+    model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path,
+                         cpp_options={"STAN_THREADS": True})
 
     # Fit the model.
-    fit = model.sample(chains=16, parallel_chains=16, data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
-                       iter_sampling=1000, seed=101, show_progress=False,
+    fit = model.sample(chains=4, parallel_chains=2, threads_per_chain=4,
+                       data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
+                       iter_sampling=1000, seed=101, show_progress=True,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
-                       max_treedepth=15,
-                       inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
-                              ct.FILE_PREFIX + '/inits/chain_2.json',
-                              ct.FILE_PREFIX + '/inits/chain_3.json',
-                              ct.FILE_PREFIX + '/inits/chain_4.json',
-                              ct.FILE_PREFIX + '/inits/chain_5.json',
-                              ct.FILE_PREFIX + '/inits/chain_6.json',
-                              ct.FILE_PREFIX + '/inits/chain_7.json',
-                              ct.FILE_PREFIX + '/inits/chain_8.json',
-                              ct.FILE_PREFIX + '/inits/chain_9.json',
-                              ct.FILE_PREFIX + '/inits/chain_10.json',
-                              ct.FILE_PREFIX + '/inits/chain_11.json',
-                              ct.FILE_PREFIX + '/inits/chain_12.json',
-                              ct.FILE_PREFIX + '/inits/chain_13.json',
-                              ct.FILE_PREFIX + '/inits/chain_14.json',
-                              ct.FILE_PREFIX + '/inits/chain_15.json',
-                              ct.FILE_PREFIX + '/inits/chain_16.json'])
+                       max_treedepth=12)
+                       # inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
+                       #        ct.FILE_PREFIX + '/inits/chain_2.json',
+                       #        ct.FILE_PREFIX + '/inits/chain_3.json',
+                       #        ct.FILE_PREFIX + '/inits/chain_4.json'
+                       #        ])
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
