@@ -11,9 +11,9 @@ from src import plotting as p
 #-----------------------------------
 GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = False
-PERFORM_FULL_FIT    = True
-SHOW_RESULTS        = False
-TEST_RUN_NAME       = 'days_15_M_100_reduce_sum'
+PERFORM_FULL_FIT    = False
+SHOW_RESULTS        = True
+TEST_RUN_NAME       = 'days_15_M_100_gelman'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
@@ -25,7 +25,7 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'rho'
+PARAM             = 'gamma'
 DATE              = 10000003
 ##=======================================================
 
@@ -52,7 +52,7 @@ if PERFORM_DROPOUT_FIT:
 
 if PERFORM_FULL_FIT:
     fm.fit_model('data/' + TEST_RUN_NAME + '/data.json',
-                 'models/reduce_sum.stan',
+                 'models/gelman.stan',
                  TEST_RUN_NAME)
 
 if SHOW_RESULTS:
@@ -61,6 +61,6 @@ if SHOW_RESULTS:
     p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.dropout_scatterplot(DATE, TEST_RUN_NAME)
-    p.reduced_chi_squared(TEST_RUN_NAME)
+    #p.dropout_scatterplot(DATE, TEST_RUN_NAME)
+    #p.reduced_chi_squared(TEST_RUN_NAME)
 

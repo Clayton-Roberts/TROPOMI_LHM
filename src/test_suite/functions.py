@@ -168,11 +168,16 @@ def prepare_dataset_for_cmdstanpy(run_name):
     D       = int(np.max(day_id))
     M       = len(obs_no2)
 
+    matrix_no2 = []
+    for no2 in obs_no2:
+        matrix_no2.append([1.0, no2])
+
     data = {}
+    data['K']       = 2
     data['M']       = M
     data['D']       = D
     data['day_id']  = day_id
-    data['NO2_obs'] = obs_no2
+    data['NO2_obs'] = matrix_no2#obs_no2
     data['CH4_obs'] = obs_ch4
     data['sigma_N'] = sigma_N
     data['sigma_C'] = sigma_C

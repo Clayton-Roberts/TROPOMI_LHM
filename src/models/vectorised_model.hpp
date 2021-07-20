@@ -17,30 +17,14 @@ using namespace stan::math;
 
 
 stan::math::profile_map profiles__;
-static constexpr std::array<const char*, 44> locations_array__ = 
+static constexpr std::array<const char*, 26> locations_array__ = 
 {" (found before start of program)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 14, column 4 to column 29)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 15, column 4 to column 35)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 16, column 4 to column 26)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 17, column 4 to column 32)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 18, column 4 to column 29)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 37, column 4 to column 23)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 38, column 4 to column 22)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 39, column 4 to column 26)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 40, column 4 to column 25)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 41, column 4 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 42, column 4 to column 29)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 43, column 4 to column 28)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 46, column 8 to column 31)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 47, column 8 to column 31)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 45, column 19 to line 48, column 5)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 45, column 4 to line 48, column 5)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 50, column 4 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 51, column 4 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 53, column 4 to column 22)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 55, column 4 to column 33)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 56, column 4 to column 33)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 23, column 4 to column 30)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 23, column 4 to column 24)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 24, column 4 to column 33)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 27, column 4 to column 23)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 28, column 4 to column 47)",
@@ -59,9 +43,7 @@ static constexpr std::array<const char*, 44> locations_array__ =
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 11, column 20 to column 21)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 11, column 4 to column 34)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 17, column 29 to column 30)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 18, column 20 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 37, column 11 to column 12)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 38, column 11 to column 12)"};
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/vectorised_model.stan', line 18, column 20 to column 21)"};
 
 
 
@@ -106,48 +88,48 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       pos__ = std::numeric_limits<int>::min();
       
       pos__ = 1;
-      current_statement__ = 28;
+      current_statement__ = 12;
       context__.validate_dims("data initialization","M","int",
            std::vector<size_t>{});
       M = std::numeric_limits<int>::min();
       
-      current_statement__ = 28;
+      current_statement__ = 12;
       M = context__.vals_i("M")[(1 - 1)];
-      current_statement__ = 28;
+      current_statement__ = 12;
       check_greater_or_equal(function__, "M", M, 0);
-      current_statement__ = 29;
+      current_statement__ = 13;
       context__.validate_dims("data initialization","D","int",
            std::vector<size_t>{});
       D = std::numeric_limits<int>::min();
       
-      current_statement__ = 29;
+      current_statement__ = 13;
       D = context__.vals_i("D")[(1 - 1)];
-      current_statement__ = 29;
+      current_statement__ = 13;
       check_greater_or_equal(function__, "D", D, 0);
-      current_statement__ = 30;
+      current_statement__ = 14;
       validate_non_negative_index("day_id", "M", M);
-      current_statement__ = 31;
+      current_statement__ = 15;
       context__.validate_dims("data initialization","day_id","int",
            std::vector<size_t>{static_cast<size_t>(M)});
       day_id = std::vector<int>(M, std::numeric_limits<int>::min());
       
-      current_statement__ = 31;
+      current_statement__ = 15;
       day_id = context__.vals_i("day_id");
-      current_statement__ = 31;
+      current_statement__ = 15;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 31;
+        current_statement__ = 15;
         check_greater_or_equal(function__, "day_id[sym1__]",
                                day_id[(sym1__ - 1)], 1);
       }
-      current_statement__ = 31;
+      current_statement__ = 15;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 31;
+        current_statement__ = 15;
         check_less_or_equal(function__, "day_id[sym1__]",
                             day_id[(sym1__ - 1)], D);
       }
-      current_statement__ = 32;
+      current_statement__ = 16;
       validate_non_negative_index("NO2_obs", "M", M);
-      current_statement__ = 33;
+      current_statement__ = 17;
       context__.validate_dims("data initialization","NO2_obs","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       NO2_obs__ = Eigen::Matrix<double, -1, 1>(M);
@@ -156,32 +138,32 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       
       {
         std::vector<local_scalar_t__> NO2_obs_flat__;
-        current_statement__ = 33;
+        current_statement__ = 17;
         NO2_obs_flat__ = context__.vals_r("NO2_obs");
-        current_statement__ = 33;
+        current_statement__ = 17;
         pos__ = 1;
-        current_statement__ = 33;
+        current_statement__ = 17;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 33;
+          current_statement__ = 17;
           assign(NO2_obs, NO2_obs_flat__[(pos__ - 1)],
             "assigning variable NO2_obs", index_uni(sym1__));
-          current_statement__ = 33;
+          current_statement__ = 17;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 34;
+      current_statement__ = 18;
       validate_non_negative_index("CH4_obs", "M", M);
-      current_statement__ = 35;
+      current_statement__ = 19;
       context__.validate_dims("data initialization","CH4_obs","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       CH4_obs = std::vector<double>(M, std::numeric_limits<double>::quiet_NaN());
       
       
-      current_statement__ = 35;
+      current_statement__ = 19;
       CH4_obs = context__.vals_r("CH4_obs");
-      current_statement__ = 36;
+      current_statement__ = 20;
       validate_non_negative_index("sigma_N", "M", M);
-      current_statement__ = 37;
+      current_statement__ = 21;
       context__.validate_dims("data initialization","sigma_N","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       sigma_N__ = Eigen::Matrix<double, -1, 1>(M);
@@ -190,28 +172,28 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       
       {
         std::vector<local_scalar_t__> sigma_N_flat__;
-        current_statement__ = 37;
+        current_statement__ = 21;
         sigma_N_flat__ = context__.vals_r("sigma_N");
-        current_statement__ = 37;
+        current_statement__ = 21;
         pos__ = 1;
-        current_statement__ = 37;
+        current_statement__ = 21;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 37;
+          current_statement__ = 21;
           assign(sigma_N, sigma_N_flat__[(pos__ - 1)],
             "assigning variable sigma_N", index_uni(sym1__));
-          current_statement__ = 37;
+          current_statement__ = 21;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 37;
+      current_statement__ = 21;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 37;
+        current_statement__ = 21;
         check_greater_or_equal(function__, "sigma_N[sym1__]",
                                sigma_N[(sym1__ - 1)], 0);
       }
-      current_statement__ = 38;
+      current_statement__ = 22;
       validate_non_negative_index("sigma_C", "M", M);
-      current_statement__ = 39;
+      current_statement__ = 23;
       context__.validate_dims("data initialization","sigma_C","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       sigma_C__ = Eigen::Matrix<double, -1, 1>(M);
@@ -220,33 +202,29 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       
       {
         std::vector<local_scalar_t__> sigma_C_flat__;
-        current_statement__ = 39;
+        current_statement__ = 23;
         sigma_C_flat__ = context__.vals_r("sigma_C");
-        current_statement__ = 39;
+        current_statement__ = 23;
         pos__ = 1;
-        current_statement__ = 39;
+        current_statement__ = 23;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 39;
+          current_statement__ = 23;
           assign(sigma_C, sigma_C_flat__[(pos__ - 1)],
             "assigning variable sigma_C", index_uni(sym1__));
-          current_statement__ = 39;
+          current_statement__ = 23;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 39;
+      current_statement__ = 23;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 39;
+        current_statement__ = 23;
         check_greater_or_equal(function__, "sigma_C[sym1__]",
                                sigma_C[(sym1__ - 1)], 0);
       }
-      current_statement__ = 40;
+      current_statement__ = 24;
       validate_non_negative_index("kappa", "D", D);
-      current_statement__ = 41;
+      current_statement__ = 25;
       validate_non_negative_index("gamma", "D", D);
-      current_statement__ = 42;
-      validate_non_negative_index("alpha", "D", D);
-      current_statement__ = 43;
-      validate_non_negative_index("beta", "D", D);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
       // Next line prevents compiler griping about no return
@@ -310,20 +288,20 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       gamma = in__.template read_constrain_lb<Eigen::Matrix<local_scalar_t__, -1, 1>, jacobian__>(
                 0, lp__, D);
       {
-        current_statement__ = 22;
+        current_statement__ = 6;
         lp_accum__.add(lkj_corr_lpdf<propto__>(Omega, 2));
-        current_statement__ = 23;
+        current_statement__ = 7;
         lp_accum__.add(exponential_lpdf<propto__>(sigma_kappa, 1));
         Eigen::Matrix<local_scalar_t__, -1, -1> Sigma;
         Sigma = Eigen::Matrix<local_scalar_t__, -1, -1>(2, 2);
         stan::math::fill(Sigma, DUMMY_VAR__);
         
-        current_statement__ = 25;
+        current_statement__ = 9;
         assign(Sigma, quad_form_diag(Omega, sigma_kappa),
           "assigning variable Sigma");
-        current_statement__ = 26;
+        current_statement__ = 10;
         lp_accum__.add(multi_normal_lpdf<propto__>(kappa, mu, Sigma));
-        current_statement__ = 27;
+        current_statement__ = 11;
         lp_accum__.add(
           normal_lpdf<propto__>(CH4_obs,
             add(
@@ -439,59 +417,6 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       if (logical_negation(emit_generated_quantities__)) {
         return ;
       } 
-      Eigen::Matrix<double, -1, 1> alpha;
-      alpha = Eigen::Matrix<double, -1, 1>(D);
-      stan::math::fill(alpha, std::numeric_limits<double>::quiet_NaN());
-      
-      Eigen::Matrix<double, -1, 1> beta;
-      beta = Eigen::Matrix<double, -1, 1>(D);
-      stan::math::fill(beta, std::numeric_limits<double>::quiet_NaN());
-      
-      double mu_alpha;
-      mu_alpha = std::numeric_limits<double>::quiet_NaN();
-      
-      double mu_beta;
-      mu_beta = std::numeric_limits<double>::quiet_NaN();
-      
-      double rho;
-      rho = std::numeric_limits<double>::quiet_NaN();
-      
-      double sigma_alpha;
-      sigma_alpha = std::numeric_limits<double>::quiet_NaN();
-      
-      double sigma_beta;
-      sigma_beta = std::numeric_limits<double>::quiet_NaN();
-      
-      current_statement__ = 16;
-      for (int d = 1; d <= D; ++d) {
-        current_statement__ = 13;
-        assign(alpha, rvalue(kappa, "kappa", index_uni(d), index_uni(1)),
-          "assigning variable alpha", index_uni(d));
-        current_statement__ = 14;
-        assign(beta, rvalue(kappa, "kappa", index_uni(d), index_uni(2)),
-          "assigning variable beta", index_uni(d));
-      }
-      current_statement__ = 17;
-      mu_alpha = rvalue(mu, "mu", index_uni(1));
-      current_statement__ = 18;
-      mu_beta = rvalue(mu, "mu", index_uni(2));
-      current_statement__ = 19;
-      rho = rvalue(Omega, "Omega", index_uni(1), index_uni(2));
-      current_statement__ = 20;
-      sigma_alpha = rvalue(sigma_kappa, "sigma_kappa", index_uni(1));
-      current_statement__ = 21;
-      sigma_beta = rvalue(sigma_kappa, "sigma_kappa", index_uni(2));
-      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        vars__.emplace_back(alpha[(sym1__ - 1)]);
-      }
-      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        vars__.emplace_back(beta[(sym1__ - 1)]);
-      }
-      vars__.emplace_back(mu_alpha);
-      vars__.emplace_back(mu_beta);
-      vars__.emplace_back(rho);
-      vars__.emplace_back(sigma_alpha);
-      vars__.emplace_back(sigma_beta);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
       // Next line prevents compiler griping about no return
@@ -702,8 +627,7 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
   inline void get_param_names(std::vector<std::string>& names__) const {
     
     names__ = std::vector<std::string>{"Omega", "sigma_kappa", "mu", "kappa",
-      "gamma", "alpha", "beta", "mu_alpha", "mu_beta", "rho", "sigma_alpha",
-      "sigma_beta"};
+      "gamma"};
     
     } // get_param_names() 
     
@@ -717,11 +641,7 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
       std::vector<size_t>{static_cast<size_t>(2)},
       std::vector<size_t>{static_cast<size_t>(2)},
       std::vector<size_t>{static_cast<size_t>(D), static_cast<size_t>(2)},
-      std::vector<size_t>{static_cast<size_t>(D)},
-      std::vector<size_t>{static_cast<size_t>(D)},
-      std::vector<size_t>{static_cast<size_t>(D)}, std::vector<size_t>{
-      }, std::vector<size_t>{}, std::vector<size_t>{}, std::vector<size_t>{
-      }, std::vector<size_t>{}};
+      std::vector<size_t>{static_cast<size_t>(D)}};
     
     } // get_dims() 
     
@@ -769,21 +689,7 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
     }
     
     if (emit_generated_quantities__) {
-      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        {
-          param_names__.emplace_back(std::string() + "alpha" + '.' + std::to_string(sym1__));
-        } 
-      }
-      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        {
-          param_names__.emplace_back(std::string() + "beta" + '.' + std::to_string(sym1__));
-        } 
-      }
-      param_names__.emplace_back(std::string() + "mu_alpha");
-      param_names__.emplace_back(std::string() + "mu_beta");
-      param_names__.emplace_back(std::string() + "rho");
-      param_names__.emplace_back(std::string() + "sigma_alpha");
-      param_names__.emplace_back(std::string() + "sigma_beta");
+      
     }
     
     } // constrained_param_names() 
@@ -828,34 +734,20 @@ class vectorised_model_model final : public model_base_crtp<vectorised_model_mod
     }
     
     if (emit_generated_quantities__) {
-      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        {
-          param_names__.emplace_back(std::string() + "alpha" + '.' + std::to_string(sym1__));
-        } 
-      }
-      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        {
-          param_names__.emplace_back(std::string() + "beta" + '.' + std::to_string(sym1__));
-        } 
-      }
-      param_names__.emplace_back(std::string() + "mu_alpha");
-      param_names__.emplace_back(std::string() + "mu_beta");
-      param_names__.emplace_back(std::string() + "rho");
-      param_names__.emplace_back(std::string() + "sigma_alpha");
-      param_names__.emplace_back(std::string() + "sigma_beta");
+      
     }
     
     } // unconstrained_param_names() 
     
   inline std::string get_constrained_sizedtypes() const {
     
-    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"},{\"name\":\"alpha\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"beta\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"mu_alpha\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"mu_beta\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"rho\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"sigma_alpha\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"sigma_beta\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"}]");
+    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"matrix\",\"rows\":" + std::to_string(2) + ",\"cols\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"}]");
     
     } // get_constrained_sizedtypes() 
     
   inline std::string get_unconstrained_sizedtypes() const {
     
-    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(((2 * (2 - 1)) / 2)) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"},{\"name\":\"alpha\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"beta\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"generated_quantities\"},{\"name\":\"mu_alpha\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"mu_beta\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"rho\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"sigma_alpha\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"},{\"name\":\"sigma_beta\",\"type\":{\"name\":\"real\"},\"block\":\"generated_quantities\"}]");
+    return std::string("[{\"name\":\"Omega\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(((2 * (2 - 1)) / 2)) + "},\"block\":\"parameters\"},{\"name\":\"sigma_kappa\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"mu\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "},\"block\":\"parameters\"},{\"name\":\"kappa\",\"type\":{\"name\":\"array\",\"length\":" + std::to_string(D) + ",\"element_type\":{\"name\":\"vector\",\"length\":" + std::to_string(2) + "}},\"block\":\"parameters\"},{\"name\":\"gamma\",\"type\":{\"name\":\"vector\",\"length\":" + std::to_string(D) + "},\"block\":\"parameters\"}]");
     
     } // get_unconstrained_sizedtypes() 
     

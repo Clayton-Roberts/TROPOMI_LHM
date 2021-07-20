@@ -33,11 +33,10 @@ def fit_model(data_path, model_path, output_directory):
 
     set_cmdstan_path(ct.CMDSTAN_PATH)
 
-    model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path,
-                         cpp_options={"STAN_THREADS": True})
+    model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path)
 
     # Fit the model.
-    fit = model.sample(chains=4, parallel_chains=2, threads_per_chain=4,
+    fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
                        iter_sampling=1000, seed=101, show_progress=True,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,

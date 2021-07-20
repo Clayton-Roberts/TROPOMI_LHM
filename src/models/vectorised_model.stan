@@ -5,10 +5,10 @@ data {
     int<lower=0>          M;            // Total number of observations, i.e, rows in the dataset csv file.
     int<lower=0>          D;            // Number of days we have observations on.
     int<lower=1,upper=D>  day_id[M];    // Vector of day ids, which will be an integer between 1 and D inclusive.
-    vector[M]             NO2_obs;      // Observations of NO2.
+    vector[M]             NO2_obs;	// Observations of NO2.
     real                  CH4_obs[M];   // Observations of CH4.
-    vector<lower=0>[M]    sigma_N;      // Observational error on NO2.
-    vector<lower=0>[M]    sigma_C;      // Observational error on CH4.
+    vector<lower=0>[M]    sigma_N;	// Observational error on NO2.
+    vector<lower=0>[M]    sigma_C;	// Observational error on CH4.
 }
 parameters {
     corr_matrix[2]     Omega;        // Correlation matrix.
@@ -20,7 +20,7 @@ parameters {
 model {
 
     // Priors for our hyper-parameters, mu has a flat prior.
-    Omega       ~ lkj_corr(2);
+    Omega	~ lkj_corr(2);
     sigma_kappa ~ exponential(1);
 
     // Model assumption is that beta[1] and beta[2] are drawn from a multivariate normal distribution.
