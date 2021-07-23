@@ -12,12 +12,12 @@ from src import plotting as p
 GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = False
-SHOW_RESULTS        = True
-TEST_RUN_NAME       = 'days_15_M_100_gelman'
+SHOW_RESULTS        = False
+TEST_RUN_NAME       = '10_days_100_M'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 15
+NUM_DAYS        = 10
 NUM_OBS         = 100
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
@@ -25,8 +25,8 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'gamma'
-DATE              = 10000003
+PARAM             = 'alpha'
+DATE              = 10000007
 ##=======================================================
 
 if INSTALL_CMDSTAN:
@@ -40,19 +40,18 @@ if GENERATE_TEST_DATA:
     tsf.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
 
 if PERFORM_DROPOUT_FIT:
-    #dt.make_directories(TEST_RUN_NAME)
-    #dt.create_csvs(TEST_RUN_NAME)
-    #dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
-    #p.dropout_scatterplot(DATE, TEST_RUN_NAME)
-    #fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json',
-     #            'models/linear_hierarchical_model.stan',
-      #           TEST_RUN_NAME + '/dropout')
+    dt.make_directories(TEST_RUN_NAME)
+    dt.create_csvs(TEST_RUN_NAME)
+    dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
+    fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json',
+                 'models/lhm.stan',
+                 TEST_RUN_NAME + '/dropout')
     fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
     fitted_model.write_reduced_chi_squared_csv()
 
 if PERFORM_FULL_FIT:
     fm.fit_model('data/' + TEST_RUN_NAME + '/data.json',
-                 'models/gelman.stan',
+                 'models/lhm.stan',
                  TEST_RUN_NAME)
 
 if SHOW_RESULTS:
@@ -61,6 +60,6 @@ if SHOW_RESULTS:
     p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    #p.dropout_scatterplot(DATE, TEST_RUN_NAME)
-    #p.reduced_chi_squared(TEST_RUN_NAME)
+    p.dropout_scatterplot(DATE, TEST_RUN_NAME)
+    p.reduced_chi_squared(TEST_RUN_NAME)
 
