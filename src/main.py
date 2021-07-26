@@ -12,8 +12,8 @@ from src import plotting as p
 GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = False
-SHOW_RESULTS        = False
-TEST_RUN_NAME       = '10_days_100_M'
+SHOW_RESULTS        = True
+TEST_RUN_NAME       = '80_days_1000_M'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
@@ -25,7 +25,7 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'alpha'
+PARAM             = 'sigma_alpha'
 DATE              = 10000007
 ##=======================================================
 
@@ -57,9 +57,9 @@ if PERFORM_FULL_FIT:
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
     p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.dropout_scatterplot(DATE, TEST_RUN_NAME)
-    p.reduced_chi_squared(TEST_RUN_NAME)
+    # p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.dropout_scatterplot(DATE, TEST_RUN_NAME)
+    # p.reduced_chi_squared(TEST_RUN_NAME)
 
