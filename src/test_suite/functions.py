@@ -162,20 +162,25 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     obs_no2 = list(df.obs_NO2)
     obs_ch4 = list(df.obs_CH4)
-    sigma_N = list(df.sigma_N)
-    sigma_C = list(df.sigma_C)
     day_id  = list(df.Day_ID)
     D       = int(np.max(day_id))
     M       = len(obs_no2)
 
+    group_sizes = []
+    for i in range(D):
+        day = i+1
+        size = len(df[df.Day_ID == day])
+        group_sizes.append(size)
+
     data = {}
-    data['M']       = M
-    data['D']       = D
-    data['day_id']  = day_id
-    data['NO2_obs'] = obs_no2
-    data['CH4_obs'] = obs_ch4
-    data['sigma_N'] = sigma_N
-    data['sigma_C'] = sigma_C
+    data['M']           = M
+    data['D']           = D
+    data['day_id']      = day_id
+    data['group_sizes'] = group_sizes
+    data['NO2_obs']     = obs_no2
+    data['CH4_obs']     = obs_ch4
+    data['sigma_N']     = 7.0
+    data['sigma_C']     = 2.0
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)

@@ -216,7 +216,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     alpha = fitted_model.full_trace['alpha.' + str(day_id)][randomize]
     beta = fitted_model.full_trace['beta.' + str(day_id)][randomize]
     for i in range(500):
-        plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='lightcoral',
+        plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='black',
                  alpha=0.05, zorder=2)
 
     if compare_to_ground_truth:
@@ -404,7 +404,9 @@ def reduced_chi_squared(model_run):
 
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
-    sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=False)
+    sns.displot(reduced_chi_square_df.Reduced_chi_squared,
+                bins=[0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25], kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
-    plt.title('Reduced chi-squared values for 2019')
+    plt.title('Reduced chi-squared values by day')
+    plt.tight_layout()
     plt.show()
