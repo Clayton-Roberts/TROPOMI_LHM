@@ -115,7 +115,7 @@ def generate_dataset(run_name, n_Obs):
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'true_NO2', 'true_CH4'))
+        writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C'))
 
         day_index = 1  # Stan starts counting from 1!
 
@@ -127,7 +127,7 @@ def generate_dataset(run_name, n_Obs):
             gamma = df.loc[date, 'gamma']
 
             # Generate values of latent NO2 for each day.
-            latent_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
+            obs_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
 
             # Define our observational errors.
             mu_sigma_N = 7.0    # Micro mol / square meter
@@ -135,22 +135,17 @@ def generate_dataset(run_name, n_Obs):
             sigma_sigma_N = 0.3 # Micro mol / square meter
             sigma_sigma_C = 0.3 # ppbv
 
-            for true_no2 in latent_no2:
+            for no2 in obs_no2:
 
                 # Generate a value for sigma_N and sigma_C
                 sigma_N = np.random.normal(mu_sigma_N, sigma_sigma_N)
                 sigma_C = np.random.normal(mu_sigma_C, sigma_sigma_C)
 
-                # Generate the observed value of NO2 from the latent value.
-                obs_no2  = np.random.normal(true_no2, sigma_N)
-                # Generate the latent value of CH4 according to the model equation.
-                true_ch4 = np.random.normal(alpha + beta * true_no2, gamma)
-                # Generate the observed value of CH4 from the latent value.
-                obs_ch4  = np.random.normal(true_ch4, sigma_C)
+                # Generate the observed value of CH4 according to the model equation.
+                obs_ch4 = np.random.normal(alpha + beta * no2, np.sqrt(gamma**2 + sigma_C**2 + (beta**2 * sigma_N**2)))
 
                 # Write to the dataset.
-                writer.writerow((day_index, str(date), round(obs_no2, 2), round(obs_ch4, 2), round(sigma_N,2),
-                                 round(sigma_C,2), round(true_no2, 2), round(true_ch4, 2)))
+                writer.writerow((day_index, str(date), round(no2, 2), round(obs_ch4, 2), round(sigma_N,2), round(sigma_C,2)))
 
             day_index += 1
 

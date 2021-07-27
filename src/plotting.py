@@ -114,7 +114,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.legend()
     plt.show()
 
-def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
+def observations_scatterplot(date, run_name):
     '''
     This function is for plotting a simple scatterplot of observations. It will always include errorbars on the observations,
     and if it is a test dataset than you can select to have the latent values shown as well.
@@ -123,9 +123,6 @@ def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
     :type date: int
     :param run_name: Name of the model run.
     :type run_name: string
-    :param compare_to_ground_truth: A boolean to include a comparison to the latent values if this
-        model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
-    :type compare_to_ground_truth: Boolean
     :return:
     '''
 
@@ -134,10 +131,6 @@ def observations_scatterplot(date, run_name, compare_to_ground_truth=False):
 
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', header=0)
     date_df = dataset_df[dataset_df.Date == date]
-
-    if compare_to_ground_truth:
-        plt.scatter(date_df.true_NO2, date_df.true_CH4, s=12, c='lime', edgecolors='black',
-                    marker='D', label="Latent values", zorder=2)
 
     plt.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
                  ecolor="blue",

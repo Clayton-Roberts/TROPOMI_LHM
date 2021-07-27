@@ -58,7 +58,7 @@ if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
     fitted_model.calculate_fractional_metric()
     p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.observations_scatterplot(DATE, TEST_RUN_NAME)
     p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.dropout_scatterplot(DATE, TEST_RUN_NAME)
