@@ -41,12 +41,7 @@ def fit_model(data_path, model_path, output_directory):
                        iter_sampling=1000, seed=101, show_progress=True,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
-                       max_treedepth=12,
-                       inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
-                              ct.FILE_PREFIX + '/inits/chain_2.json',
-                              ct.FILE_PREFIX + '/inits/chain_3.json',
-                              ct.FILE_PREFIX + '/inits/chain_4.json'
-                              ])
+                       max_treedepth=12)
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
@@ -56,4 +51,20 @@ def fit_model(data_path, model_path, output_directory):
     f.write('---------------------------------------------------' + '\n')
     f.write(fit.diagnose())
     f.close()
+
+def optimize(data_path, model_path, output_directory):
+    # Record the start time in order to write elapsed time for fitting to the output file.
+    start_time = time.time()
+
+    # Set the random seed for replicability.
+    np.random.seed(101)
+
+    set_cmdstan_path(ct.CMDSTAN_PATH)
+
+    model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path)
+    # run CmdStan's optimize method, returns object `CmdStanMLE`
+    mle = model.optimize(data=ct.FILE_PREFIX + '/' + data_path,
+                         output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory)
+    print(mle.column_names)
+    print(mle.optimized_params_dict)
 

@@ -8,8 +8,8 @@ data {
     int<lower=1,upper=D>    day_id[M];        // Vector of day ids, which will be an integer between 1 and D inclusive.
     vector[M]               NO2_obs;	      // Observations of NO2.
     vector[M]               CH4_obs;          // Observations of CH4.
-    vector<lower=0>[D]      sigma_N;	      // Observational error on NO2 (averaged by day).
-    vector<lower=0>[D]      sigma_C;	      // Observational error on CH4 (averaged by day).
+    vector<lower=0>[M]      sigma_N;	      // Observational error on NO2 (per individual observation).
+    vector<lower=0>[M]      sigma_C;	      // Observational error on CH4 (per individual observation).
 }
 parameters {
     vector[2]               epsilon[D];
@@ -38,12 +38,9 @@ model{
     for (d in 1:D) epsilon[d] ~ std_normal();
 
     vector[M] CH4_hat = to_vector(kappa[day_id, 1]) + (to_vector(kappa[day_id, 2]) .* NO2_obs);
-    vector[D] sigma   = sqrt(square(gamma) + square(sigma_C) + square(to_vector(kappa[, 2]) .* sigma_N));
+    vector[M] sigma   = sqrt(square(gamma[day_id]) + square(sigma_C) + square(to_vector(kappa[day_id, 2]) .* sigma_N));
 
-    for (d in 1:D) {
-        segment(CH4_obs, pos, group_sizes[d]) ~ normal(segment(CH4_hat, pos, group_sizes[d]), sigma[d]);
-        pos = pos + group_sizes[d];
-    }
+    CH4_obs ~ normal(CH4_hat, sigma);
 }
 generated quantities {
     vector[D]    alpha;

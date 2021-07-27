@@ -115,7 +115,7 @@ def generate_dataset(run_name, n_Obs):
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'true_NO2', 'true_CH4'))
+        writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C'))
 
         day_index = 1  # Stan starts counting from 1!
 
@@ -127,24 +127,25 @@ def generate_dataset(run_name, n_Obs):
             gamma = df.loc[date, 'gamma']
 
             # Generate values of latent NO2 for each day.
-            latent_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
+            obs_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
 
             # Define our observational errors.
-            sigma_N = 7.0  # Micro mol / square meter
-            sigma_C = 2.0  # ppbv
+            mu_sigma_N = 7.0    # Micro mol / square meter
+            mu_sigma_C = 2.0    # ppbv
+            sigma_sigma_N = 0.3 # Micro mol / square meter
+            sigma_sigma_C = 0.3 # ppbv
 
-            for true_no2 in latent_no2:
+            for no2 in obs_no2:
 
-                # Generate the observed value of NO2 from the latent value.
-                obs_no2  = np.random.normal(true_no2, sigma_N)
-                # Generate the latent value of CH4 according to the model equation.
-                true_ch4 = np.random.normal(alpha + beta * true_no2, gamma)
-                # Generate the observed value of CH4 from the latent value.
-                obs_ch4  = np.random.normal(true_ch4, sigma_C)
+                # Generate a value for sigma_N and sigma_C
+                sigma_N = np.random.normal(mu_sigma_N, sigma_sigma_N)
+                sigma_C = np.random.normal(mu_sigma_C, sigma_sigma_C)
+
+                # Generate the observed value of CH4 according to the model equation.
+                obs_ch4 = np.random.normal(alpha + beta * no2, np.sqrt(gamma**2 + sigma_C**2 + (beta**2 * sigma_N**2)))
 
                 # Write to the dataset.
-                writer.writerow((day_index, str(date), round(obs_no2, 2), round(obs_ch4, 2), sigma_N, sigma_C,
-                                 round(true_no2, 2), round(true_ch4, 2)))
+                writer.writerow((day_index, str(date), round(no2, 2), round(obs_ch4, 2), round(sigma_N,2), round(sigma_C,2)))
 
             day_index += 1
 
@@ -172,6 +173,17 @@ def prepare_dataset_for_cmdstanpy(run_name):
         size = len(df[df.Day_ID == day])
         group_sizes.append(size)
 
+    avg_sigma_N = []
+    avg_sigma_C = []
+
+    for i in range(D):
+        day = i+1
+        mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N),2)
+        mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C),2)
+
+        avg_sigma_N.append(mean_sigma_N)
+        avg_sigma_C.append(mean_sigma_C)
+
     data = {}
     data['M']           = M
     data['D']           = D
@@ -179,8 +191,8 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs']     = obs_no2
     data['CH4_obs']     = obs_ch4
-    data['sigma_N']     = 7.0
-    data['sigma_C']     = 2.0
+    data['sigma_N']     = avg_sigma_N
+    data['sigma_C']     = avg_sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
