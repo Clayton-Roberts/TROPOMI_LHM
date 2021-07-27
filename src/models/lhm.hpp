@@ -17,7 +17,7 @@ using namespace stan::math;
 
 
 stan::math::profile_map profiles__;
-static constexpr std::array<const char*, 57> locations_array__ = 
+static constexpr std::array<const char*, 59> locations_array__ = 
 {" (found before start of program)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 15, column 4 to column 39)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 16, column 4 to column 34)",
@@ -68,7 +68,9 @@ static constexpr std::array<const char*, 57> locations_array__ =
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 9, column 4 to column 36)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 10, column 11 to column 12)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 10, column 4 to column 36)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 11, column 20 to column 21)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 11, column 4 to column 36)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 12, column 20 to column 21)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 12, column 4 to column 36)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 15, column 36 to column 37)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/lhm.stan', line 19, column 20 to column 21)",
@@ -87,10 +89,12 @@ class lhm_model final : public model_base_crtp<lhm_model> {
   std::vector<int> day_id;
   Eigen::Matrix<double, -1, 1> NO2_obs__;
   Eigen::Matrix<double, -1, 1> CH4_obs__;
-  double sigma_N;
-  double sigma_C; 
+  Eigen::Matrix<double, -1, 1> sigma_N__;
+  Eigen::Matrix<double, -1, 1> sigma_C__; 
   Eigen::Map<Eigen::Matrix<double, -1, 1>> NO2_obs{nullptr, 0};
   Eigen::Map<Eigen::Matrix<double, -1, 1>> CH4_obs{nullptr, 0};
+  Eigen::Map<Eigen::Matrix<double, -1, 1>> sigma_N{nullptr, 0};
+  Eigen::Map<Eigen::Matrix<double, -1, 1>> sigma_C{nullptr, 0};
  
  public:
   ~lhm_model() { }
@@ -221,32 +225,74 @@ class lhm_model final : public model_base_crtp<lhm_model> {
         }
       }
       current_statement__ = 50;
+      validate_non_negative_index("sigma_N", "D", D);
+      current_statement__ = 51;
       context__.validate_dims("data initialization","sigma_N","double",
-           std::vector<size_t>{});
-      sigma_N = std::numeric_limits<double>::quiet_NaN();
+           std::vector<size_t>{static_cast<size_t>(D)});
+      sigma_N__ = Eigen::Matrix<double, -1, 1>(D);
+      new (&sigma_N) Eigen::Map<Eigen::Matrix<double, -1, 1>>(sigma_N__.data(), D);
       
-      current_statement__ = 50;
-      sigma_N = context__.vals_r("sigma_N")[(1 - 1)];
-      current_statement__ = 50;
-      check_greater_or_equal(function__, "sigma_N", sigma_N, 0);
-      current_statement__ = 51;
-      context__.validate_dims("data initialization","sigma_C","double",
-           std::vector<size_t>{});
-      sigma_C = std::numeric_limits<double>::quiet_NaN();
       
+      {
+        std::vector<local_scalar_t__> sigma_N_flat__;
+        current_statement__ = 51;
+        sigma_N_flat__ = context__.vals_r("sigma_N");
+        current_statement__ = 51;
+        pos__ = 1;
+        current_statement__ = 51;
+        for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
+          current_statement__ = 51;
+          assign(sigma_N, sigma_N_flat__[(pos__ - 1)],
+            "assigning variable sigma_N", index_uni(sym1__));
+          current_statement__ = 51;
+          pos__ = (pos__ + 1);
+        }
+      }
       current_statement__ = 51;
-      sigma_C = context__.vals_r("sigma_C")[(1 - 1)];
-      current_statement__ = 51;
-      check_greater_or_equal(function__, "sigma_C", sigma_C, 0);
+      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
+        current_statement__ = 51;
+        check_greater_or_equal(function__, "sigma_N[sym1__]",
+                               sigma_N[(sym1__ - 1)], 0);
+      }
       current_statement__ = 52;
-      validate_non_negative_index("epsilon", "D", D);
+      validate_non_negative_index("sigma_C", "D", D);
       current_statement__ = 53;
-      validate_non_negative_index("gamma", "D", D);
+      context__.validate_dims("data initialization","sigma_C","double",
+           std::vector<size_t>{static_cast<size_t>(D)});
+      sigma_C__ = Eigen::Matrix<double, -1, 1>(D);
+      new (&sigma_C) Eigen::Map<Eigen::Matrix<double, -1, 1>>(sigma_C__.data(), D);
+      
+      
+      {
+        std::vector<local_scalar_t__> sigma_C_flat__;
+        current_statement__ = 53;
+        sigma_C_flat__ = context__.vals_r("sigma_C");
+        current_statement__ = 53;
+        pos__ = 1;
+        current_statement__ = 53;
+        for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
+          current_statement__ = 53;
+          assign(sigma_C, sigma_C_flat__[(pos__ - 1)],
+            "assigning variable sigma_C", index_uni(sym1__));
+          current_statement__ = 53;
+          pos__ = (pos__ + 1);
+        }
+      }
+      current_statement__ = 53;
+      for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
+        current_statement__ = 53;
+        check_greater_or_equal(function__, "sigma_C[sym1__]",
+                               sigma_C[(sym1__ - 1)], 0);
+      }
       current_statement__ = 54;
-      validate_non_negative_index("kappa", "D", D);
+      validate_non_negative_index("epsilon", "D", D);
       current_statement__ = 55;
-      validate_non_negative_index("alpha", "D", D);
+      validate_non_negative_index("gamma", "D", D);
       current_statement__ = 56;
+      validate_non_negative_index("kappa", "D", D);
+      current_statement__ = 57;
+      validate_non_negative_index("alpha", "D", D);
+      current_statement__ = 58;
       validate_non_negative_index("beta", "D", D);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
@@ -379,7 +425,7 @@ class lhm_model final : public model_base_crtp<lhm_model> {
           stan::math::sqrt(
             add(add(square(gamma), square(sigma_C)),
               square(
-                multiply(
+                elt_multiply(
                   to_vector(
                     rvalue(kappa, "kappa", index_omni(), index_uni(2))),
                   sigma_N)))), "assigning variable sigma");

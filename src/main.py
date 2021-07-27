@@ -13,11 +13,11 @@ GENERATE_TEST_DATA  = False
 PERFORM_DROPOUT_FIT = False
 PERFORM_FULL_FIT    = False
 SHOW_RESULTS        = True
-TEST_RUN_NAME       = '80_days_1000_M'
+TEST_RUN_NAME       = '20_days_100_M'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 10
+NUM_DAYS        = 20
 NUM_OBS         = 100
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
@@ -56,10 +56,11 @@ if PERFORM_FULL_FIT:
 
 if SHOW_RESULTS:
     fitted_model = sr.FittedModel(TEST_RUN_NAME)
+    fitted_model.calculate_fractional_metric()
     p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.dropout_scatterplot(DATE, TEST_RUN_NAME)
-    # p.reduced_chi_squared(TEST_RUN_NAME)
+    p.observations_scatterplot(DATE, TEST_RUN_NAME, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.dropout_scatterplot(DATE, TEST_RUN_NAME)
+    p.reduced_chi_squared(TEST_RUN_NAME)
 

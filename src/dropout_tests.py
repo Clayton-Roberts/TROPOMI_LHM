@@ -90,15 +90,26 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     obs_no2 = list(df.obs_NO2)
     obs_ch4 = list(df.obs_CH4)
-    day_id  = list(df.Day_ID)
-    D       = int(np.max(day_id))
-    M       = len(obs_no2)
+    day_id = list(df.Day_ID)
+    D = int(np.max(day_id))
+    M = len(obs_no2)
 
     group_sizes = []
     for i in range(D):
         day = i + 1
         size = len(df[df.Day_ID == day])
         group_sizes.append(size)
+
+    avg_sigma_N = []
+    avg_sigma_C = []
+
+    for i in range(D):
+        day = i + 1
+        mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N), 2)
+        mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C), 2)
+
+        avg_sigma_N.append(mean_sigma_N)
+        avg_sigma_C.append(mean_sigma_C)
 
     data = {}
     data['M'] = M
@@ -107,8 +118,8 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs'] = obs_no2
     data['CH4_obs'] = obs_ch4
-    data['sigma_N'] = 7.0
-    data['sigma_C'] = 2.0
+    data['sigma_N'] = avg_sigma_N
+    data['sigma_C'] = avg_sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/data.json', 'w') as outfile:
         json.dump(data, outfile)

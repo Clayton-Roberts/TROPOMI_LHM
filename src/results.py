@@ -4,11 +4,46 @@ import numpy as np
 from tabulate import tabulate
 import random
 import csv
+from tqdm import tqdm
 from src import constants as ct
 
 class FittedModel:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
     needs to be pointed towards the correct subdirectory in the /outputs folder.'''
+
+    def calculate_fractional_metric(self):
+        '''
+        This function goes through all the dropped-out pixels for this model run and calculates which fraction of those
+        are within two standard deviations of what the model predicts for those pixels.
+        '''
+
+        # Open the dropout_dataset.csv file
+        dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout/dropout_dataset.csv')
+
+        total_predictions     = 0
+        well_predicted_pixels = 0
+
+        for day_id in tqdm(set(dropout_df.Day_ID)):
+
+            dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+
+            obs_CH4 = list(dropout_day_df.obs_CH4)
+            obs_NO2 = list(dropout_day_df.obs_NO2)
+            sigma_N = list(dropout_day_df.sigma_N)
+
+            for i in range(len(obs_NO2)):
+                prediction, std_deviation = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+
+                if np.abs(prediction - obs_CH4[i]) < 2.*std_deviation:
+                    well_predicted_pixels += 1
+
+                total_predictions += 1
+
+        percentage = (well_predicted_pixels / total_predictions) * 100
+
+        print("There were", total_predictions, "total predictions made.")
+        print("{:.2f}".format(percentage) + "% of pixel values are within the 95% credible"
+                                            " interval of their corresponding predicted value.")
 
     def write_reduced_chi_squared_csv(self):
         '''
