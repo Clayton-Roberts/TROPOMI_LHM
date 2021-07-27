@@ -40,7 +40,7 @@ model{
     vector[M] CH4_hat = to_vector(kappa[day_id, 1]) + (to_vector(kappa[day_id, 2]) .* NO2_obs);
     vector[M] sigma   = sqrt(square(gamma[day_id]) + square(sigma_C) + square(to_vector(kappa[day_id, 2]) .* sigma_N));
 
-    CH4_obs ~ normal(CH4_hat, sigma)
+    CH4_obs ~ normal(CH4_hat, sigma);
 }
 generated quantities {
     vector[D]    alpha;

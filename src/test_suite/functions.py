@@ -173,19 +173,16 @@ def prepare_dataset_for_cmdstanpy(run_name):
         size = len(df[df.Day_ID == day])
         group_sizes.append(size)
 
-    # avg_sigma_N = []
-    # avg_sigma_C = []
-    #
-    # for i in range(D):
-    #     day = i+1
-    #     mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N),2)
-    #     mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C),2)
-    #
-    #     avg_sigma_N.append(mean_sigma_N)
-    #     avg_sigma_C.append(mean_sigma_C)
+    avg_sigma_N = []
+    avg_sigma_C = []
 
-    sigma_N = list(df.sigma_N)
-    sigma_C = list(df.sigma_C)
+    for i in range(D):
+        day = i+1
+        mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N),2)
+        mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C),2)
+
+        avg_sigma_N.append(mean_sigma_N)
+        avg_sigma_C.append(mean_sigma_C)
 
     data = {}
     data['M']           = M
@@ -194,8 +191,8 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs']     = obs_no2
     data['CH4_obs']     = obs_ch4
-    data['sigma_N']     = sigma_N#avg_sigma_N
-    data['sigma_C']     = sigma_C#avg_sigma_C
+    data['sigma_N']     = avg_sigma_N
+    data['sigma_C']     = avg_sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
