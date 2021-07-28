@@ -4,18 +4,16 @@ from src import results as sr
 from src import dropout_tests as dt
 from src import plotting as p
 
-import tracemalloc
-
 # Important: all things will be run from here, file paths defined as such.
 
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA  = False
-PERFORM_DROPOUT_FIT = False
-PERFORM_FULL_FIT    = False
-SHOW_RESULTS        = True
-TEST_RUN_NAME       = '20_days_100_M'
+GENERATE_TEST_DATA   = False
+PERFORM_DROPOUT_FIT  = False
+PERFORM_FULL_FIT     = False
+SHOW_RESULTS         = True
+TEST_RUN_NAME        = '20_days_100_M'
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
@@ -27,7 +25,8 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'rho'
+SHOW_MLE_ESTIMATE = True
+PARAM             = 'beta'
 DATE              = 10000007
 ##=======================================================
 
@@ -45,24 +44,26 @@ if PERFORM_DROPOUT_FIT:
     dt.make_directories(TEST_RUN_NAME)
     dt.create_csvs(TEST_RUN_NAME)
     dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
-    fm.fit_model('data/' + TEST_RUN_NAME + '/dropout/data.json',
+    fm.nuts('data/' + TEST_RUN_NAME + '/dropout/data.json',
                  'models/lhm.stan',
-                 TEST_RUN_NAME + '/dropout')
-    fitted_model = sr.FittedModel(TEST_RUN_NAME + '/dropout')
-    fitted_model.write_reduced_chi_squared_csv()
+            TEST_RUN_NAME + '/dropout')
+    results = sr.FittedResults(TEST_RUN_NAME + '/dropout')
+    results.write_reduced_chi_squared_csv()
 
 if PERFORM_FULL_FIT:
-    fm.fit_model('data/' + TEST_RUN_NAME + '/data.json',
+    fm.nuts('data/' + TEST_RUN_NAME + '/data.json',
                  'models/lhm.stan',
-                 TEST_RUN_NAME)
+            TEST_RUN_NAME)
 
 if SHOW_RESULTS:
-    fitted_model = sr.FittedModel(TEST_RUN_NAME)
-    fitted_model.calculate_fractional_metric()
-    p.trace(fitted_model, PARAM, date=DATE, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    results = sr.FittedResults(TEST_RUN_NAME)
+    results.calculate_fractional_metric()
+    p.trace(results, PARAM, date=DATE,
+            compare_to_ground_truth=SHOW_GROUND_TRUTH,
+            compare_to_mle=SHOW_MLE_ESTIMATE)
     p.observations_scatterplot(DATE, TEST_RUN_NAME)
-    p.regression_scatterplot(DATE, fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.dropout_scatterplot(DATE, TEST_RUN_NAME)
     p.reduced_chi_squared(TEST_RUN_NAME)
 

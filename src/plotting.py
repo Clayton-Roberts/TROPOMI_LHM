@@ -10,7 +10,7 @@ from src import constants as ct
 # Some global parameters for all plots.
 mpl.rcParams['font.family']    = 'Avenir'
 
-def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
+def trace(fitted_model, parameter, date=None, compare_to_mle=False, compare_to_ground_truth=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
 
     :param fitted_model: The object contained the results from a fitted model.
@@ -20,6 +20,8 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     :type parameter: string
     :param date: Date you want to see parameter of interest for, in format YYYYMMDD. Only needed for parameter =
         'alpha', 'beta' or 'gamma'.
+    :param compare_to_mle: A boolean to include a comparison to the MLE optimisation results for this parameter.
+    :type compare_to_mle: Boolean
     :param compare_to_ground_truth: A boolean to include a comparison to the ground truth value for this parameter
         if this model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
     :type compare_to_ground_truth: Boolean
@@ -38,6 +40,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         else:
             ground_truth = hyperparameter_truths_df[parameter][0]
 
+
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
     day_id = {}
 
@@ -52,6 +55,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         model_key = parameter + '.' + str(day_id[date])
     else:
         model_key = parameter
+
+    if compare_to_mle:
+        mle_value = fitted_model.mle_values[model_key]
 
     # Greek letters for labels
     parameter_symbol = {
@@ -93,7 +99,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.axhline(fitted_model.mean_values[model_key], color='r', lw=2, linestyle='--')
     if compare_to_ground_truth:
-        plt.axhline(ground_truth, color='blue', lw=2, linestyle='--',)
+        plt.axhline(ground_truth, color='black', lw=2, linestyle='--',)
+    if compare_to_mle:
+        plt.axhline(mle_value, color='blue', lw=2, linestyle='--',)
     plt.axhline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2)
     plt.axhline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
     plt.title(title)
@@ -106,7 +114,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.ylabel('Density')
     plt.axvline(fitted_model.mean_values[model_key], color='r', lw=2, linestyle='--', label='Mean value')
     if compare_to_ground_truth:
-        plt.axvline(ground_truth, color='blue', lw=2, linestyle='--', label='True value')
+        plt.axvline(ground_truth, color='black', lw=2, linestyle='--', label='True value')
+    if compare_to_mle:
+        plt.axvline(mle_value, color='blue', lw=2, linestyle='--', label='MLE')
     plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'95% CI')
     plt.axvline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
 
