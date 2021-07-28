@@ -7,7 +7,7 @@ import csv
 from tqdm import tqdm
 from src import constants as ct
 
-class FittedModel:
+class FittedResults:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
     needs to be pointed towards the correct subdirectory in the /outputs folder.'''
 
@@ -176,20 +176,30 @@ class FittedModel:
         model     = output_file_list[0].split('-')[0]
 
         # Read in the chains from the .csv files
-        chain_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-1.csv', comment='#')
-        chain_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-2.csv', comment='#')
-        chain_3 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
-        chain_4 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
+        nuts_chain_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-1.csv', comment='#')
+        nuts_chain_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-2.csv', comment='#')
+        nuts_chain_3 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
+        nuts_chain_4 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
+
+        mle_files     = os.listdir(ct.FILE_PREFIX + '/outputs/' + run_name + '/optimisation')
+        mle_date_time = mle_files[0].split('-')[1]
+
+        # Read in the single chain from the MLE optimisation
+        mle_chain = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/optimisation/' + model + '-' + mle_date_time + '-1.csv', comment='#')
 
         # Make a list of all model parameters
-        parameter_list = chain_1.columns
+        parameter_list = nuts_chain_1.columns
 
         # Construct the full trace for each model parameter
         full_trace = {}
+        mle_values = {}
 
         for parameter in parameter_list:
-            full_trace[parameter] = np.concatenate((chain_1[parameter].array,chain_2[parameter].array,
-                                                   chain_3[parameter].array,chain_4[parameter].array))
+            full_trace[parameter] = np.concatenate((nuts_chain_1[parameter].array,nuts_chain_2[parameter].array,
+                                                   nuts_chain_3[parameter].array,nuts_chain_4[parameter].array))
+
+        for parameter in mle_chain.columns:
+            mle_values[parameter] = mle_chain[parameter][0]
 
         # Calculate mean value, standard deviation and 95% CI for all model parameter values
         credible_intervals  = {}
@@ -207,11 +217,12 @@ class FittedModel:
         self.credible_intervals  = credible_intervals
         self.mean_values         = mean_values
         self.standard_deviations = standard_deviations
-        self.chain_1             = chain_1
-        self.chain_2             = chain_2
-        self.chain_3             = chain_3
-        self.chain_4             = chain_4
+        self.chain_1             = nuts_chain_1
+        self.chain_2             = nuts_chain_2
+        self.chain_3             = nuts_chain_3
+        self.chain_4             = nuts_chain_4
         self.run_name            = run_name
+        self.mle_values          = mle_values
 
 
 
