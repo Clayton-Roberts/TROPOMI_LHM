@@ -4,12 +4,75 @@ import numpy as np
 from tabulate import tabulate
 import random
 import csv
+from scipy.stats import norm
 from tqdm import tqdm
 from src import constants as ct
 
 class FittedResults:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
     needs to be pointed towards the correct subdirectory in the /outputs folder.'''
+
+    def elpd_i(self):
+        '''This function calculates the expected log pointwise predictive density, per observation. Doing this as a
+        function so that we don't have to wait for it to be done every single time a fitted model is loaded into this
+        class. To get the actual computed elpd, you need to sum every element in the returned list. Returning as a list
+        to aid in model comparison when we have to calculate the standard error of the difference between the elpd of two
+        different models.'''
+
+        dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name.split('/')[0] + '/dataset.csv')
+
+        elpd_i = []
+
+        # Total number of observations
+        M = len(dataset_df)
+        D = max(set(dataset_df.Day_ID))
+
+        # Number of random draws to use, 4000 is the max. Might need to be smaller if this is taking a while.
+        S = 1000
+
+        for i in tqdm(range(M)):
+            day_id     = dataset_df.Day_ID[i]
+
+            obs_no2    = dataset_df.obs_NO2[i]
+            obs_ch4    = dataset_df.obs_CH4[i]
+            sigma_N    = dataset_df.sigma_N[i]
+            sigma_C    = dataset_df.sigma_C[i]
+
+            alphas     = self.full_trace['alpha.' + str(day_id)]
+            betas      = self.full_trace['beta.' + str(day_id)]
+            gammas     = self.full_trace['gamma.' + str(day_id)]
+
+            num_draws  = len(alphas)
+
+            ith_likelihood_s = []
+            a                = []
+
+            for s in range(S):
+                index = random.randint(0, num_draws-1)
+
+                # Choose a set of model parameters from the full trace (all from the same simulation)
+                alpha = alphas[index]
+                beta  = betas[index]
+                gamma = gammas[index]
+
+                loc   = alpha + beta * obs_no2
+                scale = np.sqrt(gamma**2 + sigma_C**2 + (beta**2 * sigma_N**2))
+
+                likelihood_s = norm.pdf(obs_ch4, loc=loc, scale=scale)
+
+                ith_likelihood_s.append(likelihood_s)
+
+                a.append(np.log(likelihood_s))
+
+            lpd_i = np.log((1./S) * sum(ith_likelihood_s))
+
+            a_bar = np.mean(a)
+
+            p_waic_i = (1./(S-1.)) * sum((a_s - a_bar)**2 for a_s in a)
+
+            elpd_i.append(lpd_i - p_waic_i)
+
+        return elpd_i
 
     def calculate_fractional_metric(self):
         '''
@@ -120,24 +183,22 @@ class FittedResults:
         betas  = self.full_trace['beta.' + str(day_id)]
         gammas = self.full_trace['gamma.' + str(day_id)]
 
-        num_sims = len(alphas)
+        num_draws = len(alphas)
 
         predictions = []
 
         for i in range(1000):
 
-            index    = random.randint(0, num_sims-1)
-
-            # Randomly choose a "true" value of NO2 from the given observation and uncertainty.
-            true_no2 = np.random.normal(obs_no2, sigma_N)
+            index    = random.randint(0, num_draws-1)
 
             # Choose a set of model parameters from the full trace (all from the same simulation)
             alpha = alphas[index]
             beta  = betas[index]
             gamma = gammas[index]
 
-            # Predict the "true" value of CH4 given the true value of NO2 and the model parameters.
-            predictions.append(np.random.normal(alpha + beta * true_no2, gamma))
+            # Predict the "true" value of CH4 given the true value of NO2 and the model parameters, i.e., don't
+            # include anything to do with sigma_C in the variance term.
+            predictions.append(np.random.normal(alpha + beta * obs_no2, np.sqrt(gamma**2 + (beta**2 * sigma_N**2))))
 
         mean_observation = np.mean(predictions)
         standard_deviation = np.std(predictions)
@@ -181,25 +242,15 @@ class FittedResults:
         nuts_chain_3 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
         nuts_chain_4 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
 
-        mle_files     = os.listdir(ct.FILE_PREFIX + '/outputs/' + run_name + '/optimisation')
-        mle_date_time = mle_files[0].split('-')[1]
-
-        # Read in the single chain from the MLE optimisation
-        mle_chain = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/optimisation/' + model + '-' + mle_date_time + '-1.csv', comment='#')
-
         # Make a list of all model parameters
         parameter_list = nuts_chain_1.columns
 
         # Construct the full trace for each model parameter
         full_trace = {}
-        mle_values = {}
 
         for parameter in parameter_list:
             full_trace[parameter] = np.concatenate((nuts_chain_1[parameter].array,nuts_chain_2[parameter].array,
                                                    nuts_chain_3[parameter].array,nuts_chain_4[parameter].array))
-
-        for parameter in mle_chain.columns:
-            mle_values[parameter] = mle_chain[parameter][0]
 
         # Calculate mean value, standard deviation and 95% CI for all model parameter values
         credible_intervals  = {}
@@ -222,7 +273,5 @@ class FittedResults:
         self.chain_3             = nuts_chain_3
         self.chain_4             = nuts_chain_4
         self.run_name            = run_name
-        self.mle_values          = mle_values
-
 
 
