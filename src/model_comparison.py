@@ -13,11 +13,12 @@ def compare_models(individual_model, mean_error_model):
     print("Calculating for individual error per observation model...")
     individual_model_elpd_i = individual_model.elpd_i()
     individual_model_elpd   = sum(individual_model_elpd_i)
-    print(round(individual_model_elpd, 2))
+    print("Individual error model estimated elpd: ", round(individual_model_elpd, 2))
+
     print("Calculating for daily mean error model...")
     mean_error_model_elpd_i = mean_error_model.elpd_i()
     mean_error_model_elpd   = sum(mean_error_model_elpd_i)
-    print(round(mean_error_model_elpd, 2))
+    print("Daily mean error model estimated elpd: ", round(mean_error_model_elpd, 2))
 
     M = len(mean_error_model_elpd_i)
 
@@ -29,7 +30,7 @@ def compare_models(individual_model, mean_error_model):
                       sum(((elpd_i_A - elpd_i_B) - mean_diff)**2
                           for elpd_i_A, elpd_i_B in zip(mean_error_model_elpd_i, individual_model_elpd_i)))
 
-    print('ELPD difference: {:.2f}'.format(diff))
-    print('SE of ELPD difference: {:.2f}'.format(se_diff))
+    print('Difference in elpd: {:.2f}'.format(diff))
+    print('Standard error of difference: {:.2f}'.format(se_diff))
 
 

@@ -13,14 +13,14 @@ from src import model_comparison as mc
 GENERATE_TEST_DATA   = False
 PERFORM_DROPOUT_FIT  = False
 PERFORM_FULL_FIT     = False
-COMPARE_MODELS       = True
-SHOW_RESULTS         = False
+COMPARE_MODELS       = False
+SHOW_RESULTS         = True
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
 NUM_DAYS        = 20
 NUM_OBS         = 100
-MODEL           = 'individual_error'
+MODEL           = 'daily_mean_error'
 TEST_RUN_NAME   = str(NUM_DAYS) + '_days_' \
                   + str(NUM_OBS) + '_M_' \
                   + MODEL
@@ -64,9 +64,6 @@ if COMPARE_MODELS:
     daily_mean_error_fitted_model = sr.FittedResults(str(NUM_DAYS) + '_days_' + str(NUM_OBS) + '_M_daily_mean_error')
 
     mc.compare_models(individual_error_fitted_model, daily_mean_error_fitted_model)
-
-
-
 
 if SHOW_RESULTS:
     results = sr.FittedResults(TEST_RUN_NAME)

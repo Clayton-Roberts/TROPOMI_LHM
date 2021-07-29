@@ -20,20 +20,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/model_comparison.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dropout_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/dropout_tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lhm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lhm.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lhm.stan" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/daily_mean_error.stan" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lhm_old" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lhm_old.hpp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/models/lhm_old.stan" beforeDir="false" afterPath="$PROJECT_DIR$/src/models/individual_error.stan" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model_comparison.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_comparison.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/plotting.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/functions.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/test_suite/functions.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -59,7 +51,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/data/20_days_100_M_individual_error" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/test_suite/ground_truths/20_days_100_M_daily_mean_error" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -68,11 +60,11 @@
       <recent name="$PROJECT_DIR$/testing" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/test_suite/ground_truths/20_days_100_M_daily_mean_error" />
+      <recent name="$PROJECT_DIR$/src/data/20_days_100_M_daily_mean_error" />
       <recent name="$PROJECT_DIR$/src/data/20_days_100_M_individual_error" />
       <recent name="$PROJECT_DIR$/src/test_suite/ground_truths/20_days_100_M_individual_error" />
       <recent name="$PROJECT_DIR$/src/test_suite/ground_truths" />
-      <recent name="$PROJECT_DIR$/src/outputs" />
-      <recent name="$PROJECT_DIR$/src/test_suite/ground_truths/days_15_M_100_vectorised" />
     </key>
   </component>
   <component name="RunManager" selected="Python.main">
@@ -160,33 +152,33 @@
     </state>
     <state x="409" y="321" key="#xdebugger.evaluate/0.0.1440.900@0.0.1440.900" timestamp="1626365279313" />
     <state x="396" y="501" width="1220" height="579" key="#xdebugger.evaluate/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627503677694" />
-    <state width="1899" height="284" key="GridCell.Tab.0.bottom" timestamp="1627503722331">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1419" height="259" key="GridCell.Tab.0.bottom" timestamp="1627554402224">
+      <screen x="250" y="1080" width="1440" height="900" />
     </state>
     <state width="1419" height="319" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1627248298088" />
     <state width="1899" height="284" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627503722331" />
-    <state width="1419" height="357" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1626869653809" />
+    <state width="1419" height="259" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627554402224" />
     <state width="1899" height="373" key="GridCell.Tab.0.bottom/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1626702859145" />
-    <state width="1899" height="284" key="GridCell.Tab.0.center" timestamp="1627503722330">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1419" height="259" key="GridCell.Tab.0.center" timestamp="1627554402222">
+      <screen x="250" y="1080" width="1440" height="900" />
     </state>
     <state width="1419" height="319" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1627248298087" />
     <state width="1899" height="284" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627503722330" />
-    <state width="1419" height="357" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1626869653807" />
+    <state width="1419" height="259" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627554402222" />
     <state width="1899" height="373" key="GridCell.Tab.0.center/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1626702859144" />
-    <state width="1899" height="284" key="GridCell.Tab.0.left" timestamp="1627503722329">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1419" height="259" key="GridCell.Tab.0.left" timestamp="1627554402221">
+      <screen x="250" y="1080" width="1440" height="900" />
     </state>
     <state width="1419" height="319" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1627248298086" />
     <state width="1899" height="284" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627503722329" />
-    <state width="1419" height="357" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1626869653806" />
+    <state width="1419" height="259" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627554402221" />
     <state width="1899" height="373" key="GridCell.Tab.0.left/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1626702859142" />
-    <state width="1899" height="284" key="GridCell.Tab.0.right" timestamp="1627503722330">
-      <screen x="0" y="0" width="1920" height="1080" />
+    <state width="1419" height="259" key="GridCell.Tab.0.right" timestamp="1627554402223">
+      <screen x="250" y="1080" width="1440" height="900" />
     </state>
     <state width="1419" height="319" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1627248298087" />
     <state width="1899" height="284" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627503722330" />
-    <state width="1419" height="357" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1626869653808" />
+    <state width="1419" height="259" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627554402223" />
     <state width="1899" height="373" key="GridCell.Tab.0.right/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1626702859145" />
     <state width="1899" height="284" key="GridCell.Tab.1.bottom" timestamp="1627503722333">
       <screen x="0" y="0" width="1920" height="1080" />
@@ -250,7 +242,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/model_comparison.py</url>
-          <line>21</line>
+          <line>22</line>
           <option name="timeStamp" value="67" />
         </line-breakpoint>
       </breakpoints>

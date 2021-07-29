@@ -25,7 +25,6 @@ class FittedResults:
 
         # Total number of observations
         M = len(dataset_df)
-        D = max(set(dataset_df.Day_ID))
 
         # Number of random draws to use, 4000 is the max. Might need to be smaller if this is taking a while.
         S = 1000

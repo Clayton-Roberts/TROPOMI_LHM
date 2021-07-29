@@ -398,8 +398,7 @@ def reduced_chi_squared(model_run):
 
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
-    sns.displot(reduced_chi_square_df.Reduced_chi_squared,
-                bins=[0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25], kde=True)
+    sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
     plt.title('Reduced chi-squared values by day')
     plt.tight_layout()

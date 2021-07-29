@@ -3,4 +3,3 @@ src/outputs/*
 src/test_suite/ground_truths/*
 src/data/*
 src/figures/*
-src/observations/*
