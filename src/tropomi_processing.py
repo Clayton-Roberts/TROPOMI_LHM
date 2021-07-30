@@ -1,6 +1,11 @@
 from src import constants as ct
 import netCDF4 as nc4
 import numpy as np
+from scipy.interpolate import griddata
+from scipy import stats
+import csv
+import os
+from tqdm import tqdm
 
 def unpack_no2(filename):
     '''This function opens a "raw" TROPOMI observation file of :math:`\mathrm{NO}_2` and returns arrays of quantities
@@ -130,7 +135,7 @@ def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitude
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes
 
-def create_dataset(filename):
+def get_colocated_measurements(filename):
     #TODO Make docstring, and eventually have arguments that control the date range to make the dataset for.
     #   For now no arguments as I build the function.
 
@@ -146,9 +151,93 @@ def create_dataset(filename):
     ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes, ch4_qa_values \
         = unpack_ch4(filename)
 
-    # Unpack the TROPOMI CH4 data for this day.
+    # Reduce the CH4 data down to what is contained within the study area
     ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes \
         = reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes, ch4_qa_values)
 
-    print(2)
+    # Interpolate the reduced CH4 data at the locations of reduced NO2 data:
+    interpolated_ch4_pixel_values = griddata((ch4_pixel_centre_longitudes,
+                                              ch4_pixel_centre_latitudes),
+                                              ch4_pixel_values,
+                                              (no2_pixel_centre_longitudes, no2_pixel_centre_latitudes),
+                                              method='linear')
 
+    # Interpolate the reduced CH4 data precisions at the locations of reduced NO2 data:
+    interpolated_ch4_pixel_precisions = griddata((ch4_pixel_centre_longitudes,
+                                              ch4_pixel_centre_latitudes),
+                                              ch4_pixel_precisions,
+                                              (no2_pixel_centre_longitudes, no2_pixel_centre_latitudes),
+                                              method='linear')
+
+    # Define the lists that will hold our observations and their respective errors
+    obs_NO2   = []
+    sigma_N   = []
+    obs_CH4   = []
+    sigma_C   = []
+    latitude  = []
+    longitude = []
+
+    # Now we need to fill the lists.
+    # Only need to iterate over the reduced data, which is one-dimensional.
+    for j in range(len(no2_pixel_values)):
+        # TODO Sphinx autodoc does not like the below line for some reason
+        if (no2_pixel_values[j] < 1e30) and (interpolated_ch4_pixel_values[j] < 1e30):
+            # Append the CH4 and NO2 pixel values to the relevant lists.
+            obs_NO2.append(no2_pixel_values[j] * 1e6)  # Convert to micro mol / m^2
+            obs_CH4.append(interpolated_ch4_pixel_values[j])
+            # Append the CH4 and NO2 precisions to the relevant lists.
+            sigma_N.append(no2_pixel_precisions[j] * 1e6)  # Convert to micro mol / m^2
+            sigma_C.append(interpolated_ch4_pixel_precisions[j])
+            # Append the latitudes and longitudes to the relevant lists.
+            latitude.append(no2_pixel_centre_latitudes[j])
+            longitude.append(no2_pixel_centre_longitudes[j])
+
+    return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
+
+def create_dataset(run_name):
+    #TODO Make docstring, and eventually have arguments that control the date range to make the dataset for.
+    #For now no arguments as I build the function.
+
+    start_date, end_date, model = run_name.split('-')
+
+    total_days     = 0
+    data_rich_days = 0
+
+    day_id = 0
+
+    with open(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', 'w') as csvfile, \
+        open(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', 'w') as summaryfile:
+        csvwriter = csv.writer(csvfile, delimiter=',')
+        csvwriter.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+        summarywriter = csv.writer(summaryfile, delimiter=',')
+        summarywriter.writerow(('Day_ID', 'Date', 'M', 'R'))
+
+        for file in tqdm(os.listdir(ct.FILE_PREFIX + '/observations/NO2')):
+            date = file[:8]
+
+            # If date in correct range for this run...
+            if int(start_date) <= int(date) <= int(end_date):
+
+                total_days += 1
+
+                obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(file)
+
+                # If there are more than 100 co-located measurements on this day ...
+                if len(obs_NO2) >= 100:
+
+                    r, p_value = stats.pearsonr(obs_NO2, obs_CH4)
+
+                    # if R >= 0.4 ...
+                    if r >= 0.4:
+
+                        # Write to the dataset.
+                        day_id         += 1
+                        data_rich_days += 1
+
+                        summarywriter.writerow((day_id, date, len(obs_NO2), r))
+
+                        for i in range(len(obs_NO2)):
+                            csvwriter.writerow((day_id, date, round(obs_NO2[i], 2), round(obs_CH4[i], 2),
+                                                round(sigma_N[i], 2), round(sigma_C[i], 2),
+                                            round(latitude[i], 2), round(longitude[i], 2)))
