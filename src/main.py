@@ -4,17 +4,19 @@ from src import results as sr
 from src import dropout_tests as dt
 from src import plotting as p
 from src import model_comparison as mc
+from src import tropomi_processing as tp
 
 # Important: all things will be run from here, file paths defined as such.
 
 #=======================================================
 #    --- Flags for testing suite ---
 #-----------------------------------
-GENERATE_TEST_DATA   = False
-PERFORM_DROPOUT_FIT  = False
-PERFORM_FULL_FIT     = False
-COMPARE_MODELS       = False
-SHOW_RESULTS         = True
+GENERATE_TEST_DATA    = False
+PERFORM_DROPOUT_FIT   = False
+PERFORM_FULL_FIT      = False
+COMPARE_MODELS        = False
+SHOW_RESULTS          = False
+PROCESS_TROPOMI_FILES = True
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
@@ -77,4 +79,7 @@ if SHOW_RESULTS:
     p.dropout_scatterplot(DATE, TEST_RUN_NAME)
     p.reduced_chi_squared(TEST_RUN_NAME)
     p.residuals(TEST_RUN_NAME, '20_days_100_M_individual_error')
+
+if PROCESS_TROPOMI_FILES:
+    tp.create_dataset('20181201T195518.nc')
 
