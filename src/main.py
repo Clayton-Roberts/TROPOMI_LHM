@@ -4,34 +4,47 @@ from src import results as sr
 from src import dropout_tests as dt
 from src import plotting as p
 from src import model_comparison as mc
+from src import tropomi_processing as tp
 
 # Important: all things will be run from here, file paths defined as such.
 
 #=======================================================
-#    --- Flags for testing suite ---
-#-----------------------------------
-GENERATE_TEST_DATA   = False
-PERFORM_DROPOUT_FIT  = False
-PERFORM_FULL_FIT     = False
-COMPARE_MODELS       = False
-SHOW_RESULTS         = True
+#    --- Flags for testing analysis ---
+#----------------------------------------
+GENERATE_TEST_DATA    = False
+PERFORM_DROPOUT_FIT   = False
+PERFORM_FULL_FIT      = False
+COMPARE_MODELS        = False
+SHOW_TEST_RESULTS     = False
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
 NUM_DAYS        = 20
 NUM_OBS         = 100
-MODEL           = 'daily_mean_error'
+TEST_MODEL      = 'daily_mean_error'
 TEST_RUN_NAME   = str(NUM_DAYS) + '_days_' \
                   + str(NUM_OBS) + '_M_' \
-                  + MODEL
+                  + TEST_MODEL
 # You only need to install CmdStan once!
 INSTALL_CMDSTAN = False
+#-----------------------------------
+#   --- Flags for real analysis ---
+#-----------------------------------
+PROCESS_TROPOMI_FILES = False
+SHOW_REAL_RESULTS     = True
+#-----------------------------------
+#   --- Flags for real runs ---
+#-----------------------------------
+START_DATE = '20190101'
+END_DATE   = '20190131'
+MODEL      = 'daily_mean_error'
+RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
 PARAM             = 'beta'
-DATE              = 10000007
+DATE              = 20190131
 ##=======================================================
 
 if INSTALL_CMDSTAN:
@@ -49,14 +62,15 @@ if PERFORM_DROPOUT_FIT:
     dt.create_csvs(TEST_RUN_NAME)
     dt.prepare_dataset_for_cmdstanpy(TEST_RUN_NAME)
     fm.nuts('data/' + TEST_RUN_NAME + '/dropout/data.json',
-            'models/' + MODEL + '.stan',
+            'models/' + TEST_MODEL + '.stan',
             TEST_RUN_NAME + '/dropout')
     results = sr.FittedResults(TEST_RUN_NAME + '/dropout')
     results.write_reduced_chi_squared_csv()
+    results.write_residuals_csv()
 
 if PERFORM_FULL_FIT:
     fm.nuts('data/' + TEST_RUN_NAME + '/data.json',
-            'models/' + MODEL + '.stan',
+            'models/' + TEST_MODEL + '.stan',
             TEST_RUN_NAME)
 
 if COMPARE_MODELS:
@@ -65,7 +79,7 @@ if COMPARE_MODELS:
 
     mc.compare_models(individual_error_fitted_model, daily_mean_error_fitted_model)
 
-if SHOW_RESULTS:
+if SHOW_TEST_RESULTS:
     results = sr.FittedResults(TEST_RUN_NAME)
     results.calculate_fractional_metric()
     p.trace(results, PARAM, date=DATE,
@@ -75,4 +89,18 @@ if SHOW_RESULTS:
     p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.dropout_scatterplot(DATE, TEST_RUN_NAME)
     p.reduced_chi_squared(TEST_RUN_NAME)
+    p.residuals(TEST_RUN_NAME, '20_days_100_M_individual_error')
+
+if PROCESS_TROPOMI_FILES:
+    tp.make_directories(RUN_NAME)
+    tp.create_dataset(RUN_NAME)
+    tp.prepare_dataset_for_cmdstanpy(RUN_NAME)
+
+    dt.make_directories(RUN_NAME)
+    dt.create_csvs(RUN_NAME)
+    dt.prepare_dataset_for_cmdstanpy(RUN_NAME)
+
+if SHOW_REAL_RESULTS:
+    p.observations_scatterplot(DATE, RUN_NAME)
+    p.dropout_scatterplot(DATE, RUN_NAME)
 
