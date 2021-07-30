@@ -53,6 +53,7 @@ if PERFORM_DROPOUT_FIT:
             TEST_RUN_NAME + '/dropout')
     results = sr.FittedResults(TEST_RUN_NAME + '/dropout')
     results.write_reduced_chi_squared_csv()
+    results.write_residuals_csv()
 
 if PERFORM_FULL_FIT:
     fm.nuts('data/' + TEST_RUN_NAME + '/data.json',
@@ -75,4 +76,5 @@ if SHOW_RESULTS:
     p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.dropout_scatterplot(DATE, TEST_RUN_NAME)
     p.reduced_chi_squared(TEST_RUN_NAME)
+    p.residuals(TEST_RUN_NAME, '20_days_100_M_individual_error')
 

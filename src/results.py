@@ -107,6 +107,35 @@ class FittedResults:
         print("{:.2f}".format(percentage) + "% of pixel values are within the 95% credible"
                                             " interval of their corresponding predicted value.")
 
+    def write_residuals_csv(self):
+        '''This function goes through all days fitted in the model and calculates the residual between what the model
+        predicts and what the "actual" methane pixel value is. This is performed only as part of the dropout testing.
+        '''
+
+        # Open the dropout_dataset.csv file
+        dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
+
+        with open(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/residuals.csv', 'w') as csvfile:
+            csv_writer = csv.writer(csvfile, delimiter=',')
+            csv_writer.writerow(('Day_ID', 'Date', 'Predicted_Values', 'Actual_Values', 'Residuals'))
+
+            for day_id in tqdm(set(dropout_df.Day_ID)):
+                dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+
+                date = dropout_day_df.Date.iloc[0]
+
+                obs_CH4 = list(dropout_day_df.obs_CH4)
+                obs_NO2 = list(dropout_day_df.obs_NO2)
+                sigma_N = list(dropout_day_df.sigma_N)
+
+
+                for i in range(len(obs_NO2)):
+                    prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+                    csv_writer.writerow([day_id, date,
+                                         round(prediction, 2),
+                                         round(obs_CH4[i], 2),
+                                         round(prediction - obs_CH4[i], 2)])
+
     def write_reduced_chi_squared_csv(self):
         '''
         This function goes through all days fitted in the model and calculates a reduced chi-squred statistic for that day,
@@ -120,7 +149,7 @@ class FittedResults:
             csv_writer = csv.writer(csvfile, delimiter=',')
             csv_writer.writerow(('Day_ID', 'Date', 'Reduced_chi_squared', 'N_observations'))
 
-            for day_id in set(dropout_df.Day_ID):
+            for day_id in tqdm(set(dropout_df.Day_ID)):
 
                 dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
 

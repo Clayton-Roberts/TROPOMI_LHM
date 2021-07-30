@@ -403,3 +403,24 @@ def reduced_chi_squared(model_run):
     plt.title('Reduced chi-squared values by day')
     plt.tight_layout()
     plt.show()
+
+def residuals(model_run_1, model_run_2=None):
+    '''A function for plotting the residuals between actual and predicted results for the held-out set of observations.
+    :param model_run_1: The name of the first model run to plot the residuals for.
+    :type model_run_1: string
+    :param model_run_2: The name of the second model run to plot the residuals for if you're comparing two models, not required.
+    :type model_run_2: string .
+    '''
+
+    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run_1 + '/dropout/residuals.csv')
+
+    if model_run_2:
+        residual_df_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run_2 + '/dropout/residuals.csv')
+        plt.hist(residual_df_2.Residuals, label='Individual error model')
+
+    plt.hist(residual_df_1.Residuals, label='Average error model')
+    plt.title('Residual comparison')
+    plt.legend()
+    plt.xlabel(r'$\mathregular{CH_4^{pred}} - \mathregular{CH_4^{obs}}$ [ppbv]')
+    plt.tight_layout()
+    plt.show()
