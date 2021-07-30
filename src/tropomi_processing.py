@@ -5,7 +5,85 @@ from scipy.interpolate import griddata
 from scipy import stats
 import csv
 import os
+import pandas as pd
 from tqdm import tqdm
+import json
+import shutil
+
+def make_directories(run_name):
+    '''This function checks that all the relevant directories are made. If you re-use a run name, the directory and
+    previous contents will be deleted, and the directory will be created again WITHOUT WARNING.
+
+    :param run_name: The name of the run, will also be the name of the folders that is created.
+    :type run_name string
+    '''
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + run_name)
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/data/' + run_name)
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name)
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
+
+def prepare_dataset_for_cmdstanpy(run_name):
+    '''This function takes the "dataset.cvs" file located at "data/run_name" and turns it into json
+    that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
+    fit our models).
+
+    :param run_name: Name of the model run.
+    :type run_name:str
+    '''
+
+    df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', delimiter=',',
+                     header=0, index_col=1)  # Indexing by Date instead of Day_ID
+
+    obs_no2 = list(df.obs_NO2)
+    obs_ch4 = list(df.obs_CH4)
+    day_id  = list(df.Day_ID)
+    D       = int(np.max(day_id))
+    M       = len(obs_no2)
+
+    group_sizes = []
+    for i in range(D):
+        day = i+1
+        size = len(df[df.Day_ID == day])
+        group_sizes.append(size)
+
+    avg_sigma_N = []
+    avg_sigma_C = []
+
+    for i in range(D):
+        day = i+1
+        mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N),2)
+        mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C),2)
+
+        avg_sigma_N.append(mean_sigma_N)
+        avg_sigma_C.append(mean_sigma_C)
+
+    sigma_N = list(df.sigma_N)
+    sigma_C = list(df.sigma_C)
+
+    data = {}
+    data['M']           = M
+    data['D']           = D
+    data['day_id']      = day_id
+    data['group_sizes'] = group_sizes
+    data['NO2_obs']     = obs_no2
+    data['CH4_obs']     = obs_ch4
+    if 'daily_mean_error' in run_name:
+        data['sigma_N']     = avg_sigma_N
+        data['sigma_C']     = avg_sigma_C
+    else:
+        data['sigma_N'] = sigma_N
+        data['sigma_C'] = sigma_C
+
+    with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
+        json.dump(data, outfile)
 
 def unpack_no2(filename):
     '''This function opens a "raw" TROPOMI observation file of :math:`\mathrm{NO}_2` and returns arrays of quantities
@@ -200,8 +278,9 @@ def create_dataset(run_name):
 
     start_date, end_date, model = run_name.split('-')
 
-    total_days     = 0
-    data_rich_days = 0
+    total_days         = 0
+    data_rich_days     = 0
+    total_observations = 0
 
     day_id = 0
 
@@ -232,8 +311,9 @@ def create_dataset(run_name):
                     if r >= 0.4:
 
                         # Write to the dataset.
-                        day_id         += 1
-                        data_rich_days += 1
+                        day_id             += 1
+                        data_rich_days     += 1
+                        total_observations += len(obs_NO2)
 
                         summarywriter.writerow((day_id, date, len(obs_NO2), r))
 
@@ -241,3 +321,9 @@ def create_dataset(run_name):
                             csvwriter.writerow((day_id, date, round(obs_NO2[i], 2), round(obs_CH4[i], 2),
                                                 round(sigma_N[i], 2), round(sigma_C[i], 2),
                                             round(latitude[i], 2), round(longitude[i], 2)))
+
+    f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
+    f.write("Total number of days in range: " + str(total_days) + '\n')
+    f.write("Total number of data-rich days in range: " + str(data_rich_days) + '\n')
+    f.write("Total number of observations in range: " + str(total_observations) + '\n')
+    f.close()

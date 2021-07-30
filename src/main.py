@@ -30,8 +30,8 @@ INSTALL_CMDSTAN = False
 #-----------------------------------
 #   --- Flags for real analysis ---
 #-----------------------------------
-PROCESS_TROPOMI_FILES = True
-SHOW_REAL_RESULTS     = False
+PROCESS_TROPOMI_FILES = False
+SHOW_REAL_RESULTS     = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -92,8 +92,15 @@ if SHOW_TEST_RESULTS:
     p.residuals(TEST_RUN_NAME, '20_days_100_M_individual_error')
 
 if PROCESS_TROPOMI_FILES:
+    tp.make_directories(RUN_NAME)
     tp.create_dataset(RUN_NAME)
+    tp.prepare_dataset_for_cmdstanpy(RUN_NAME)
+
+    dt.make_directories(RUN_NAME)
+    dt.create_csvs(RUN_NAME)
+    dt.prepare_dataset_for_cmdstanpy(RUN_NAME)
 
 if SHOW_REAL_RESULTS:
     p.observations_scatterplot(DATE, RUN_NAME)
+    p.dropout_scatterplot(DATE, RUN_NAME)
 
