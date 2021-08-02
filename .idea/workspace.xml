@@ -20,9 +20,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/real_analysis.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/test_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/tropomi_processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tropomi_processing.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/model_comparison.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_comparison.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/plotting.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/plotting.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,7 +52,7 @@
   <component name="PropertiesComponent">
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/observations" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/data/20190101-20190131-individual_error" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
@@ -57,14 +61,14 @@
       <recent name="$PROJECT_DIR$/testing" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/observations" />
-      <recent name="$PROJECT_DIR$/src/test_suite/ground_truths/20_days_100_M_daily_mean_error" />
-      <recent name="$PROJECT_DIR$/src/data/20_days_100_M_daily_mean_error" />
-      <recent name="$PROJECT_DIR$/src/data/20_days_100_M_individual_error" />
+      <recent name="$PROJECT_DIR$/src/data/20190101-20190131-individual_error" />
+      <recent name="$PROJECT_DIR$/src/data/20190101-20190131-individual_error/dropout" />
       <recent name="$PROJECT_DIR$/src/test_suite/ground_truths/20_days_100_M_individual_error" />
+      <recent name="$PROJECT_DIR$/src/data/20_days_100_M_individual_error/dropout" />
+      <recent name="$PROJECT_DIR$/src/data/20_days_100_M_individual_error" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.main">
+  <component name="RunManager" selected="Python.real_analysis">
     <configuration name="dummy" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="TROPOMI_LHM" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -107,8 +111,52 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <configuration name="real_analysis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TROPOMI_LHM" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/real_analysis.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="test_analysis" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="TROPOMI_LHM" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/test_analysis.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.real_analysis" />
+        <item itemvalue="Python.test_analysis" />
         <item itemvalue="Python.main" />
         <item itemvalue="Python.dummy" />
       </list>
@@ -149,32 +197,32 @@
     </state>
     <state x="409" y="321" key="#xdebugger.evaluate/0.0.1440.900@0.0.1440.900" timestamp="1626365279313" />
     <state x="396" y="501" width="1220" height="579" key="#xdebugger.evaluate/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627656593281" />
-    <state width="1899" height="321" key="GridCell.Tab.0.bottom" timestamp="1627664296522">
+    <state width="1899" height="329" key="GridCell.Tab.0.bottom" timestamp="1627914780589">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1419" height="319" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1627248298088" />
-    <state width="1899" height="321" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627664296521" />
+    <state width="1419" height="329" key="GridCell.Tab.0.bottom/0.0.1440.900@0.0.1440.900" timestamp="1627913530287" />
+    <state width="1899" height="329" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627914780589" />
     <state width="1419" height="259" key="GridCell.Tab.0.bottom/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627561903014" />
     <state width="1899" height="284" key="GridCell.Tab.0.bottom/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1627653627488" />
-    <state width="1899" height="321" key="GridCell.Tab.0.center" timestamp="1627664296520">
+    <state width="1899" height="329" key="GridCell.Tab.0.center" timestamp="1627914780588">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1419" height="319" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1627248298087" />
-    <state width="1899" height="321" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627664296520" />
+    <state width="1419" height="329" key="GridCell.Tab.0.center/0.0.1440.900@0.0.1440.900" timestamp="1627913530286" />
+    <state width="1899" height="329" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627914780588" />
     <state width="1419" height="259" key="GridCell.Tab.0.center/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627561903011" />
     <state width="1899" height="284" key="GridCell.Tab.0.center/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1627653627486" />
-    <state width="1899" height="321" key="GridCell.Tab.0.left" timestamp="1627664296518">
+    <state width="1899" height="329" key="GridCell.Tab.0.left" timestamp="1627914780587">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1419" height="319" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1627248298086" />
-    <state width="1899" height="321" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627664296518" />
+    <state width="1419" height="329" key="GridCell.Tab.0.left/0.0.1440.900@0.0.1440.900" timestamp="1627913530285" />
+    <state width="1899" height="329" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627914780587" />
     <state width="1419" height="259" key="GridCell.Tab.0.left/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627561903008" />
     <state width="1899" height="284" key="GridCell.Tab.0.left/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1627653627485" />
-    <state width="1899" height="321" key="GridCell.Tab.0.right" timestamp="1627664296521">
+    <state width="1899" height="329" key="GridCell.Tab.0.right" timestamp="1627914780589">
       <screen x="0" y="0" width="1920" height="1080" />
     </state>
-    <state width="1419" height="319" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1627248298087" />
-    <state width="1899" height="321" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627664296521" />
+    <state width="1419" height="329" key="GridCell.Tab.0.right/0.0.1440.900@0.0.1440.900" timestamp="1627913530287" />
+    <state width="1899" height="329" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1627914780589" />
     <state width="1419" height="259" key="GridCell.Tab.0.right/250.1080.1440.900/0.0.1920.1080@250.1080.1440.900" timestamp="1627561903013" />
     <state width="1899" height="284" key="GridCell.Tab.0.right/250.1103.1440.877/0.0.1920.1080@0.0.1920.1080" timestamp="1627653627488" />
     <state width="1899" height="284" key="GridCell.Tab.1.bottom" timestamp="1627657662394">
@@ -247,7 +295,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/model_comparison.py</url>
-          <line>22</line>
+          <line>23</line>
           <option name="timeStamp" value="67" />
         </line-breakpoint>
       </breakpoints>
