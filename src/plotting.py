@@ -404,19 +404,19 @@ def reduced_chi_squared(model_run):
     plt.tight_layout()
     plt.show()
 
-def residuals(model_run_1, model_run_2=None):
+def residuals(daily_mean_error_model_run, individual_error_model_run=None):
     '''A function for plotting the residuals between actual and predicted results for the held-out set of observations.
-    :param model_run_1: The name of the first model run to plot the residuals for.
-    :type model_run_1: string
-    :param model_run_2: The name of the second model run to plot the residuals for if you're comparing two models, not required.
-    :type model_run_2: string .
+    :param daily_mean_error_model_run: The name of the daily mean error model run to plot the residuals for.
+    :type daily_mean_error_model_run: string
+    :param individual_error_model_run: The name of the individual error model run to plot the residuals for if you're comparing two models, not required.
+    :type individual_error_model_run: string .
     '''
 
-    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run_1 + '/dropout/residuals.csv')
-
-    if model_run_2:
-        residual_df_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run_2 + '/dropout/residuals.csv')
+    if individual_error_model_run:
+        residual_df_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + individual_error_model_run + '/dropout/residuals.csv')
         plt.hist(residual_df_2.Residuals, label='Individual error model')
+
+    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + daily_mean_error_model_run + '/dropout/residuals.csv')
 
     plt.hist(residual_df_1.Residuals, label='Average error model')
     plt.title('Residual comparison')
