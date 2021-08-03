@@ -3,7 +3,6 @@ import netCDF4 as nc4
 import numpy as np
 from scipy.interpolate import griddata
 from scipy import stats
-import csv
 import os
 import pandas as pd
 from tqdm import tqdm
@@ -273,8 +272,7 @@ def get_colocated_measurements(filename):
     return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
 
 def create_dataset(run_name):
-    #TODO Make docstring, and eventually have arguments that control the date range to make the dataset for.
-    #For now no arguments as I build the function.
+    #TODO Make docstring
 
     start_date, end_date, model = run_name.split('-')
 
@@ -284,43 +282,73 @@ def create_dataset(run_name):
 
     day_id = 0
 
-    with open(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', 'w') as csvfile, \
-        open(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', 'w') as summaryfile:
-        csvwriter = csv.writer(csvfile, delimiter=',')
-        csvwriter.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+    # Empty list to hold dataframes for each day's observations when checks are passed.
+    daily_dfs = []
 
-        summarywriter = csv.writer(summaryfile, delimiter=',')
-        summarywriter.writerow(('Day_ID', 'Date', 'M', 'R'))
+    # A summary dataframe for overall metrics of for this run's data.
+    summary_df = pd.DataFrame(columns=(('Date', 'Day_ID', 'M', 'R')))
 
-        for file in tqdm(os.listdir(ct.FILE_PREFIX + '/observations/NO2')):
-            date = file[:8]
+    for file in tqdm(os.listdir(ct.FILE_PREFIX + '/observations/NO2'), desc='Iterating over all TROPOMI observations'):
+        date = file[:8]
 
-            # If date in correct range for this run...
-            if int(start_date) <= int(date) <= int(end_date):
+        # If date in correct range for this run...
+        if int(start_date) <= int(date) <= int(end_date):
 
-                total_days += 1
+            total_days += 1
 
-                obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(file)
+            obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(file)
 
-                # If there are more than 100 co-located measurements on this day ...
-                if len(obs_NO2) >= 100:
+            # If there are more than 100 co-located measurements on this day ...
+            if len(obs_NO2) >= 100:
 
-                    r, p_value = stats.pearsonr(obs_NO2, obs_CH4)
+                r, p_value = stats.pearsonr(obs_NO2, obs_CH4)
 
-                    # if R >= 0.4 ...
-                    if r >= 0.4:
+                # if R >= 0.4 ...
+                if r >= 0.4:
+                    # Checks are passed, so write to the various datasets.
 
-                        # Write to the dataset.
-                        day_id             += 1
-                        data_rich_days     += 1
-                        total_observations += len(obs_NO2)
+                    day_id             += 1
+                    data_rich_days     += 1
+                    total_observations += len(obs_NO2)
 
-                        summarywriter.writerow((day_id, date, len(obs_NO2), r))
+                    # Append summary of this day to the summary dataframe.
+                    summary_df = summary_df.append({'Date': date, 'Day_ID': day_id, 'M': len(obs_NO2),
+                                                    'R': round(r, 2)},
+                                                   ignore_index=True)
 
-                        for i in range(len(obs_NO2)):
-                            csvwriter.writerow((day_id, date, round(obs_NO2[i], 2), round(obs_CH4[i], 2),
-                                                round(sigma_N[i], 2), round(sigma_C[i], 2),
-                                            round(latitude[i], 2), round(longitude[i], 2)))
+                    # Round numbers to two decimal places
+                    obs_NO2   = [round(float(num), 2) for num in obs_NO2]
+                    obs_CH4   = [round(float(num), 2) for num in obs_CH4]
+                    sigma_N   = [round(float(num), 2) for num in sigma_N]
+                    sigma_C   = [round(float(num), 2) for num in sigma_C]
+                    latitude  = [round(float(num), 2) for num in latitude]
+                    longitude = [round(float(num), 2) for num in longitude]
+
+                    # Create a dataframe containing the observations for this day. Round numbers to two decimal places.
+                    day_df = pd.DataFrame(list(zip([day_id]*len(obs_NO2),
+                                                   [date]*len(obs_NO2),
+                                                   obs_NO2,
+                                                   obs_CH4,
+                                                   sigma_N,
+                                                   sigma_C,
+                                                   latitude,
+                                                   longitude)),
+                                          columns=('Day_ID','Date','obs_NO2', 'obs_CH4',
+                                                   'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+                    # Append the dataframe to this day to the list of dataframes to later concatenate together.
+                    daily_dfs.append(day_df)
+
+    # Convert summary dates to datetimes and sort the summary dataframe by date.
+    summary_df.Date = pd.to_datetime(summary_df.Date)
+    summary_df      = summary_df.sort_values(by='Date')
+    summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
+
+    # Concatenate the daily dataframes together to make the dataset dataframe. Convert dates to datetimes but leave it
+    # sorted by Day ID.
+    dataset_df      = pd.concat(daily_dfs)
+    dataset_df.Date = pd.to_datetime(dataset_df.Date)
+    dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
 
     f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
     f.write("Total number of days in range: " + str(total_days) + '\n')
