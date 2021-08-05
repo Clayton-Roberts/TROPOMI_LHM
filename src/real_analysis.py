@@ -9,12 +9,12 @@ from src import plotting as p
 #=======================================================
 #   --- Flags for real analysis ---
 #-----------------------------------
-PROCESS_TROPOMI_FILES = True
-PROCESS_VIIRS_FILES   = True
+PROCESS_TROPOMI_FILES = False
+PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
-MAKE_PLOTS            = False
+MAKE_PLOTS            = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -31,6 +31,8 @@ DATE              = 20190128
 ##=======================================================
 
 if PROCESS_TROPOMI_FILES:
+    print('Preparing data for analysis:')
+
     tp.make_directories(RUN_NAME)
     tp.create_dataset(RUN_NAME)
     tp.prepare_dataset_for_cmdstanpy(RUN_NAME)
@@ -43,6 +45,7 @@ if PROCESS_VIIRS_FILES:
     vp.generate_flare_time_series(RUN_NAME)
 
 if PERFORM_DROPOUT_FIT:
+    print('Fitting without holdout observations:')
     fm.nuts('data/' + RUN_NAME + '/dropout/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME + '/dropout')
@@ -51,6 +54,7 @@ if PERFORM_DROPOUT_FIT:
     results.write_residuals_csv()
 
 if PERFORM_FULL_FIT:
+    print('Fitting with all observations:')
     fm.nuts('data/' + RUN_NAME + '/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME)

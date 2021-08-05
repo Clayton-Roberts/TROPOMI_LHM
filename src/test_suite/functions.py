@@ -4,6 +4,8 @@ import csv
 import json
 import os
 import shutil
+from tqdm import tqdm
+import datetime
 from src import constants as ct
 
 def make_directories(run_name):
@@ -48,7 +50,7 @@ def generate_mu_and_Sigma(run_name):
     mu_gamma = 10.0  # ppbv
 
     # Define the mean vector mu
-    mu = np.array((mu_alpha, mu_beta, mu_gamma))
+    mu = [mu_alpha, mu_beta, mu_gamma]
 
     # Give each mean value some variance.
     sigma_alpha = 10.0  # ppbv
@@ -59,12 +61,12 @@ def generate_mu_and_Sigma(run_name):
     rho = -0.8
 
     # Define the covariance matrix Sigma
-    sigma = np.array(((sigma_alpha ** 2, sigma_alpha * sigma_beta * rho, sigma_alpha * sigma_gamma * 0),
-                    (sigma_alpha * sigma_beta * rho, sigma_beta ** 2, sigma_beta * sigma_gamma * 0),
-                    (sigma_alpha * sigma_gamma * 0, sigma_beta * sigma_gamma * 0, sigma_gamma ** 2)))
+    sigma = [[sigma_alpha ** 2, sigma_alpha * sigma_beta * rho, sigma_alpha * sigma_gamma * 0],
+             [sigma_alpha * sigma_beta * rho, sigma_beta ** 2, sigma_beta * sigma_gamma * 0],
+             [sigma_alpha * sigma_gamma * 0, sigma_beta * sigma_gamma * 0, sigma_gamma ** 2]]
 
-    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",")
-    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",")
+    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",", fmt='%.2f')
+    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",", fmt='%.2f')
 
     with open(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/hyperparameter_truths.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -86,18 +88,17 @@ def generate_alphas_betas_and_gammas(days, run_name):
     mu    = np.loadtxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", delimiter=",")
     sigma = np.loadtxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", delimiter=",")
 
+    df = pd.DataFrame(columns=('Date','alpha','beta','gamma'))
+
+    today = datetime.date.today()
     # To simulate how we will handle real data, generate a fake date for each day.
-    dates = []
     for i in range(days):
-        dates.append(str(10000000 + i))
+        date = today + datetime.timedelta(days=i)
+        alpha, beta, gamma = np.random.multivariate_normal(mu, sigma)
+        df = df.append({'Date': date, 'alpha': round(alpha, 2), 'beta': round(beta, 2), 'gamma': round(gamma, 2)},
+                       ignore_index=True)
 
-    group_params = {}
-
-    for date in dates:
-        group_params[date] = np.random.multivariate_normal(mu, sigma)
-
-    df = pd.DataFrame.from_dict(group_params, orient='index', columns=['alpha', 'beta', 'gamma'])
-    df.to_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv')
+    df.to_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv', index=False)
 
 def generate_dataset(run_name, n_Obs):
     '''This function generates a .csv file that contains the total set of fake observations over all of the fake days
@@ -110,44 +111,68 @@ def generate_dataset(run_name, n_Obs):
     :type n_Obs: int
     '''
 
-    df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
+    # Empty list to hold dataframes for each day's "observations"
+    daily_dfs = []
+
+    alpha_beta_gamma_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv',
                      delimiter=",", header=0, index_col=0) # Indexing by date, column 0
 
-    with open(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', 'w') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',')
-        writer.writerow(('Day_ID','Date','obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C'))
+    # Define our observational errors.
+    mu_sigma_N    = 7.0  # Micro mol / square meter
+    mu_sigma_C    = 2.0  # ppbv
+    sigma_sigma_N = 0.3  # Micro mol / square meter
+    sigma_sigma_C = 0.3  # ppbv
 
-        day_index = 1  # Stan starts counting from 1!
+    day_id = 1  # Stan starts counting from 1!
 
-        for date in df.index:
+    for date in tqdm(alpha_beta_gamma_df.index, desc='Creating observations for days in test dataset'):
 
-            # Get the true value of alpha, beta and gamma for this date.
-            alpha = df.loc[date, 'alpha']
-            beta = df.loc[date, 'beta']
-            gamma = df.loc[date, 'gamma']
+        # Get the true value of alpha, beta and gamma for this date.
+        alpha = alpha_beta_gamma_df.loc[date, 'alpha']
+        beta  = alpha_beta_gamma_df.loc[date, 'beta']
+        gamma = alpha_beta_gamma_df.loc[date, 'gamma']
 
-            # Generate values of latent NO2 for each day.
-            obs_no2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
+        # Generate values of observed NO2 for each day.
+        obs_NO2 = np.random.uniform(0.0, 175.0, n_Obs)  # Micro mol / square meter
 
-            # Define our observational errors.
-            mu_sigma_N = 7.0    # Micro mol / square meter
-            mu_sigma_C = 2.0    # ppbv
-            sigma_sigma_N = 0.3 # Micro mol / square meter
-            sigma_sigma_C = 0.3 # ppbv
+        # Define some empty lists
+        obs_CH4 = []
+        sigma_N = []
+        sigma_C = []
 
-            for no2 in obs_no2:
+        for no2 in obs_NO2:
 
-                # Generate a value for sigma_N and sigma_C
-                sigma_N = np.random.normal(mu_sigma_N, sigma_sigma_N)
-                sigma_C = np.random.normal(mu_sigma_C, sigma_sigma_C)
+            # Generate a value for sigma_N and sigma_C
+            sigma_n = np.random.normal(mu_sigma_N, sigma_sigma_N)
+            sigma_c = np.random.normal(mu_sigma_C, sigma_sigma_C)
 
-                # Generate the observed value of CH4 according to the model equation.
-                obs_ch4 = np.random.normal(alpha + beta * no2, np.sqrt(gamma**2 + sigma_C**2 + (beta**2 * sigma_N**2)))
+            # Generate the observed value of CH4 according to the model equation.
+            obs_ch4 = np.random.normal(alpha + beta * no2, np.sqrt(gamma**2 + sigma_c**2 + (beta**2 * sigma_n**2)))
 
-                # Write to the dataset.
-                writer.writerow((day_index, str(date), round(no2, 2), round(obs_ch4, 2), round(sigma_N,2), round(sigma_C,2)))
+            obs_CH4.append(obs_ch4)
+            sigma_C.append(sigma_c)
+            sigma_N.append(sigma_n)
 
-            day_index += 1
+        # Round to two decimal places
+        obs_NO2 = [round(num, 2) for num in obs_NO2]
+        obs_CH4 = [round(num, 2) for num in obs_CH4]
+        sigma_N = [round(num, 2) for num in sigma_N]
+        sigma_C = [round(num, 2) for num in sigma_C]
+
+        day_df = pd.DataFrame(list(zip([day_id]*len(obs_NO2),
+                                       [date]*len(obs_NO2),
+                                       obs_NO2,
+                                       obs_CH4,
+                                       sigma_N,
+                                       sigma_C)),
+                              columns=('Day_ID', 'Date', 'obs_NO2', 'obs_CH4', 'sigma_N', 'sigma_C'))
+
+        daily_dfs.append(day_df)
+
+        day_id += 1
+
+    dataset_df = pd.concat(daily_dfs)
+    dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
 
 def prepare_dataset_for_cmdstanpy(run_name):
     '''This function takes the "dataset.cvs" file located at "test_suite/ground_truths/run_name" and turns it into json

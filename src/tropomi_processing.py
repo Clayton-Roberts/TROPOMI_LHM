@@ -6,6 +6,7 @@ from scipy import stats
 import os
 import pandas as pd
 from tqdm import tqdm
+import datetime
 import json
 import shutil
 
@@ -276,6 +277,9 @@ def create_dataset(run_name):
 
     start_date, end_date, model = run_name.split('-')
 
+    start_date = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+    end_date   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
+
     total_days         = 0
     data_rich_days     = 0
     total_observations = 0
@@ -289,10 +293,11 @@ def create_dataset(run_name):
     summary_df = pd.DataFrame(columns=(('Date', 'Day_ID', 'M', 'R')))
 
     for file in tqdm(os.listdir(ct.FILE_PREFIX + '/observations/NO2'), desc='Iterating over all TROPOMI observations'):
-        date = file[:8]
+
+        date  = datetime.datetime.strptime(file[:8], "%Y%m%d").date()
 
         # If date in correct range for this run...
-        if int(start_date) <= int(date) <= int(end_date):
+        if start_date <= date <= end_date:
 
             total_days += 1
 
@@ -339,15 +344,12 @@ def create_dataset(run_name):
                     # Append the dataframe to this day to the list of dataframes to later concatenate together.
                     daily_dfs.append(day_df)
 
-    # Convert summary dates to datetimes and sort the summary dataframe by date.
-    summary_df.Date = pd.to_datetime(summary_df.Date)
-    summary_df      = summary_df.sort_values(by='Date')
+    # Sort the summary dataframe by date.
+    summary_df = summary_df.sort_values(by='Date')
     summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
 
-    # Concatenate the daily dataframes together to make the dataset dataframe. Convert dates to datetimes but leave it
-    # sorted by Day ID.
-    dataset_df      = pd.concat(daily_dfs)
-    dataset_df.Date = pd.to_datetime(dataset_df.Date)
+    # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
+    dataset_df = pd.concat(daily_dfs)
     dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
 
     f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")

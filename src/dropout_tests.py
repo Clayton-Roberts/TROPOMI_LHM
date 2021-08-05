@@ -42,7 +42,7 @@ def create_csvs(run_name):
     dropout_dfs   = []
     remaining_dfs = []
 
-    for day_id in tqdm(day_ids, desc='Splitting data-rich days into holdout setss'):
+    for day_id in tqdm(day_ids, desc='Splitting data-rich days into holdout sets'):
 
         day_df = full_dataset_df[full_dataset_df.Day_ID == day_id]
 
