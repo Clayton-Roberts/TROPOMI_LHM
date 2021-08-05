@@ -4,19 +4,20 @@ from src import fit_model as fm
 from src import results as sr
 from src import model_comparison as mc
 from src import plotting as p
+import time
 
 #=======================================================
 #    --- Flags for testing analysis ---
 #----------------------------------------
-GENERATE_TEST_DATA    = True
-PERFORM_DROPOUT_FIT   = True
+GENERATE_TEST_DATA    = False
+PERFORM_DROPOUT_FIT   = False
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
-MAKE_PLOTS            = False
+MAKE_PLOTS            = True
 #-----------------------------------
 #   --- Flags for test runs ---
 #-----------------------------------
-NUM_DAYS        = 20
+NUM_DAYS        = 10
 NUM_OBS         = 100
 MODEL           = 'daily_mean_error'
 RUN_NAME        = str(NUM_DAYS) + '_days-' \
@@ -28,8 +29,8 @@ INSTALL_CMDSTAN = False
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH = True
-PARAM             = 'sigma_beta'
-DATE              = 10000004
+PARAM             = 'alpha'
+DATE              = '2021-08-10'
 ##=======================================================
 
 if GENERATE_TEST_DATA:
@@ -47,6 +48,8 @@ if GENERATE_TEST_DATA:
 
 if PERFORM_DROPOUT_FIT:
     print('Fitting without holdout observations:')
+    time.sleep(1)
+
     fm.nuts('data/' + RUN_NAME + '/dropout/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME + '/dropout')
@@ -56,6 +59,7 @@ if PERFORM_DROPOUT_FIT:
 
 if PERFORM_FULL_FIT:
     print('Fitting with all observations:')
+    time.sleep(1)
     fm.nuts('data/' + RUN_NAME + '/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME)

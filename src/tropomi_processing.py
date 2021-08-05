@@ -284,7 +284,7 @@ def create_dataset(run_name):
     data_rich_days     = 0
     total_observations = 0
 
-    day_id = 0
+    day_id = 1 # Stan starts counting from 1!
 
     # Empty list to hold dataframes for each day's observations when checks are passed.
     daily_dfs = []
@@ -312,7 +312,6 @@ def create_dataset(run_name):
                 if r >= 0.4:
                     # Checks are passed, so write to the various datasets.
 
-                    day_id             += 1
                     data_rich_days     += 1
                     total_observations += len(obs_NO2)
 
@@ -343,6 +342,9 @@ def create_dataset(run_name):
 
                     # Append the dataframe to this day to the list of dataframes to later concatenate together.
                     daily_dfs.append(day_df)
+
+                    # Increment day_is
+                    day_id += 1
 
     # Sort the summary dataframe by date.
     summary_df = summary_df.sort_values(by='Date')
