@@ -1,4 +1,5 @@
 from src import constants as ct
+from tqdm import tqdm
 import os
 import shutil
 import pandas as pd
@@ -38,20 +39,10 @@ def create_csvs(run_name):
 
     day_ids = set(full_dataset_df.Day_ID)
 
-    # Open and write headers of the two csv files here
-
-    with open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/dropout_dataset.csv', 'w') as dropout_csvfile, \
-            open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv', 'w') as remaining_csvfile:
-        dropout_writer = csv.writer(dropout_csvfile, delimiter=',')
-        remaining_writer = csv.writer(remaining_csvfile, delimiter=',')
-
-        dropout_writer.writerow(np.array(full_dataset_df.columns))
-        remaining_writer.writerow(np.array(full_dataset_df.columns))
-
     dropout_dfs   = []
     remaining_dfs = []
 
-    for day_id in day_ids:
+    for day_id in tqdm(day_ids, desc='Splitting data-rich days into holdout sets'):
 
         day_df = full_dataset_df[full_dataset_df.Day_ID == day_id]
 
@@ -69,12 +60,11 @@ def create_csvs(run_name):
         dropout_dfs.append(dropout_df)
         remaining_dfs.append(remaining_df)
 
-    with open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/dropout_dataset.csv', 'a') as dropout_csvfile, \
-            open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv', 'a') as remaining_csvfile:
+    dropout_df = pd.concat(dropout_dfs)
+    dropout_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/dropout_dataset.csv', index=False)
 
-        for i in range(len(dropout_dfs)):
-            dropout_dfs[i].to_csv(dropout_csvfile, header=False, index=False)
-            remaining_dfs[i].to_csv(remaining_csvfile, header=False, index=False)
+    remaining_df = pd.concat(remaining_dfs)
+    remaining_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv', index=False)
 
 def prepare_dataset_for_cmdstanpy(run_name):
     '''This function takes the "remaining_dataset.csv" file located at "data/run_name/dropout" and turns it into json

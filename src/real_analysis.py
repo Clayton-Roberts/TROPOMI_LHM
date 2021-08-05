@@ -1,4 +1,5 @@
 from src import tropomi_processing as tp
+from src import viirs_processing as vp
 from src import dropout_tests as dt
 from src import fit_model as fm
 from src import results as sr
@@ -9,6 +10,7 @@ from src import plotting as p
 #   --- Flags for real analysis ---
 #-----------------------------------
 PROCESS_TROPOMI_FILES = False
+PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
@@ -18,7 +20,7 @@ MAKE_PLOTS            = True
 #-----------------------------------
 START_DATE = '20190101'
 END_DATE   = '20190131'
-MODEL      = 'individual_error'
+MODEL      = 'daily_mean_error'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
@@ -29,6 +31,8 @@ DATE              = 20190128
 ##=======================================================
 
 if PROCESS_TROPOMI_FILES:
+    print('Preparing data for analysis:')
+
     tp.make_directories(RUN_NAME)
     tp.create_dataset(RUN_NAME)
     tp.prepare_dataset_for_cmdstanpy(RUN_NAME)
@@ -37,7 +41,11 @@ if PROCESS_TROPOMI_FILES:
     dt.create_csvs(RUN_NAME)
     dt.prepare_dataset_for_cmdstanpy(RUN_NAME)
 
+if PROCESS_VIIRS_FILES:
+    vp.generate_flare_time_series(RUN_NAME)
+
 if PERFORM_DROPOUT_FIT:
+    print('Fitting without holdout observations:')
     fm.nuts('data/' + RUN_NAME + '/dropout/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME + '/dropout')
@@ -46,6 +54,7 @@ if PERFORM_DROPOUT_FIT:
     results.write_residuals_csv()
 
 if PERFORM_FULL_FIT:
+    print('Fitting with all observations:')
     fm.nuts('data/' + RUN_NAME + '/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME)

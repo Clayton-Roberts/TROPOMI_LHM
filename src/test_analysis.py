@@ -8,8 +8,8 @@ from src import plotting as p
 #=======================================================
 #    --- Flags for testing analysis ---
 #----------------------------------------
-GENERATE_TEST_DATA    = False
-PERFORM_DROPOUT_FIT   = False
+GENERATE_TEST_DATA    = True
+PERFORM_DROPOUT_FIT   = True
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
 MAKE_PLOTS            = False
@@ -18,7 +18,7 @@ MAKE_PLOTS            = False
 #-----------------------------------
 NUM_DAYS        = 20
 NUM_OBS         = 100
-MODEL           = 'individual_error'
+MODEL           = 'daily_mean_error'
 RUN_NAME        = str(NUM_DAYS) + '_days-' \
                   + str(NUM_OBS) + '_M-' \
                   + MODEL
@@ -33,6 +33,8 @@ DATE              = 10000004
 ##=======================================================
 
 if GENERATE_TEST_DATA:
+    print('Preparing data for analysis:')
+
     tsf.make_directories(RUN_NAME)
     tsf.generate_mu_and_Sigma(RUN_NAME)
     tsf.generate_alphas_betas_and_gammas(NUM_DAYS, RUN_NAME)
@@ -44,6 +46,7 @@ if GENERATE_TEST_DATA:
     dt.prepare_dataset_for_cmdstanpy(RUN_NAME)
 
 if PERFORM_DROPOUT_FIT:
+    print('Fitting without holdout observations:')
     fm.nuts('data/' + RUN_NAME + '/dropout/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME + '/dropout')
@@ -52,6 +55,7 @@ if PERFORM_DROPOUT_FIT:
     results.write_residuals_csv()
 
 if PERFORM_FULL_FIT:
+    print('Fitting with all observations:')
     fm.nuts('data/' + RUN_NAME + '/data.json',
             'models/' + MODEL + '.stan',
             RUN_NAME)

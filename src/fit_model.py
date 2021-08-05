@@ -40,7 +40,7 @@ def nuts(data_path, model_path, output_directory):
     # Fit the model.
     fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
-                       iter_sampling=1000, seed=101, show_progress=True,
+                       iter_sampling=1000, seed=101, show_progress=False,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,

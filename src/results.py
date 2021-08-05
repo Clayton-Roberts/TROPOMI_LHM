@@ -85,7 +85,7 @@ class FittedResults:
         total_predictions     = 0
         well_predicted_pixels = 0
 
-        for day_id in tqdm(set(dropout_df.Day_ID)):
+        for day_id in tqdm(set(dropout_df.Day_ID), desc='Calculating 95% CI for held-out predictions'):
 
             dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
 
@@ -115,26 +115,37 @@ class FittedResults:
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
-        with open(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/residuals.csv', 'w') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter=',')
-            csv_writer.writerow(('Day_ID', 'Date', 'Predicted_Values', 'Actual_Values', 'Residuals'))
+        # Empty list to hold daily frames for later concatenation
+        daily_dfs = []
 
-            for day_id in tqdm(set(dropout_df.Day_ID)):
-                dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+        for day_id in tqdm(set(dropout_df.Day_ID), desc='Writing residuals'):
+            dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
 
-                date = dropout_day_df.Date.iloc[0]
+            date = dropout_day_df.Date.iloc[0]
 
-                obs_CH4 = list(dropout_day_df.obs_CH4)
-                obs_NO2 = list(dropout_day_df.obs_NO2)
-                sigma_N = list(dropout_day_df.sigma_N)
+            obs_CH4 = list(dropout_day_df.obs_CH4)
+            obs_NO2 = list(dropout_day_df.obs_NO2)
+            sigma_N = list(dropout_day_df.sigma_N)
 
+            predictions = []
+            residuals   = []
 
-                for i in range(len(obs_NO2)):
-                    prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
-                    csv_writer.writerow([day_id, date,
-                                         round(prediction, 2),
-                                         round(obs_CH4[i], 2),
-                                         round(prediction - obs_CH4[i], 2)])
+            for i in range(len(obs_NO2)):
+                prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+                predictions.append(round(prediction, 2))
+                residuals.append(round(prediction - obs_CH4[i], 2))
+
+            day_df = pd.DataFrame(list(zip([day_id]*len(obs_NO2),
+                                           [date]*len(obs_NO2),
+                                           predictions,
+                                           obs_CH4,
+                                           residuals)),
+                                  columns=('Day_ID', 'Date', 'Predicted_value', 'Actual_value', 'Residuals'))
+
+            daily_dfs.append(day_df)
+
+        residuals_df = pd.concat(daily_dfs)
+        residuals_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/residuals.csv', index=False)
 
     def write_reduced_chi_squared_csv(self):
         '''
@@ -145,39 +156,46 @@ class FittedResults:
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
-        with open(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv', 'w') as csvfile:
-            csv_writer = csv.writer(csvfile, delimiter=',')
-            csv_writer.writerow(('Day_ID', 'Date', 'Reduced_chi_squared', 'N_observations'))
+        # Create dataframe for reduced chi-squared calculations
+        reduced_chi_squared_df = pd.DataFrame(columns=('Date', 'Day_ID', 'Reduced_chi_squared', 'N_observations'))
 
-            for day_id in tqdm(set(dropout_df.Day_ID)):
+        for day_id in tqdm(set(dropout_df.Day_ID), desc='Writing reduced chi-squared results'):
 
-                dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+            dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
 
-                date = dropout_day_df.Date.iloc[0]
+            date = dropout_day_df.Date.iloc[0]
 
-                obs_CH4 = list(dropout_day_df.obs_CH4)
-                sigma_C = list(dropout_day_df.sigma_C)
-                obs_NO2 = list(dropout_day_df.obs_NO2)
-                sigma_N = list(dropout_day_df.sigma_N)
+            obs_CH4 = list(dropout_day_df.obs_CH4)
+            sigma_C = list(dropout_day_df.sigma_C)
+            obs_NO2 = list(dropout_day_df.obs_NO2)
+            sigma_N = list(dropout_day_df.sigma_N)
 
-                n_Observations  = len(obs_CH4)
-                degrees_freedom = int(n_Observations - 3)
+            n_Observations  = len(obs_CH4)
+            degrees_freedom = int(n_Observations - 3)
 
-                pred_CH4       = []
-                sigma_pred_CH4 = []
+            pred_CH4       = []
+            sigma_pred_CH4 = []
 
-                for i in range(len(obs_NO2)):
-                    prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
-                    pred_CH4.append(prediction)
-                    sigma_pred_CH4.append(uncertainty)
+            for i in range(len(obs_NO2)):
+                prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+                pred_CH4.append(prediction)
+                sigma_pred_CH4.append(uncertainty)
 
-                chi_squared = np.sum(
-                    [(o_i - p_i) ** 2 / (sigma_o_i ** 2 + sigma_p_i ** 2) for o_i, p_i, sigma_o_i, sigma_p_i in
-                     zip(obs_CH4, pred_CH4, sigma_C, sigma_pred_CH4)])
+            chi_squared = np.sum(
+                [(o_i - p_i) ** 2 / (sigma_o_i ** 2 + sigma_p_i ** 2) for o_i, p_i, sigma_o_i, sigma_p_i in
+                 zip(obs_CH4, pred_CH4, sigma_C, sigma_pred_CH4)])
 
-                reduced_chi_squared = chi_squared / degrees_freedom
+            reduced_chi_squared = chi_squared / degrees_freedom
 
-                csv_writer.writerow([day_id, date, reduced_chi_squared, n_Observations])
+            reduced_chi_squared_df = reduced_chi_squared_df.append({'Date': date,
+                                                                    'Day_ID': day_id,
+                                                                    'Reduced_chi_squared': round(reduced_chi_squared, 2),
+                                                                    'N_observations': n_Observations},
+                                                                   ignore_index=True)
+
+            reduced_chi_squared_df = reduced_chi_squared_df.sort_values(by='Date')
+            reduced_chi_squared_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv',
+                                          index=False)
 
     def predict_ch4(self, obs_no2, sigma_N, identifier, value):
         '''
