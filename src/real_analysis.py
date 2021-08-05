@@ -27,7 +27,7 @@ RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 SHOW_GROUND_TRUTH = False
 PARAM             = 'rho'
-DATE              = 20190128
+DATE              = '2019-01-28'
 ##=======================================================
 
 if PROCESS_TROPOMI_FILES:

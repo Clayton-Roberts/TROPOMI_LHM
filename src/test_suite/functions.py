@@ -6,6 +6,7 @@ import os
 import shutil
 from tqdm import tqdm
 import datetime
+from scipy import stats
 from src import constants as ct
 
 def make_directories(run_name):
@@ -65,8 +66,8 @@ def generate_mu_and_Sigma(run_name):
              [sigma_alpha * sigma_beta * rho, sigma_beta ** 2, sigma_beta * sigma_gamma * 0],
              [sigma_alpha * sigma_gamma * 0, sigma_beta * sigma_gamma * 0, sigma_gamma ** 2]]
 
-    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",", fmt='%.2f')
-    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",", fmt='%.2f')
+    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/mu.csv", mu, delimiter=",", fmt='%.3f')
+    np.savetxt(ct.FILE_PREFIX + "/test_suite/ground_truths/" + run_name + "/cov.csv", sigma, delimiter=",", fmt='%.3f')
 
     with open(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/hyperparameter_truths.csv', 'w') as csvfile:
         writer = csv.writer(csvfile, delimiter=',')
@@ -95,7 +96,7 @@ def generate_alphas_betas_and_gammas(days, run_name):
     for i in range(days):
         date = today + datetime.timedelta(days=i)
         alpha, beta, gamma = np.random.multivariate_normal(mu, sigma)
-        df = df.append({'Date': date, 'alpha': round(alpha, 2), 'beta': round(beta, 2), 'gamma': round(gamma, 2)},
+        df = df.append({'Date': date, 'alpha': round(alpha, 3), 'beta': round(beta, 3), 'gamma': round(gamma, 3)},
                        ignore_index=True)
 
     df.to_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + run_name + '/alphas_betas_gammas.csv', index=False)
@@ -124,6 +125,8 @@ def generate_dataset(run_name, n_Obs):
     sigma_sigma_C = 0.3  # ppbv
 
     day_id = 1  # Stan starts counting from 1!
+
+    summary_df = pd.DataFrame(columns=('Date', 'Day_ID', 'M', 'R'))
 
     for date in tqdm(alpha_beta_gamma_df.index, desc='Creating observations for days in test dataset'):
 
@@ -169,7 +172,15 @@ def generate_dataset(run_name, n_Obs):
 
         daily_dfs.append(day_df)
 
+        r, p_value = stats.pearsonr(obs_NO2, obs_CH4)
+
+        summary_df = summary_df.append({'Date': date, 'Day_ID': day_id, 'M': n_Obs, 'R': r}, ignore_index=True)
+
+        # Increment day_id
         day_id += 1
+
+    summary_df = summary_df.sort_values(by='Date')
+    summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
 
     dataset_df = pd.concat(daily_dfs)
     dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)

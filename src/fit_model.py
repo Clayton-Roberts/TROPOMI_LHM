@@ -1,8 +1,6 @@
 import time
 import numpy as np
 import cmdstanpy
-import os
-import shutil
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
 from   src import constants as ct
 

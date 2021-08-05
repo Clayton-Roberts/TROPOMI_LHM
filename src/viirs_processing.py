@@ -1,5 +1,5 @@
 from src import constants as ct
-import csv
+import datetime
 import os
 from tqdm import tqdm
 import pandas as pd
@@ -14,15 +14,17 @@ def generate_flare_time_series(run_name):
 
 
     start_date, end_date, model = run_name.split('-')
+    start_date = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+    end_date   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
 
     time_series_df = pd.DataFrame(columns=('Date', 'Flare_count'))
 
     # Loop through every VIIRS data file you have.
     for file in tqdm(os.listdir(ct.FILE_PREFIX + '/observations/VIIRS/'), desc='Iterating over all VIIRS observations'):
 
-        date = file.split('_')[2][1:]
+        date = datetime.datetime.strptime(file.split('_')[2][1:], "%Y%m%d").date()
 
-        if int(start_date) <= int(date) <= int(end_date):
+        if start_date <= date <= end_date:
 
             # Set number of active flares to zero and count up from here.
             active_flares = 0
@@ -43,13 +45,9 @@ def generate_flare_time_series(run_name):
 
                             active_flares += 1
 
-            date = df.Date_Mscan[5].split(' ')[0]
-
             # Add a row to the time series dataframe of flare stack count.
             time_series_df = time_series_df.append({'Date': date, 'Flare_count': active_flares}, ignore_index=True)
 
-    # Convert flare stack count dataframe dates to datetimes and sort by date.
-    time_series_df.Date = pd.to_datetime(time_series_df.Date)
-    time_series_df      = time_series_df.sort_values(by='Date')
-
+    # Sort by date and write to csv file.
+    time_series_df  = time_series_df.sort_values(by='Date')
     time_series_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/flare_counts.csv', index=False)

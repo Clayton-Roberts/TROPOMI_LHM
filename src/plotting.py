@@ -5,6 +5,7 @@ import matplotlib.transforms as transforms
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import datetime
 from src import constants as ct
 
 # Some global parameters for all plots.
@@ -20,6 +21,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     :type parameter: string
     :param date: Date you want to see parameter of interest for, in format YYYYMMDD. Only needed for parameter =
         'alpha', 'beta' or 'gamma'.
+    :type date: string
     :param compare_to_ground_truth: A boolean to include a comparison to the ground truth value for this parameter
         if this model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
     :type compare_to_ground_truth: Boolean
@@ -38,19 +40,16 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         else:
             ground_truth = hyperparameter_truths_df[parameter][0]
 
-
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
-    day_id = {}
 
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
-    # using the passed date.
-    for i in range(len(dataset_df.Date)):
-        if dataset_df.Date[i] not in day_id.keys():
-            day_id[dataset_df.Date[i]] = dataset_df.Day_ID[i]
+    # using the passed date. Use the summary.csv file and index by date
+    summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
+    summary_dict = summary_df.to_dict()
 
-    # Daily parameter are saved in stan as parameter.day_id .
+    # Daily parameters are saved in stan as parameter.day_id .
     if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
-        model_key = parameter + '.' + str(day_id[date])
+        model_key = parameter + '.' + str(summary_dict['Day_ID'][date])
     else:
         model_key = parameter
 
@@ -82,7 +81,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter]
 
     if date:
-        title += ', ' + str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4]
+        title += ', ' + datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y")
 
     # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
@@ -121,7 +120,7 @@ def observations_scatterplot(date, run_name):
     and if it is a test dataset than you can select to have the latent values shown as well.
 
     :param date: Date of observations that you want to plot, formatted YYYYMMDD
-    :type date: int
+    :type date: string
     :param run_name: Name of the model run.
     :type run_name: string
     :return:
@@ -146,7 +145,7 @@ def observations_scatterplot(date, run_name):
     plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
     plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
-    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y"))
     plt.legend(loc='upper left')
     plt.tight_layout()
     plt.show()
@@ -155,7 +154,7 @@ def dropout_scatterplot(date, run_name):
     '''
     This function is for plotting a scatterplot showing which observations were dropped out on a given day.
     :param date: Date of observations that you want to plot, formatted YYYYMMDD
-    :type date: int
+    :type date: string
     :param run_name: Name of the model run.
     :type run_name: string
     '''
@@ -175,7 +174,7 @@ def dropout_scatterplot(date, run_name):
     plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
     plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
-    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y"))
     plt.legend(loc='upper left')
     plt.tight_layout()
     plt.show()
@@ -184,7 +183,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.
 
     :param date: Date of observations that you want to plot, formatted YYYYMMDD
-    :type date: int
+    :type date: string
     :param fitted_model: FittedModel object that contains the results for the day we're interested in
     :type fitted_model: FittedModel
     :param compare_to_ground_truth: A boolean to include a comparison to the ground truth regression if this
@@ -202,13 +201,17 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
     x_domain = np.linspace(x_min, x_max, 100)
 
-    day_id = date_df.Day_ID.iloc[0]
+    # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
+    # using the passed date. Use the summary.csv file and index by date
+    summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
+    summary_dict = summary_df.to_dict()
 
-    # Plot a subset of sampled regression lines
-    randomize = np.arange(len(fitted_model.full_trace['alpha.' + str(day_id)]))
-    np.random.shuffle(randomize)
-    alpha = fitted_model.full_trace['alpha.' + str(day_id)][randomize]
-    beta = fitted_model.full_trace['beta.' + str(day_id)][randomize]
+    day_id = summary_dict['Day_ID'][date]
+
+    draws = np.arange(len(fitted_model.full_trace['alpha.' + str(day_id)]))
+    np.random.shuffle(draws)
+    alpha = fitted_model.full_trace['alpha.' + str(day_id)][draws]
+    beta  = fitted_model.full_trace['beta.' + str(day_id)][draws]
     for i in range(500):
         plt.plot(x_domain, alpha[i] + beta[i] * x_domain, color='black',
                  alpha=0.05, zorder=2)
@@ -235,12 +238,11 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
     plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
-    plt.title(str(date)[6:] + '/' + str(date)[4:6] + '/' + str(date)[:4])
+    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y"))
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.show()
 
-# Time series plotting function that plots alpha or beta against flare stack data, needs "real" data to develop.
 def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
     '''This function is for plotting estimated values of :math:`\\alpha_d` vs :math:`\\beta_d` for a range of days
     :math:`d`.
@@ -340,7 +342,14 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
 
     ax0.set_ylabel(r'$\mathregular{\beta}$ [ppbv / $\mathregular{\mu}$ mol m$^{-2}$]')
     ax0.set_xlabel(r'$\mathregular{\alpha}$ [ppbv]')
-    plt.title('Test dataset')
+
+    # Check if this is a test dataset or not
+    if 'days' in fitted_model.run_name:
+        plt.title('Test dataset')
+    else:
+        start_date, end_date, model = fitted_model.run_name.split('-')
+        plt.title(datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%d/%m/%Y") + ' - '
+                  + datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%d/%m/%Y"))
     plt.tight_layout()
     plt.show()
 
@@ -398,9 +407,18 @@ def reduced_chi_squared(model_run):
 
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
+    title = 'Reduced chi-squared values by day, '
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
-    plt.title('Reduced chi-squared values by day')
+
+    # Check if this is a test dataset or not
+    if 'days' in model_run:
+        title += 'test dataset'
+    else:
+        start_date, end_date, model = model_run.split('-')
+        title += datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%d/%m/%Y") + ' - ' + \
+                 datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%d/%m/%Y")
+    plt.title(title)
     plt.tight_layout()
     plt.show()
 

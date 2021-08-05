@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 from tabulate import tabulate
 import random
-import csv
 from scipy.stats import norm
 from tqdm import tqdm
 from src import constants as ct
@@ -29,7 +28,7 @@ class FittedResults:
         # Number of random draws to use, 4000 is the max. Might need to be smaller if this is taking a while.
         S = 1000
 
-        for i in tqdm(range(M)):
+        for i in tqdm(range(M), desc='Iterating over all observations'):
             day_id     = dataset_df.Day_ID[i]
 
             obs_no2    = dataset_df.obs_NO2[i]
