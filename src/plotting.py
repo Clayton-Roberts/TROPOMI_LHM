@@ -2,14 +2,225 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
+import matplotlib.patches as patches
+import matplotlib.cm as cm
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import netCDF4 as nc4
+import copy
 import datetime
+import glob
+import cartopy.crs as ccrs
+import cartopy.io.shapereader as shpreader
+import cartopy.feature as cfeature
 from src import constants as ct
 
 # Some global parameters for all plots.
-mpl.rcParams['font.family']    = 'Avenir'
+#mpl.rcParams['font.family']    = 'Avenir'
+
+class PlotHelper:
+    #TODO make the docstring
+    def __init__(self, filename, molecule, qa_only=False):
+        self.figsize = (10.0, 6.0)
+        self.extent  = (-106, -99, 29, 35)
+        self.xticks  = range(-106, -99, 2)
+        self.yticks  = range(29, 35, 2)
+
+        # Open the TROPOMI observation file
+        f = nc4.Dataset(ct.FILE_PREFIX + '/observations/' + molecule + '/' + filename, 'r')
+
+        date = filename.split("T")[0]
+
+        if molecule == "NO2":
+            self.legend = "Column density [$\mu$mol m$^{-2}$]"
+            self.title = 'Tropospheric column density NO$_2$' + \
+                         '\n' + datetime.datetime.strptime(date, '%Y%m%d').strftime('%B %-d, %Y')
+            self.vmax  = 100.0
+            self.vmin  = 0.0
+
+            # Access pixel values, convert to micromols / m^2
+            no2 = np.array(f.groups['PRODUCT'].variables['nitrogendioxide_tropospheric_column'][0]) * 1e6
+
+
+            if not qa_only:
+                self.data = np.ma.masked_greater(no2, 1e30)
+            # If you only want high quality pixels, need to do the below.
+            else:
+                filtered_no2 = np.empty(np.shape(no2))
+                qa_values    = np.array(f.groups['PRODUCT'].variables['qa_value'][0])
+
+                for i in range(np.shape(no2)[0]):
+                    for j in range(np.shape(no2)[1]):
+                        if qa_values[i, j] < 0.75:
+                            filtered_no2[i, j] = 1e32
+                        else:
+                            filtered_no2[i, j] = no2[i, j]
+
+                self.data = np.ma.masked_greater(filtered_no2, 1e30)
+
+        elif molecule == "CH4":
+            self.legend = "Mixing ratio [ppbv]"
+            self.title = 'Column averaged mixing ratio CH$_4$' + \
+                         '\n' + datetime.datetime.strptime(date, '%Y%m%d').strftime('%B %-d, %Y')
+            self.vmax  = 1900.0
+            self.vmin  = 1820.0
+
+            # Access pixel values
+            ch4 = np.array(f.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+
+            if not qa_only:
+                self.data = np.ma.masked_greater(ch4, 1e30)
+            # If you only want high-quality pixels, have to do the below.
+            else:
+                filtered_ch4 = np.empty(np.shape(ch4))
+                qa_values    = np.array(f.groups['PRODUCT'].variables['qa_value'][0])
+
+                for i in range(np.shape(ch4)[0]):
+                    for j in range(np.shape(ch4)[1]):
+                        if qa_values[i, j] < 0.5:
+                            filtered_ch4[i, j] = 1e32
+                        else:
+                            filtered_ch4[i, j] = ch4[i, j]
+
+                self.data = np.ma.masked_greater(filtered_ch4, 1e30)
+
+        # Acess pixel corner latitudes and longitudes
+        lat_corners = np.array(
+            f.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['GEOLOCATIONS'].variables['latitude_bounds'][0])
+        lon_corners = np.array(
+            f.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['GEOLOCATIONS'].variables['longitude_bounds'][0])
+
+        rows    = np.shape(self.data)[0]
+        columns = np.shape(self.data)[1]
+
+        latitude_corners = np.empty((rows + 1, columns + 1))
+        longitude_corners = np.empty((rows + 1, columns + 1))
+
+        for i in range(rows):
+            for j in range(columns):
+                latitude_corners[i, j] = lat_corners[i][j][0]
+                latitude_corners[i + 1, j] = lat_corners[i][j][1]
+                latitude_corners[i + 1, j + 1] = lat_corners[i][j][2]
+                latitude_corners[i, j + 1] = lat_corners[i][j][3]
+                longitude_corners[i, j] = lon_corners[i][j][0]
+                longitude_corners[i + 1, j] = lon_corners[i][j][1]
+                longitude_corners[i + 1, j + 1] = lon_corners[i][j][2]
+                longitude_corners[i, j + 1] = lon_corners[i][j][3]
+
+        self.latitudes = latitude_corners
+        self.longitudes = longitude_corners
+
+def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_flares=False):
+    '''This is a function for plotting TROPOMI observations of either :math:`\\mathrm{NO}_2` or :math:`\\mathrm{CH}_4`.
+
+    :param date: Date you want to plot observations for, format as %Y-%m-%d
+    :type date: str
+    :param molecule: Molecule you want to plot observations of. Must be either "CH4" or "NO2".
+    :type molecule: string
+    :param plot_study_region: A flag to determine if you want to plot the study region or not.
+    :type plot_study_region: bool
+    :param qa_only: A flag to determine if you want to only use QA'd observations or not.
+    :type qa_only: bool
+    :param show_flares: A flag to determine if you want to plot flare stack locations that are "on" from VIIRS.
+    :type show_flares: bool
+    '''
+
+    file_date_prefix        = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
+    potential_tropomi_files = [file.split('/')[-1] for file in
+                               glob.glob(ct.FILE_PREFIX + '/observations/' + molecule + '/' + file_date_prefix + '*.nc')]
+
+    if len(potential_tropomi_files) > 1:
+        print('Multiple files match the input date. Enter index of desired file:')
+        for i in range(len(potential_tropomi_files)):
+            print(f'[{i}]: {potential_tropomi_files[i]}')
+        index = int(input('File index: '))
+        file = potential_tropomi_files[index]
+    else:
+        file = potential_tropomi_files[0]
+
+    # Set necessary details with the plot helper
+    plot_helper = PlotHelper(file, molecule, qa_only)
+
+    # Get the oulines of counties
+    reader = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
+    counties = list(reader.geometries())
+    COUNTIES = cfeature.ShapelyFeature(counties, ccrs.PlateCarree())
+
+    # Set the figure size
+    plt.figure(figsize=plot_helper.figsize)
+
+    ax = plt.axes(projection=ccrs.PlateCarree())
+
+    # Set the ticks
+    ax.set_xlabel('Longitude')
+    ax.set_xticks(plot_helper.xticks)
+    ax.set_ylabel('Latitude')
+    ax.set_yticks(plot_helper.yticks)
+
+    # Set up the limits to the plot
+    ax.set_extent(plot_helper.extent, crs=ccrs.PlateCarree())
+
+    if plot_study_region:
+        # Create a Rectangle patch
+        box       = ct.STUDY_REGION['Permian_Basin']
+        rectangle = patches.Rectangle((box[0], box[2]),
+                                    box[1] - box[0],
+                                    box[3] - box[2],
+                                    linewidth=2,
+                                    edgecolor='r',
+                                    facecolor='none')
+        # Add the patch to the Axes
+        ax.add_patch(rectangle)
+
+    colors = copy.copy(cm.RdYlBu_r)
+    colors.set_bad('grey', 1.0)
+
+    # Define the coordinate system that the grid lons and grid lats are on
+    plt.pcolormesh(plot_helper.longitudes,
+                   plot_helper.latitudes,
+                   plot_helper.data,
+                   cmap=colors,
+                   vmin=plot_helper.vmin,
+                   vmax=plot_helper.vmax)
+
+    if show_flares:
+        # Find and open the relevant VIIRS observation file, there should only be one matching file in the list.
+        viirs_file = glob.glob(ct.FILE_PREFIX + '/observations/VIIRS/*' + file_date_prefix + '*.csv')[0]
+        viirs_df = pd.read_csv(viirs_file)
+
+        flare_location_df = pd.DataFrame(columns=('Latitude', 'Longitude'))
+
+        # Examine every active flare
+        for index in viirs_df.index:
+
+            # If latitudes of flare in study region:
+            if (ct.STUDY_REGION['Permian_Basin'][2] < viirs_df.Lat_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][3]):
+
+                # If longitudes of flare in study region:
+                if (ct.STUDY_REGION['Permian_Basin'][0] < viirs_df.Lon_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][1]):
+
+                    if viirs_df.Temp_BB[index] != 999999:
+                        flare_location_df = flare_location_df.append({'Latitude': viirs_df.Lat_GMTCO[index],
+                                                                      'Longitude': viirs_df.Lon_GMTCO[index]},
+                                                                     ignore_index=True)
+
+        ax.scatter(flare_location_df.Longitude, flare_location_df.Latitude,
+                   marker="^",
+                   s=20,
+                   color='limegreen',
+                   edgecolors='black')
+
+    cbar = plt.colorbar()
+    cbar.set_label(plot_helper.legend, rotation=270, labelpad=18)
+
+    ax.add_feature(cfeature.BORDERS.with_scale('10m'), edgecolor='lightgray')
+    ax.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray')
+    ax.add_feature(cfeature.COASTLINE.with_scale('10m'), edgecolor="lightgray")
+    plt.title(plot_helper.title)
+    plt.tight_layout()
+    plt.savefig('figures/autosaved/image.png', dpi=300, bbox_inches='tight')
+    plt.show()
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
@@ -78,7 +289,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter]
 
     if date:
-        title += ', ' + datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y")
+        title += '\n' + datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y")
 
     # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
@@ -88,9 +299,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.plot(fitted_model.chain_4[model_key])
     plt.xlabel('Samples')
     plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
-    plt.axhline(fitted_model.mean_values[model_key], color='r', lw=2, linestyle='--')
+    plt.axhline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--')
     if compare_to_ground_truth:
-        plt.axhline(ground_truth, color='black', lw=2, linestyle='--',)
+        plt.axhline(ground_truth, color='red', lw=2, linestyle='--',)
     plt.axhline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2)
     plt.axhline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
     plt.title(title)
@@ -101,9 +312,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     sns.kdeplot(fitted_model.full_trace[model_key], shade=True)
     plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
-    plt.axvline(fitted_model.mean_values[model_key], color='r', lw=2, linestyle='--', label='Mean value')
+    plt.axvline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--', label='Mean value')
     if compare_to_ground_truth:
-        plt.axvline(ground_truth, color='black', lw=2, linestyle='--', label='True value')
+        plt.axvline(ground_truth, color='red', lw=2, linestyle='--', label='True value')
     plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'95% CI')
     plt.axvline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
 
@@ -142,7 +353,7 @@ def observations_scatterplot(date, run_name):
     plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
     plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
-    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y"))
+    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y"))
     plt.legend(loc='upper left')
     plt.tight_layout()
     plt.show()
@@ -171,7 +382,7 @@ def dropout_scatterplot(date, run_name):
     plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
     plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
-    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y"))
+    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y"))
     plt.legend(loc='upper left')
     plt.tight_layout()
     plt.show()
@@ -229,12 +440,13 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
                  mfc='w',
                  color='red',
                  ms=4,
-                 zorder=1)
+                 zorder=1,
+                 label='Observed values')
 
     plt.xlabel(r'NO$_{2}^{\mathrm{obs}}$ [$\mathregular{\mu}$ mol m$^{-2}$]')
     plt.ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
 
-    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%d/%m/%Y"))
+    plt.title(datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y"))
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.show()
@@ -344,8 +556,8 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
         plt.title('Test dataset')
     else:
         start_date, end_date, model = fitted_model.run_name.split('-')
-        plt.title(datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%d/%m/%Y") + ' - '
-                  + datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%d/%m/%Y"))
+        plt.title(datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - '
+                  + datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y"))
     plt.tight_layout()
     plt.show()
 
@@ -403,17 +615,17 @@ def reduced_chi_squared(model_run):
 
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
-    title = 'Reduced chi-squared values by day, '
+    title = 'Reduced chi-squared values by day'
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
 
     # Check if this is a test dataset or not
     if 'days' in model_run:
-        title += 'test dataset'
+        title += '\n Test Dataset'
     else:
         start_date, end_date, model = model_run.split('-')
-        title += datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%d/%m/%Y") + ' - ' + \
-                 datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%d/%m/%Y")
+        title += '\n' + datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
+                 datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y")
     plt.title(title)
     plt.tight_layout()
     plt.show()
@@ -429,13 +641,23 @@ def residuals(daily_mean_error_model_run, individual_error_model_run=None):
     if individual_error_model_run:
         residual_df_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + individual_error_model_run + '/dropout/residuals.csv',
                                     header=0)
-        plt.hist(residual_df_2.Residuals, label='Individual error model')
+        plt.hist(residual_df_2.Residuals, alpha=0.5, label='Individual error model')
 
     residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + daily_mean_error_model_run + '/dropout/residuals.csv',
                                 header=0)
 
-    plt.hist(residual_df_1.Residuals, label='Average error model')
-    plt.title('Residual comparison')
+    plt.hist(residual_df_1.Residuals, alpha=0.5, label='Average error model')
+
+    title = 'Residual comparison'
+    # Check if this is a test dataset
+    if 'days' in daily_mean_error_model_run:
+        title += '\n' + 'Test dataset'
+    else:
+        start_date, end_date, model = daily_mean_error_model_run.split('-')
+        title += '\n' + datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
+                 datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y")
+
+    plt.title(title)
     plt.legend()
     plt.xlabel(r'$\mathregular{CH_4^{pred}} - \mathregular{CH_4^{obs}}$ [ppbv]')
     plt.tight_layout()
@@ -539,4 +761,3 @@ def beta_flare_time_series(fitted_results):
 
     plt.tight_layout()
     plt.show()
-

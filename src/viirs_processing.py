@@ -33,15 +33,15 @@ def generate_flare_time_series(run_name):
             df = pd.read_csv(ct.FILE_PREFIX + '/observations/VIIRS/' + file)
 
             # Examine every active flare
-            for i in range(len(df)):
+            for index in df.index:
 
                 # If latitudes of flare in study region:
-                if (ct.STUDY_REGION['Permian_Basin'][2] < df.Lat_GMTCO[i] < ct.STUDY_REGION['Permian_Basin'][3]):
+                if (ct.STUDY_REGION['Permian_Basin'][2] < df.Lat_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][3]):
 
                     # If longitudes of flare in study region:
-                    if (ct.STUDY_REGION['Permian_Basin'][0] < df.Lon_GMTCO[i] < ct.STUDY_REGION['Permian_Basin'][1]):
+                    if (ct.STUDY_REGION['Permian_Basin'][0] < df.Lon_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][1]):
 
-                        if df.Temp_BB[i] != 999999:
+                        if df.Temp_BB[index] != 999999:
 
                             active_flares += 1
 
