@@ -40,16 +40,13 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         else:
             ground_truth = hyperparameter_truths_df[parameter][0]
 
-    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
-
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
     # using the passed date. Use the summary.csv file and index by date
     summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
-    summary_dict = summary_df.to_dict()
 
     # Daily parameters are saved in stan as parameter.day_id .
     if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
-        model_key = parameter + '.' + str(summary_dict['Day_ID'][date])
+        model_key = parameter + '.' + str(int(summary_df.loc[date].Day_ID))
     else:
         model_key = parameter
 
@@ -130,7 +127,7 @@ def observations_scatterplot(date, run_name):
     np.random.seed(101)
 
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', header=0)
-    date_df = dataset_df[dataset_df.Date == date]
+    date_df    = dataset_df[dataset_df.Date == date]
 
     plt.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
                  ecolor="blue",
@@ -204,9 +201,8 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
     # using the passed date. Use the summary.csv file and index by date
     summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
-    summary_dict = summary_df.to_dict()
 
-    day_id = summary_dict['Day_ID'][date]
+    day_id = int(summary_df.loc[date].Day_ID)
 
     draws = np.arange(len(fitted_model.full_trace['alpha.' + str(day_id)]))
     np.random.shuffle(draws)
@@ -431,10 +427,12 @@ def residuals(daily_mean_error_model_run, individual_error_model_run=None):
     '''
 
     if individual_error_model_run:
-        residual_df_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + individual_error_model_run + '/dropout/residuals.csv')
+        residual_df_2 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + individual_error_model_run + '/dropout/residuals.csv',
+                                    header=0)
         plt.hist(residual_df_2.Residuals, label='Individual error model')
 
-    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + daily_mean_error_model_run + '/dropout/residuals.csv')
+    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + daily_mean_error_model_run + '/dropout/residuals.csv',
+                                header=0)
 
     plt.hist(residual_df_1.Residuals, label='Average error model')
     plt.title('Residual comparison')
@@ -442,3 +440,103 @@ def residuals(daily_mean_error_model_run, individual_error_model_run=None):
     plt.xlabel(r'$\mathregular{CH_4^{pred}} - \mathregular{CH_4^{obs}}$ [ppbv]')
     plt.tight_layout()
     plt.show()
+
+def beta_flare_time_series(fitted_results):
+    '''This function is for plotting two time series together of :math:`\\beta` values and flare stack counts for
+    the specified run.
+
+    :param fitted_results: The fitted results.
+    :type fitted_results: FittedResults
+    '''
+
+    # Read in the flare stack count time series.
+    flare_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/flare_counts.csv', header=0)
+
+    # Read in the summary.csv file, index by date
+    summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0, index_col=0)
+
+    # Create the time series of mean inferred beta values and their credible intervals.
+    beta_df = pd.DataFrame(columns=('Date', 'Beta', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
+
+    for date in summary_df.index:
+        parameter = 'beta.' + str(int(summary_df.loc[date].Day_ID))
+        mean_beta = fitted_results.mean_values[parameter]
+        lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
+        beta_df = beta_df.append({'Date': date,
+                                  'Beta': mean_beta,
+                                  'Lower_bound_95_CI': lower_bound,
+                                  'Upper_bound_95_CI': upper_bound},
+                                 ignore_index=True)
+
+    beta_datetimes  = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in beta_df.Date]
+    errors          = [[beta_df.Beta[i] - beta_df.Lower_bound_95_CI[i], beta_df.Upper_bound_95_CI[i] - beta_df.Beta[i]]
+                       for i in beta_df.index]
+
+    # create figure and axis objects with subplots()
+    fig, ax = plt.subplots()
+    # make a plot
+    ax.errorbar(beta_datetimes,
+                beta_df.Beta,
+                yerr=np.array(errors).T,
+                linestyle="None",
+                ecolor="blue",
+                fmt='D',
+                mfc='w',
+                color='blue',
+                capsize=3,
+                ms=5)
+    # set x-axis label
+    ax.set_xlabel("Date", fontsize=14)
+
+    # set y-axis label
+    ax.set_ylabel(r'$\beta$', color="blue", fontsize=14)
+
+    # set y-axis colors
+    ax.tick_params(axis='y', colors='blue')
+
+    # Separate flare data into dates shared with beta and dates that are not.
+    # Indexes of flare dates that we were able to calculate beta on.
+    shared_index = flare_df[flare_df.Date.isin(beta_df.Date)].index.to_list()
+    # Indexes of flare dates that we were not able to calculate beta on.
+    unshared_index = flare_df[~flare_df.Date.isin(beta_df.Date)].index.to_list()
+
+    shared_flare_dates     = flare_df.Date[shared_index]
+    shared_flare_counts    = flare_df.Flare_count[shared_index]
+    shared_flare_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d") for date in shared_flare_dates]
+
+    unshared_flare_dates     = flare_df.Date[unshared_index]
+    unshared_flare_counts    = flare_df.Flare_count[unshared_index]
+    unshared_flare_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d") for date in unshared_flare_dates]
+
+    # twin object for two different y-axes on the same plot
+    ax2 = ax.twinx()
+    # make a plot with different y-axis using second axis object
+    ax2.scatter(shared_flare_datetimes, shared_flare_counts, color="red", marker="x", s=30)
+    ax2.scatter(unshared_flare_datetimes, unshared_flare_counts, color="grey", marker="x", s=10)
+    ax2.set_ylabel("Flare count", color="red", fontsize=14)
+    ax2.tick_params(axis='y', colors='red')
+
+    # Add in the ticks
+    # This next line will only work for "real" datasets. Shouldn't need to make this plot for test datasets anyway.
+    start_date, end_date, model  = fitted_results.run_name.split('-')
+    # Find the first tick
+    first_tick_date = datetime.datetime.strptime(start_date, "%Y%m%d").replace(day=1).strftime("%Y-%m-%d")
+    # Find the last tick
+    last_tick_date  = (datetime.datetime.strptime(end_date, "%Y%m%d").replace(day=1) + datetime.timedelta(days=32)).replace(day=1).strftime("%Y-%m-%d")
+    # Use pandas to create the date range, ticks on first of the month ('MS').
+    tick_locations = pd.date_range(first_tick_date, last_tick_date, freq='MS')
+    tick_labels    = tick_locations.strftime('%b-%y')
+    # Add ticks to the plot
+    plt.setp(ax2, xticks=tick_locations,
+             xticklabels=tick_labels)
+    # Add vlines
+    for location in tick_locations:
+        plt.axvline(location, linestyle='--', color='grey', linewidth=0.5)
+
+    # Create the title
+    plt.title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+              datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
+    plt.tight_layout()
+    plt.show()
+
