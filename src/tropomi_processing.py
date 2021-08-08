@@ -7,6 +7,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 import datetime
+import glob
 import json
 import shutil
 
@@ -277,8 +278,8 @@ def create_dataset(run_name):
 
     start_date, end_date, model = run_name.split('-')
 
-    start_date = datetime.datetime.strptime(start_date, "%Y%m%d").date()
-    end_date   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
+    start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+    end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
 
     total_days         = 0
     data_rich_days     = 0
@@ -292,62 +293,86 @@ def create_dataset(run_name):
     # A summary dataframe for overall metrics of for this run's data.
     summary_df = pd.DataFrame(columns=(('Date', 'Day_ID', 'M', 'R')))
 
-    for file in tqdm(os.listdir(ct.FILE_PREFIX + '/observations/NO2'), desc='Iterating over all TROPOMI observations'):
+    # Create the list of dates to iterate over.
+    num_days  = (end_datetime - start_datetime).days + 1
+    date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
 
-        date  = datetime.datetime.strptime(file[:8], "%Y%m%d").date()
+    # For every date in range for this model run:
+    for date in tqdm(date_list, desc='Processing TROPOMI observations'):
 
-        # If date in correct range for this run...
-        if start_date <= date <= end_date:
+        total_days += 1
 
-            total_days += 1
+        # Create string from the date datetime
+        date_string = date.strftime("%Y%m%d")
 
-            obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(file)
+        # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+        # that are a couple hours apart. Usually one overpass captures the whole study region.
+        tropomi_overpasses = [file.split('/')[-1] for file in
+                                   glob.glob(
+                                       ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
 
-            # If there are more than 100 co-located measurements on this day ...
-            if len(obs_NO2) >= 100:
+        total_obs_CH4   = []
+        total_sigma_C   = []
+        total_obs_NO2   = []
+        total_sigma_N   = []
+        total_latitude  = []
+        total_longitude = []
 
-                r, p_value = stats.pearsonr(obs_NO2, obs_CH4)
+        for overpass in tropomi_overpasses:
 
-                # if R >= 0.4 ...
-                if r >= 0.4:
-                    # Checks are passed, so write to the various datasets.
+            obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
 
-                    data_rich_days     += 1
-                    total_observations += len(obs_NO2)
+            total_obs_CH4.extend(obs_CH4)
+            total_sigma_C.extend(sigma_C)
+            total_obs_NO2.extend(obs_NO2)
+            total_sigma_N.extend(sigma_N)
+            total_latitude.extend(latitude)
+            total_longitude.extend(longitude)
 
-                    # Append summary of this day to the summary dataframe.
-                    summary_df = summary_df.append({'Date': date, 'Day_ID': day_id, 'M': len(obs_NO2),
-                                                    'R': round(r, 2)},
-                                                   ignore_index=True)
+        # If there are more than 100 co-located measurements on this day ...
+        if len(total_obs_NO2) >= 100:
 
-                    # Round numbers to two decimal places
-                    obs_NO2   = [round(float(num), 2) for num in obs_NO2]
-                    obs_CH4   = [round(float(num), 2) for num in obs_CH4]
-                    sigma_N   = [round(float(num), 2) for num in sigma_N]
-                    sigma_C   = [round(float(num), 2) for num in sigma_C]
-                    latitude  = [round(float(num), 2) for num in latitude]
-                    longitude = [round(float(num), 2) for num in longitude]
+            r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
 
-                    # Create a dataframe containing the observations for this day. Round numbers to two decimal places.
-                    day_df = pd.DataFrame(list(zip([day_id]*len(obs_NO2),
-                                                   [date]*len(obs_NO2),
-                                                   obs_NO2,
-                                                   obs_CH4,
-                                                   sigma_N,
-                                                   sigma_C,
-                                                   latitude,
-                                                   longitude)),
-                                          columns=('Day_ID','Date','obs_NO2', 'obs_CH4',
-                                                   'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+            # if R >= 0.4 ...
+            if r >= 0.4:
+                # Checks are passed, so write to the various datasets.
 
-                    # Append the dataframe to this day to the list of dataframes to later concatenate together.
-                    daily_dfs.append(day_df)
+                data_rich_days += 1
+                total_observations += len(total_obs_NO2)
 
-                    # Increment day_is
-                    day_id += 1
+                # Append summary of this day to the summary dataframe.
+                summary_df = summary_df.append({'Date': date, 'Day_ID': day_id, 'M': len(total_obs_NO2),
+                                                'R': round(r, 2)},
+                                               ignore_index=True)
+
+                # Round numbers to two decimal places
+                total_obs_NO2   = [round(float(num), 2) for num in total_obs_NO2]
+                total_obs_CH4   = [round(float(num), 2) for num in total_obs_CH4]
+                total_sigma_N   = [round(float(num), 2) for num in total_sigma_N]
+                total_sigma_C   = [round(float(num), 2) for num in total_sigma_C]
+                total_latitude  = [round(float(num), 2) for num in total_latitude]
+                total_longitude = [round(float(num), 2) for num in total_longitude]
+
+                # Create a dataframe containing the observations for this day.
+                day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),
+                                               [date] * len(total_obs_NO2),
+                                               total_obs_NO2,
+                                               total_obs_CH4,
+                                               total_sigma_N,
+                                               total_sigma_C,
+                                               total_latitude,
+                                               total_longitude)),
+                                      columns=('Day_ID', 'Date', 'obs_NO2', 'obs_CH4',
+                                               'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+                # Append the dataframe to this day to the list of dataframes to later concatenate together.
+                daily_dfs.append(day_df)
+
+                # Increment day_id
+                day_id += 1
 
     # Sort the summary dataframe by date.
-    summary_df = summary_df.sort_values(by='Date')
     summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
 
     # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
