@@ -9,12 +9,12 @@ from src import plotting as p
 #=======================================================
 #   --- Flags for real analysis ---
 #-----------------------------------
-PROCESS_TROPOMI_FILES = True
-PROCESS_VIIRS_FILES   = True
+PROCESS_TROPOMI_FILES = False
+PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
-MAKE_PLOTS            = False
+MAKE_PLOTS            = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -25,10 +25,13 @@ RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
-SHOW_GROUND_TRUTH = False
-PARAM             = 'sigma_beta'
-DATE              = '2019-01-31'
-MOLECULE          = 'NO2'
+SHOW_GROUND_TRUTH    = False
+PARAM                = 'beta'
+DATE                 = '2019-01-31'
+MOLECULE             = 'NO2'
+PLOT_STUDY_REGION    = True
+PLOT_FLARES          = True
+SHOW_QAD_PIXELS_ONLY = True
 ##=======================================================
 
 if PROCESS_TROPOMI_FILES:
