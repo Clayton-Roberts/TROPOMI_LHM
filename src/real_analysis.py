@@ -10,7 +10,7 @@ from src import plotting as p
 #   --- Flags for real analysis ---
 #-----------------------------------
 PROCESS_TROPOMI_FILES = True
-PROCESS_VIIRS_FILES   = False
+PROCESS_VIIRS_FILES   = True
 PERFORM_DROPOUT_FIT   = False
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False

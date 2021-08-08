@@ -373,7 +373,6 @@ def create_dataset(run_name):
                 day_id += 1
 
     # Sort the summary dataframe by date.
-    summary_df = summary_df.sort_values(by='Date')
     summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
 
     # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
