@@ -17,7 +17,7 @@ using namespace stan::math;
 
 
 stan::math::profile_map profiles__;
-static constexpr std::array<const char*, 59> locations_array__ = 
+static constexpr std::array<const char*, 58> locations_array__ = 
 {" (found before start of program)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 15, column 4 to column 39)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 16, column 4 to column 34)",
@@ -29,35 +29,34 @@ static constexpr std::array<const char*, 59> locations_array__ =
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 25, column 4 to column 34)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 28, column 8 to column 56)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 27, column 4 to line 28, column 56)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 49, column 4 to column 23)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 50, column 4 to column 22)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 51, column 4 to column 26)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 52, column 4 to column 25)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 53, column 4 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 54, column 4 to column 29)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 55, column 4 to column 28)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 58, column 8 to column 31)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 59, column 8 to column 31)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 57, column 19 to line 60, column 5)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 57, column 4 to line 60, column 5)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 62, column 4 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 63, column 4 to column 21)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 65, column 4 to column 22)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 67, column 4 to column 33)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 68, column 4 to column 33)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 52, column 4 to column 23)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 53, column 4 to column 22)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 54, column 4 to column 26)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 55, column 4 to column 25)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 56, column 4 to column 21)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 57, column 4 to column 29)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 58, column 4 to column 28)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 61, column 8 to column 31)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 62, column 8 to column 31)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 60, column 19 to line 63, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 60, column 4 to line 63, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 65, column 4 to column 21)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 66, column 4 to column 21)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 68, column 4 to column 22)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 70, column 4 to column 33)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 71, column 4 to column 33)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 31, column 4 to column 12)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 32, column 4 to column 12)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 35, column 4 to column 33)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 38, column 19 to column 45)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 38, column 4 to column 45)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 40, column 11 to column 12)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 40, column 4 to column 95)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 41, column 11 to column 12)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 41, column 4 to column 105)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 44, column 8 to column 104)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 45, column 8 to column 35)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 43, column 19 to line 46, column 5)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 43, column 4 to line 46, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 41, column 19 to column 45)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 41, column 4 to column 45)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 43, column 11 to column 12)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 43, column 4 to column 95)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 44, column 11 to column 12)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 44, column 4 to column 105)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 47, column 8 to column 104)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 48, column 8 to column 35)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 46, column 19 to line 49, column 5)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 46, column 4 to line 49, column 5)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 5, column 4 to column 30)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 6, column 4 to column 30)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 7, column 40 to column 41)",
@@ -75,8 +74,8 @@ static constexpr std::array<const char*, 59> locations_array__ =
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 15, column 36 to column 37)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 19, column 20 to column 21)",
  " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 23, column 34 to column 35)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 49, column 11 to column 12)",
- " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 50, column 11 to column 12)"};
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 52, column 11 to column 12)",
+ " (in '/Users/claytonroberts/Documents/TROPOMI_LHM/src/models/daily_mean_error.stan', line 53, column 11 to column 12)"};
 
 
 
@@ -123,63 +122,63 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
       pos__ = std::numeric_limits<int>::min();
       
       pos__ = 1;
-      current_statement__ = 40;
+      current_statement__ = 39;
       context__.validate_dims("data initialization","M","int",
            std::vector<size_t>{});
       M = std::numeric_limits<int>::min();
       
-      current_statement__ = 40;
+      current_statement__ = 39;
       M = context__.vals_i("M")[(1 - 1)];
-      current_statement__ = 40;
+      current_statement__ = 39;
       check_greater_or_equal(function__, "M", M, 0);
-      current_statement__ = 41;
+      current_statement__ = 40;
       context__.validate_dims("data initialization","D","int",
            std::vector<size_t>{});
       D = std::numeric_limits<int>::min();
       
-      current_statement__ = 41;
+      current_statement__ = 40;
       D = context__.vals_i("D")[(1 - 1)];
-      current_statement__ = 41;
+      current_statement__ = 40;
       check_greater_or_equal(function__, "D", D, 0);
-      current_statement__ = 42;
+      current_statement__ = 41;
       validate_non_negative_index("group_sizes", "D", D);
-      current_statement__ = 43;
+      current_statement__ = 42;
       context__.validate_dims("data initialization","group_sizes","int",
            std::vector<size_t>{static_cast<size_t>(D)});
       group_sizes = std::vector<int>(D, std::numeric_limits<int>::min());
       
-      current_statement__ = 43;
+      current_statement__ = 42;
       group_sizes = context__.vals_i("group_sizes");
-      current_statement__ = 43;
+      current_statement__ = 42;
       for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        current_statement__ = 43;
+        current_statement__ = 42;
         check_greater_or_equal(function__, "group_sizes[sym1__]",
                                group_sizes[(sym1__ - 1)], 1);
       }
-      current_statement__ = 44;
+      current_statement__ = 43;
       validate_non_negative_index("day_id", "M", M);
-      current_statement__ = 45;
+      current_statement__ = 44;
       context__.validate_dims("data initialization","day_id","int",
            std::vector<size_t>{static_cast<size_t>(M)});
       day_id = std::vector<int>(M, std::numeric_limits<int>::min());
       
-      current_statement__ = 45;
+      current_statement__ = 44;
       day_id = context__.vals_i("day_id");
-      current_statement__ = 45;
+      current_statement__ = 44;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 45;
+        current_statement__ = 44;
         check_greater_or_equal(function__, "day_id[sym1__]",
                                day_id[(sym1__ - 1)], 1);
       }
-      current_statement__ = 45;
+      current_statement__ = 44;
       for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-        current_statement__ = 45;
+        current_statement__ = 44;
         check_less_or_equal(function__, "day_id[sym1__]",
                             day_id[(sym1__ - 1)], D);
       }
-      current_statement__ = 46;
+      current_statement__ = 45;
       validate_non_negative_index("NO2_obs", "M", M);
-      current_statement__ = 47;
+      current_statement__ = 46;
       context__.validate_dims("data initialization","NO2_obs","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       NO2_obs__ = Eigen::Matrix<double, -1, 1>(M);
@@ -188,22 +187,22 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
       
       {
         std::vector<local_scalar_t__> NO2_obs_flat__;
-        current_statement__ = 47;
+        current_statement__ = 46;
         NO2_obs_flat__ = context__.vals_r("NO2_obs");
-        current_statement__ = 47;
+        current_statement__ = 46;
         pos__ = 1;
-        current_statement__ = 47;
+        current_statement__ = 46;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 47;
+          current_statement__ = 46;
           assign(NO2_obs, NO2_obs_flat__[(pos__ - 1)],
             "assigning variable NO2_obs", index_uni(sym1__));
-          current_statement__ = 47;
+          current_statement__ = 46;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 48;
+      current_statement__ = 47;
       validate_non_negative_index("CH4_obs", "M", M);
-      current_statement__ = 49;
+      current_statement__ = 48;
       context__.validate_dims("data initialization","CH4_obs","double",
            std::vector<size_t>{static_cast<size_t>(M)});
       CH4_obs__ = Eigen::Matrix<double, -1, 1>(M);
@@ -212,22 +211,22 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
       
       {
         std::vector<local_scalar_t__> CH4_obs_flat__;
-        current_statement__ = 49;
+        current_statement__ = 48;
         CH4_obs_flat__ = context__.vals_r("CH4_obs");
-        current_statement__ = 49;
+        current_statement__ = 48;
         pos__ = 1;
-        current_statement__ = 49;
+        current_statement__ = 48;
         for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
-          current_statement__ = 49;
+          current_statement__ = 48;
           assign(CH4_obs, CH4_obs_flat__[(pos__ - 1)],
             "assigning variable CH4_obs", index_uni(sym1__));
-          current_statement__ = 49;
+          current_statement__ = 48;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 50;
+      current_statement__ = 49;
       validate_non_negative_index("sigma_N", "D", D);
-      current_statement__ = 51;
+      current_statement__ = 50;
       context__.validate_dims("data initialization","sigma_N","double",
            std::vector<size_t>{static_cast<size_t>(D)});
       sigma_N__ = Eigen::Matrix<double, -1, 1>(D);
@@ -236,28 +235,28 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
       
       {
         std::vector<local_scalar_t__> sigma_N_flat__;
-        current_statement__ = 51;
+        current_statement__ = 50;
         sigma_N_flat__ = context__.vals_r("sigma_N");
-        current_statement__ = 51;
+        current_statement__ = 50;
         pos__ = 1;
-        current_statement__ = 51;
+        current_statement__ = 50;
         for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-          current_statement__ = 51;
+          current_statement__ = 50;
           assign(sigma_N, sigma_N_flat__[(pos__ - 1)],
             "assigning variable sigma_N", index_uni(sym1__));
-          current_statement__ = 51;
+          current_statement__ = 50;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 51;
+      current_statement__ = 50;
       for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        current_statement__ = 51;
+        current_statement__ = 50;
         check_greater_or_equal(function__, "sigma_N[sym1__]",
                                sigma_N[(sym1__ - 1)], 0);
       }
-      current_statement__ = 52;
+      current_statement__ = 51;
       validate_non_negative_index("sigma_C", "D", D);
-      current_statement__ = 53;
+      current_statement__ = 52;
       context__.validate_dims("data initialization","sigma_C","double",
            std::vector<size_t>{static_cast<size_t>(D)});
       sigma_C__ = Eigen::Matrix<double, -1, 1>(D);
@@ -266,34 +265,34 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
       
       {
         std::vector<local_scalar_t__> sigma_C_flat__;
-        current_statement__ = 53;
+        current_statement__ = 52;
         sigma_C_flat__ = context__.vals_r("sigma_C");
-        current_statement__ = 53;
+        current_statement__ = 52;
         pos__ = 1;
-        current_statement__ = 53;
+        current_statement__ = 52;
         for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-          current_statement__ = 53;
+          current_statement__ = 52;
           assign(sigma_C, sigma_C_flat__[(pos__ - 1)],
             "assigning variable sigma_C", index_uni(sym1__));
-          current_statement__ = 53;
+          current_statement__ = 52;
           pos__ = (pos__ + 1);
         }
       }
-      current_statement__ = 53;
+      current_statement__ = 52;
       for (int sym1__ = 1; sym1__ <= D; ++sym1__) {
-        current_statement__ = 53;
+        current_statement__ = 52;
         check_greater_or_equal(function__, "sigma_C[sym1__]",
                                sigma_C[(sym1__ - 1)], 0);
       }
-      current_statement__ = 54;
+      current_statement__ = 53;
       validate_non_negative_index("epsilon", "D", D);
-      current_statement__ = 55;
+      current_statement__ = 54;
       validate_non_negative_index("gamma", "D", D);
-      current_statement__ = 56;
+      current_statement__ = 55;
       validate_non_negative_index("kappa", "D", D);
-      current_statement__ = 57;
+      current_statement__ = 56;
       validate_non_negative_index("alpha", "D", D);
-      current_statement__ = 58;
+      current_statement__ = 57;
       validate_non_negative_index("beta", "D", D);
     } catch (const std::exception& e) {
       stan::lang::rethrow_located(e, locations_array__[current_statement__]);
@@ -391,22 +390,20 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
         
         current_statement__ = 28;
         pos = 1;
-        current_statement__ = 29;
-        lp_accum__.add(exponential_lpdf<propto__>(sigma_kappa, 1));
-        current_statement__ = 31;
+        current_statement__ = 30;
         for (int d = 1; d <= D; ++d) {
-          current_statement__ = 30;
+          current_statement__ = 29;
           lp_accum__.add(
             std_normal_lpdf<propto__>(
               rvalue(epsilon, "epsilon", index_uni(d))));
         }
-        current_statement__ = 32;
+        current_statement__ = 31;
         validate_non_negative_index("CH4_hat", "M", M);
         Eigen::Matrix<local_scalar_t__, -1, 1> CH4_hat;
         CH4_hat = Eigen::Matrix<local_scalar_t__, -1, 1>(M);
         stan::math::fill(CH4_hat, DUMMY_VAR__);
         
-        current_statement__ = 33;
+        current_statement__ = 32;
         assign(CH4_hat,
           add(
             to_vector(
@@ -415,13 +412,13 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
               to_vector(
                 rvalue(kappa, "kappa", index_multi(day_id), index_uni(2))),
               NO2_obs)), "assigning variable CH4_hat");
-        current_statement__ = 34;
+        current_statement__ = 33;
         validate_non_negative_index("sigma", "D", D);
         Eigen::Matrix<local_scalar_t__, -1, 1> sigma;
         sigma = Eigen::Matrix<local_scalar_t__, -1, 1>(D);
         stan::math::fill(sigma, DUMMY_VAR__);
         
-        current_statement__ = 35;
+        current_statement__ = 34;
         assign(sigma,
           stan::math::sqrt(
             add(add(square(gamma), square(sigma_C)),
@@ -430,9 +427,9 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
                   to_vector(
                     rvalue(kappa, "kappa", index_omni(), index_uni(2))),
                   sigma_N)))), "assigning variable sigma");
-        current_statement__ = 39;
+        current_statement__ = 38;
         for (int d = 1; d <= D; ++d) {
-          current_statement__ = 36;
+          current_statement__ = 35;
           lp_accum__.add(
             normal_lpdf<propto__>(
               segment(CH4_obs, pos,
@@ -440,7 +437,7 @@ class daily_mean_error_model final : public model_base_crtp<daily_mean_error_mod
               segment(CH4_hat, pos,
                 rvalue(group_sizes, "group_sizes", index_uni(d))),
               rvalue(sigma, "sigma", index_uni(d))));
-          current_statement__ = 37;
+          current_statement__ = 36;
           pos = (pos + rvalue(group_sizes, "group_sizes", index_uni(d)));
         }
       }

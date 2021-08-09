@@ -38,11 +38,14 @@ def nuts(data_path, model_path, output_directory):
     # Fit the model.
     fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
-                       iter_sampling=1000, seed=101, show_progress=False,
+                       save_warmup=True,
+                       iter_sampling=1000, seed=101, show_progress=True,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,
-                       inits=ct.FILE_PREFIX + '/inits/chain_3.json')
+                       inits={"Omega": [[1.0, -0.6],[-0.6, 1.0]],
+                              "sigma_kappa": [10.0, 0.2],
+                              "mu": [1865.0, 0.8]})
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time

@@ -219,7 +219,7 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
     ax.add_feature(cfeature.COASTLINE.with_scale('10m'), edgecolor="lightgray")
     plt.title(plot_helper.title)
     plt.tight_layout()
-    plt.savefig('figures/autosaved/image.png', dpi=300, bbox_inches='tight')
+    plt.savefig('figures/autosaved/tropomi_observation.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
@@ -253,13 +253,17 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
     # using the passed date. Use the summary.csv file and index by date
-    #summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
+    summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
 
     # Daily parameters are saved in stan as parameter.day_id .
     if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
-        print(2)#model_key = parameter + '.' + str(int(summary_df.loc[date].Day_ID))
+        model_key  = parameter + '.' + str(int(summary_df.loc[date].Day_ID))
+        title_date = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y")
     else:
         model_key = parameter
+        start_date, end_date, model = fitted_model.run_name.split('-')
+        title_date = datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
+                     datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y")
 
     # Greek letters for labels
     parameter_symbol = {
@@ -270,7 +274,8 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         'mu_beta': r"$\mathregular{\mu_{\beta}}$",
         'sigma_alpha': r"$\mathregular{\sigma_{\alpha}}$",
         'sigma_beta': r"$\mathregular{\sigma_{\beta}}$",
-        'rho': r"$\mathregular{\rho}$"
+        'rho': r"$\mathregular{\rho}$",
+        'lp__' : 'log posterior'
     }
 
     # Units
@@ -282,22 +287,20 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
         'mu_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
         'sigma_alpha': "[ppbv]",
         'sigma_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
-        'rho': ''
+        'rho': '',
+        'lp__': ''
     }
 
 
-    title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter]
-
-    if date:
-        title += '\n' + datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y")
+    title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter] + '\n' + title_date
 
     # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
-    plt.plot(fitted_model.chain_1[model_key], label='1')
-    plt.plot(fitted_model.chain_2[model_key], label='2')
-    plt.plot(fitted_model.chain_3[model_key], label='3')
-    plt.plot(fitted_model.chain_4[model_key], label='4')
-    plt.legend()
+    plt.plot(fitted_model.chain_1[model_key])
+    plt.plot(fitted_model.chain_2[model_key])
+    plt.plot(fitted_model.chain_3[model_key])
+    plt.plot(fitted_model.chain_4[model_key])
+
     plt.xlabel('Samples')
     plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.axhline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--')
@@ -319,8 +322,9 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'95% CI')
     plt.axvline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
 
-    plt.gcf().tight_layout()
     plt.legend()
+    plt.tight_layout()
+    plt.savefig('figures/autosaved/trace.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def observations_scatterplot(date, run_name):

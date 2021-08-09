@@ -31,8 +31,11 @@ model{
     int pos;
     pos = 1;
 
-    // Priors for our hyper-parameters. All others have flat priors.
-    sigma_kappa ~ exponential(1);
+    // These priors are needed to help prevent divergences.
+    // Prior for sigma_alpha
+    sigma_kappa[1] ~ chi_square(10);
+    // Prior for sigma_beta
+    sigma_kappa[2] ~ exponential(1);
 
     // The following line implies kappa ~ multi_normal(mu, quad_form_diag(Omega, sigma_kappa))
     for (d in 1:D) epsilon[d] ~ std_normal();
