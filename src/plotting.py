@@ -253,11 +253,11 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
     # using the passed date. Use the summary.csv file and index by date
-    summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
+    #summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
 
     # Daily parameters are saved in stan as parameter.day_id .
     if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
-        model_key = parameter + '.' + str(int(summary_df.loc[date].Day_ID))
+        print(2)#model_key = parameter + '.' + str(int(summary_df.loc[date].Day_ID))
     else:
         model_key = parameter
 
@@ -293,10 +293,11 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
 
     # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
-    plt.plot(fitted_model.chain_1[model_key])
-    plt.plot(fitted_model.chain_2[model_key])
-    plt.plot(fitted_model.chain_3[model_key])
-    plt.plot(fitted_model.chain_4[model_key])
+    plt.plot(fitted_model.chain_1[model_key], label='1')
+    plt.plot(fitted_model.chain_2[model_key], label='2')
+    plt.plot(fitted_model.chain_3[model_key], label='3')
+    plt.plot(fitted_model.chain_4[model_key], label='4')
+    plt.legend()
     plt.xlabel('Samples')
     plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.axhline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--')

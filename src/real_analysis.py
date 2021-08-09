@@ -14,7 +14,7 @@ PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
 PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
-MAKE_PLOTS            = True
+MAKE_PLOTS            = False
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -26,8 +26,8 @@ RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'beta'
-DATE                 = '2019-01-31'
+PARAM                = 'mu_beta'
+DATE                 = '2019-02-24'
 MOLECULE             = 'NO2'
 PLOT_STUDY_REGION    = True
 PLOT_FLARES          = True
@@ -71,7 +71,7 @@ if COMPARE_MODELS:
 
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
-    results.calculate_fractional_metric()
+    #results.calculate_fractional_metric()
     p.trace(results, PARAM, date=DATE,
              compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.observations_scatterplot(DATE, RUN_NAME)

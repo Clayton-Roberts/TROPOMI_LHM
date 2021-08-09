@@ -42,10 +42,7 @@ def nuts(data_path, model_path, output_directory):
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,
-                       inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
-                              ct.FILE_PREFIX + '/inits/chain_2.json',
-                              ct.FILE_PREFIX + '/inits/chain_3.json',
-                              ct.FILE_PREFIX + '/inits/chain_4.json'])
+                       inits=ct.FILE_PREFIX + '/inits/chain_3.json')
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
