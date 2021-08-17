@@ -38,14 +38,16 @@ def nuts(data_path, model_path, output_directory):
     # Fit the model.
     fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
-                       iter_sampling=1000, seed=101, show_progress=False,
+                       save_warmup=True,
+                       iter_sampling=1000, seed=101, show_progress=True,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,
-                       inits=[ct.FILE_PREFIX + '/inits/chain_1.json',
-                              ct.FILE_PREFIX + '/inits/chain_2.json',
-                              ct.FILE_PREFIX + '/inits/chain_3.json',
-                              ct.FILE_PREFIX + '/inits/chain_4.json'])
+                       # TODO write a function to do this automatically by opening the summary.csv file
+                       inits={'mu': [1860, 600.0],
+                              'Sigma': [[180, -750.0], [-750.0, 50.0]],
+                              'gamma': np.random.normal(12, 2, 76).tolist(),
+                              'epsilon': np.random.standard_normal((76, 2)).tolist()})
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time

@@ -76,7 +76,7 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs']     = obs_no2
     data['CH4_obs']     = obs_ch4
-    if 'daily_mean_error' in run_name:
+    if ('daily_mean_error' in run_name) or ('non_centered' in run_name):
         data['sigma_N']     = avg_sigma_N
         data['sigma_C']     = avg_sigma_C
     else:
@@ -262,10 +262,10 @@ def get_colocated_measurements(filename):
         # TODO Sphinx autodoc does not like the below line for some reason
         if (no2_pixel_values[j] < 1e30) and (interpolated_ch4_pixel_values[j] < 1e30):
             # Append the CH4 and NO2 pixel values to the relevant lists.
-            obs_NO2.append(no2_pixel_values[j] * 1e6)  # Convert to micro mol / m^2
+            obs_NO2.append(no2_pixel_values[j] * 1e3)  # Convert to micro mol / m^2
             obs_CH4.append(interpolated_ch4_pixel_values[j])
             # Append the CH4 and NO2 precisions to the relevant lists.
-            sigma_N.append(no2_pixel_precisions[j] * 1e6)  # Convert to micro mol / m^2
+            sigma_N.append(no2_pixel_precisions[j] * 1e3)  # Convert to milli mol / m^2
             sigma_C.append(interpolated_ch4_pixel_precisions[j])
             # Append the latitudes and longitudes to the relevant lists.
             latitude.append(no2_pixel_centre_latitudes[j])
@@ -347,12 +347,12 @@ def create_dataset(run_name):
                                                ignore_index=True)
 
                 # Round numbers to two decimal places
-                total_obs_NO2   = [round(float(num), 2) for num in total_obs_NO2]
-                total_obs_CH4   = [round(float(num), 2) for num in total_obs_CH4]
-                total_sigma_N   = [round(float(num), 2) for num in total_sigma_N]
-                total_sigma_C   = [round(float(num), 2) for num in total_sigma_C]
-                total_latitude  = [round(float(num), 2) for num in total_latitude]
-                total_longitude = [round(float(num), 2) for num in total_longitude]
+                # total_obs_NO2   = [round(float(num), 2) for num in total_obs_NO2]
+                # total_obs_CH4   = [round(float(num), 2) for num in total_obs_CH4]
+                # total_sigma_N   = [round(float(num), 2) for num in total_sigma_N]
+                # total_sigma_C   = [round(float(num), 2) for num in total_sigma_C]
+                # total_latitude  = [round(float(num), 2) for num in total_latitude]
+                # total_longitude = [round(float(num), 2) for num in total_longitude]
 
                 # Create a dataframe containing the observations for this day.
                 day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),

@@ -12,15 +12,15 @@ from src import plotting as p
 PROCESS_TROPOMI_FILES = False
 PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
-PERFORM_FULL_FIT      = False
+PERFORM_FULL_FIT      = True
 COMPARE_MODELS        = False
-MAKE_PLOTS            = True
+MAKE_PLOTS            = False
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
 START_DATE = '20190101'
 END_DATE   = '20190131'
-MODEL      = 'daily_mean_error'
+MODEL      = 'non_centered'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
@@ -71,15 +71,18 @@ if COMPARE_MODELS:
 
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
-    results.calculate_fractional_metric()
+    #results.calculate_fractional_metric()
     p.trace(results, PARAM, date=DATE,
              compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.observations_scatterplot(DATE, RUN_NAME)
     p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     p.dropout_scatterplot(DATE, RUN_NAME)
-    p.reduced_chi_squared(RUN_NAME)
-    p.residuals(START_DATE + '-' + END_DATE + '-daily_mean_error',
-                START_DATE + '-' + END_DATE + '-individual_error')
+    # p.reduced_chi_squared(RUN_NAME)
+    # p.residuals(START_DATE + '-' + END_DATE + '-daily_mean_error',
+    #             START_DATE + '-' + END_DATE + '-individual_error')
     p.beta_flare_time_series(results)
-    p.tropomi_plot(DATE, MOLECULE, plot_study_region=True, qa_only=True, show_flares=True)
+    p.tropomi_plot(DATE, MOLECULE,
+                   plot_study_region=PLOT_STUDY_REGION,
+                   qa_only=SHOW_QAD_PIXELS_ONLY,
+                   show_flares=PLOT_FLARES)

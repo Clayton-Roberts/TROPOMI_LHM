@@ -13,31 +13,24 @@ data {
 }
 parameters {
     vector[2]               epsilon[D];
-    corr_matrix[2]          Omega;            // Correlation matrix.
-    vector<lower=0>[2]      sigma_kappa;      // Standard deviations in the covariance matrix.
-    vector<lower=0>[2]      mu;               // Intercept (mu[1]) and slope (mu[2]) hyperparameters.
+    cov_matrix[2]           Sigma;            // Covariance matrix
+    vector<lower=0>[2]      mu;               // Mean vector, intercept (mu[1]) and slope (mu[2]) hyperparameters.
     vector<lower=0>[D]      gamma;            // Group d variance term.
 }
 transformed parameters {
-    matrix[2, 2]            L;                // Cholesky decomposition of the correlation matrix.
+    matrix[2, 2]            L;                // Cholesky decomposition of the covariance matrix.
     vector<lower=0>[2]      kappa[D];         // Group d intercept (kappa[d, 1]) and group d slope (kappa[d, 2]).
 
-    L = cholesky_decompose(Omega);
+    L = cholesky_decompose(Sigma);
 
     for (d in 1:D)
-        kappa[d] = mu + sigma_kappa .* (L * epsilon[d]);
+        kappa[d] = mu +  L * epsilon[d];
 }
 model{
     int pos;
     pos = 1;
 
-    // These priors are needed to help prevent divergences.
-    // Prior for sigma_alpha
-    sigma_kappa[1] ~ chi_square(10);
-    // Prior for sigma_beta
-    sigma_kappa[2] ~ exponential(1);
-
-    // The following line implies kappa ~ multi_normal(mu, quad_form_diag(Omega, sigma_kappa))
+    // The following line implies kappa ~ multi_normal(mu, Sigma)
     for (d in 1:D) epsilon[d] ~ std_normal();
 
     vector[M] CH4_hat = to_vector(kappa[day_id, 1]) + (to_vector(kappa[day_id, 2]) .* NO2_obs);
@@ -65,8 +58,9 @@ generated quantities {
     mu_alpha = mu[1];
     mu_beta  = mu[2];
 
-    rho = Omega[1, 2];
+    sigma_alpha = sqrt(Sigma[1, 1]);
+    sigma_beta  = sqrt(Sigma[2, 2]);
 
-    sigma_alpha = sigma_kappa[1];
-    sigma_beta  = sigma_kappa[2];
+    rho = Sigma[1, 2] / (sigma_alpha * sigma_beta);
 }
+
