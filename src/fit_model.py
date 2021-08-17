@@ -43,9 +43,11 @@ def nuts(data_path, model_path, output_directory):
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,
-                       inits={"Omega": [[1.0, -0.6],[-0.6, 1.0]],
-                              "sigma_kappa": [10.0, 0.2],
-                              "mu": [1865.0, 0.8]})
+                       # TODO write a function to do this automatically by opening the summary.csv file
+                       inits={'mu': [1860, 600.0],
+                              'Sigma': [[180, -750.0], [-750.0, 50.0]],
+                              'gamma': np.random.normal(12, 2, 76).tolist(),
+                              'epsilon': np.random.standard_normal((76, 2)).tolist()})
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time

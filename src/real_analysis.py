@@ -12,7 +12,7 @@ from src import plotting as p
 PROCESS_TROPOMI_FILES = False
 PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
-PERFORM_FULL_FIT      = False
+PERFORM_FULL_FIT      = True
 COMPARE_MODELS        = False
 MAKE_PLOTS            = False
 #-----------------------------------
@@ -20,13 +20,13 @@ MAKE_PLOTS            = False
 #-----------------------------------
 START_DATE = '20190101'
 END_DATE   = '20190131'
-MODEL      = 'daily_mean_error'
+MODEL      = 'non_centered'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'sigma_alpha'
+PARAM                = 'beta'
 DATE                 = '2019-01-31'
 MOLECULE             = 'NO2'
 PLOT_STUDY_REGION    = True
@@ -74,15 +74,15 @@ if MAKE_PLOTS:
     #results.calculate_fractional_metric()
     p.trace(results, PARAM, date=DATE,
              compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.observations_scatterplot(DATE, RUN_NAME)
-    # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.dropout_scatterplot(DATE, RUN_NAME)
+    p.observations_scatterplot(DATE, RUN_NAME)
+    p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    p.dropout_scatterplot(DATE, RUN_NAME)
     # p.reduced_chi_squared(RUN_NAME)
     # p.residuals(START_DATE + '-' + END_DATE + '-daily_mean_error',
     #             START_DATE + '-' + END_DATE + '-individual_error')
-    # p.beta_flare_time_series(results)
-    # p.tropomi_plot(DATE, MOLECULE,
-    #                plot_study_region=PLOT_STUDY_REGION,
-    #                qa_only=SHOW_QAD_PIXELS_ONLY,
-    #                show_flares=PLOT_FLARES)
+    p.beta_flare_time_series(results)
+    p.tropomi_plot(DATE, MOLECULE,
+                   plot_study_region=PLOT_STUDY_REGION,
+                   qa_only=SHOW_QAD_PIXELS_ONLY,
+                   show_flares=PLOT_FLARES)

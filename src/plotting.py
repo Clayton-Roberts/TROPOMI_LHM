@@ -292,7 +292,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     }
 
 
-    title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter] + '\n' + title_date
+    # title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter] + '\n' + title_date
 
     # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
@@ -302,19 +302,19 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     plt.plot(fitted_model.chain_4[model_key])
 
     plt.xlabel('Samples')
-    plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
+    # plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.axhline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--')
     if compare_to_ground_truth:
         plt.axhline(ground_truth, color='red', lw=2, linestyle='--',)
     plt.axhline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2)
     plt.axhline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
-    plt.title(title)
+    # plt.title(title)
 
     # Create the bottom panel showing the distribution of the parameter.
     plt.subplot(2, 1, 2)
     plt.hist(fitted_model.full_trace[model_key], 50, density=True)
     sns.kdeplot(fitted_model.full_trace[model_key], shade=True)
-    plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
+    # plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
     plt.axvline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--', label='Mean value')
     if compare_to_ground_truth:
