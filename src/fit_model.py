@@ -1,6 +1,7 @@
 import time
 import numpy as np
 import cmdstanpy
+import pandas as pd
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
 from   src import constants as ct
 
@@ -10,6 +11,26 @@ def install_cmdstan():
     '''
 
     cmdstanpy.install_cmdstan(ct.CMDSTAN_PATH)
+
+def set_initial_values(run_name):
+    '''This function sets the initial values for the sampler to something sensible.
+    :param run_name: The name of the run.
+    :type run_name: string
+    '''
+
+    # Open the summary dataframe
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv')
+
+    # From the way the datasets are created, the number of days in the dataset should be equal to the max Day_ID.
+    num_days = max(summary_df.Day_ID)
+
+    # By inspection we know that these are sensible values to initialise at.
+    inits = {'mu': [1860, 600.0],
+             'Sigma': [[180, -750.0], [-750.0, 50.0]],
+             'gamma': np.random.normal(12, 2, num_days).tolist(),
+             'epsilon': np.random.standard_normal((76, num_days)).tolist()}
+
+    return inits
 
 def nuts(data_path, model_path, output_directory):
     '''This function will fit a probability model to a set of data and then save outputs that summarise probability
@@ -35,6 +56,9 @@ def nuts(data_path, model_path, output_directory):
 
     model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/' + model_path)
 
+    run_name       = data_path.split('/data.json')[0].split('data/')[-1]
+    initial_values = set_initial_values(run_name)
+
     # Fit the model.
     fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
@@ -43,11 +67,7 @@ def nuts(data_path, model_path, output_directory):
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,
-                       # TODO write a function to do this automatically by opening the summary.csv file
-                       inits={'mu': [1860, 600.0],
-                              'Sigma': [[180, -750.0], [-750.0, 50.0]],
-                              'gamma': np.random.normal(12, 2, 76).tolist(),
-                              'epsilon': np.random.standard_normal((76, 2)).tolist()})
+                       inits=initial_values)
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time

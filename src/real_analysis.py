@@ -26,7 +26,7 @@ RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'beta'
+PARAM                = 'sigma_alpha'
 DATE                 = '2019-01-31'
 MOLECULE             = 'NO2'
 PLOT_STUDY_REGION    = True
