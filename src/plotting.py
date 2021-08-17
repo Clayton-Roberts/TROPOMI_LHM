@@ -222,7 +222,7 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
     plt.savefig('figures/autosaved/tropomi_observation.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
+def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, show_warmup_draws=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
 
     :param fitted_model: The object contained the results from a fitted model.
@@ -236,6 +236,8 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     :param compare_to_ground_truth: A boolean to include a comparison to the ground truth value for this parameter
         if this model run was a test run with fake data, which is why it defaults to False. Do not use with real data.
     :type compare_to_ground_truth: Boolean
+    :param show_warmup_draws: A boolean to show the warmup draws for each chain.
+    :type show_warmup_draws: Boolean
     """
 
     # Need to get the ground truth value for comparison if we're plotting a test dataset.
@@ -292,29 +294,47 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False):
     }
 
 
-    # title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter] + '\n' + title_date
+    title = 'Trace and Posterior Distribution for ' + parameter_symbol[parameter] + '\n' + title_date
 
     # Create the top panel showing how the chains have mixed.
     plt.subplot(2, 1, 1)
-    plt.plot(fitted_model.chain_1[model_key])
-    plt.plot(fitted_model.chain_2[model_key])
-    plt.plot(fitted_model.chain_3[model_key])
-    plt.plot(fitted_model.chain_4[model_key])
+    if show_warmup_draws:
+        plt.plot(pd.concat([fitted_model.draws['warmup']['chain_1'][model_key],
+                            fitted_model.draws['sampled']['chain_1'][model_key]],
+                           ignore_index=True))
+        plt.plot(pd.concat([fitted_model.draws['warmup']['chain_2'][model_key],
+                            fitted_model.draws['sampled']['chain_2'][model_key]],
+                           ignore_index=True))
+        plt.plot(pd.concat([fitted_model.draws['warmup']['chain_3'][model_key],
+                            fitted_model.draws['sampled']['chain_3'][model_key]],
+                           ignore_index=True))
+        plt.plot(pd.concat([fitted_model.draws['warmup']['chain_4'][model_key],
+                            fitted_model.draws['sampled']['chain_4'][model_key]],
+                           ignore_index=True))
 
+    else:
+        plt.plot(fitted_model.draws['sampled']['chain_1'][model_key])
+        plt.plot(fitted_model.draws['sampled']['chain_2'][model_key])
+        plt.plot(fitted_model.draws['sampled']['chain_3'][model_key])
+        plt.plot(fitted_model.draws['sampled']['chain_4'][model_key])
     plt.xlabel('Samples')
-    # plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
+    plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.axhline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--')
+    if show_warmup_draws:
+        plt.axvline(500, linestyle='--', color='grey', linewidth=0.5, label='Sampling begins')
     if compare_to_ground_truth:
         plt.axhline(ground_truth, color='red', lw=2, linestyle='--',)
     plt.axhline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2)
     plt.axhline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
-    # plt.title(title)
+    if show_warmup_draws:
+        plt.legend()
+    plt.title(title)
 
     # Create the bottom panel showing the distribution of the parameter.
     plt.subplot(2, 1, 2)
     plt.hist(fitted_model.full_trace[model_key], 50, density=True)
     sns.kdeplot(fitted_model.full_trace[model_key], shade=True)
-    # plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
+    plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
     plt.axvline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--', label='Mean value')
     if compare_to_ground_truth:

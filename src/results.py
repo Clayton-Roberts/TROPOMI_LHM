@@ -287,36 +287,68 @@ class FittedResults:
         nuts_chain_3 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-3.csv', comment='#')
         nuts_chain_4 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model + '-' + date_time + '-4.csv', comment='#')
 
+        # Separate the chains into warmup draws and sampler draws.
+        warmup_draws_chain_1 = nuts_chain_1.head(500)
+        warmup_draws_chain_2 = nuts_chain_2.head(500)
+        warmup_draws_chain_3 = nuts_chain_3.head(500)
+        warmup_draws_chain_4 = nuts_chain_4.head(500)
+
+        sample_draws_chain_1 = nuts_chain_1.tail(1000)
+        sample_draws_chain_2 = nuts_chain_2.tail(1000)
+        sample_draws_chain_3 = nuts_chain_3.tail(1000)
+        sample_draws_chain_4 = nuts_chain_4.tail(1000)
+
         # Make a list of all model parameters
         parameter_list = nuts_chain_1.columns
 
-        # Construct the full trace for each model parameter
+        # Construct a dictionary containing all the draws, but separated into useful keys.
+        draws = {'warmup': {'chain_1': {},
+                            'chain_2': {},
+                            'chain_3': {},
+                            'chain_4': {}
+                            },
+                 'sampled': {'chain_1': {},
+                             'chain_2': {},
+                             'chain_3': {},
+                             'chain_4': {}
+                             }
+                 }
+
+        # Construct the full trace for each model parameter. Full trace will only include sample draws, NO WARMUP DRAWS.
         full_trace = {}
 
         for parameter in parameter_list:
-            full_trace[parameter] = np.concatenate((nuts_chain_1[parameter].array,nuts_chain_2[parameter].array,
-                                                   nuts_chain_3[parameter].array,nuts_chain_4[parameter].array))
+            draws['warmup']['chain_1'][parameter] = warmup_draws_chain_1[parameter]
+            draws['warmup']['chain_2'][parameter] = warmup_draws_chain_2[parameter]
+            draws['warmup']['chain_3'][parameter] = warmup_draws_chain_3[parameter]
+            draws['warmup']['chain_4'][parameter] = warmup_draws_chain_4[parameter]
 
-        # Calculate mean value, standard deviation and 95% CI for all model parameter values
+            draws['sampled']['chain_1'][parameter] = sample_draws_chain_1[parameter]
+            draws['sampled']['chain_2'][parameter] = sample_draws_chain_2[parameter]
+            draws['sampled']['chain_3'][parameter] = sample_draws_chain_3[parameter]
+            draws['sampled']['chain_4'][parameter] = sample_draws_chain_4[parameter]
+
+            full_trace[parameter] = np.concatenate((sample_draws_chain_1[parameter].array,
+                                                    sample_draws_chain_2[parameter].array,
+                                                    sample_draws_chain_3[parameter].array,
+                                                    sample_draws_chain_4[parameter].array))
+
+        # Calculate median value, standard deviation and 95% CI for all model parameter values
         credible_intervals  = {}
         mean_values         = {}
         standard_deviations = {}
         for parameter in parameter_list:
             credible_intervals[parameter]  = [np.percentile(full_trace[parameter], 2.5),
-                                             np.percentile(full_trace[parameter], 97.5)]
+                                              np.percentile(full_trace[parameter], 97.5)]
             mean_values[parameter]         = np.mean(full_trace[parameter])
             standard_deviations[parameter] = np.std(full_trace[parameter])
 
         # Assign accessible attributes
-        self.full_trace          = full_trace
-        self.parameter_list      = parameter_list
-        self.credible_intervals  = credible_intervals
-        self.mean_values         = mean_values
-        self.standard_deviations = standard_deviations
-        self.chain_1             = nuts_chain_1
-        self.chain_2             = nuts_chain_2
-        self.chain_3             = nuts_chain_3
-        self.chain_4             = nuts_chain_4
-        self.run_name            = run_name
+        self.full_trace         = full_trace
+        self.parameter_list     = parameter_list
+        self.credible_intervals = credible_intervals
+        self.mean_values        = mean_values
+        self.draws              = draws
+        self.run_name           = run_name
 
 
