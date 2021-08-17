@@ -12,9 +12,9 @@ from src import plotting as p
 PROCESS_TROPOMI_FILES = False
 PROCESS_VIIRS_FILES   = False
 PERFORM_DROPOUT_FIT   = False
-PERFORM_FULL_FIT      = True
+PERFORM_FULL_FIT      = False
 COMPARE_MODELS        = False
-MAKE_PLOTS            = False
+MAKE_PLOTS            = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -26,9 +26,10 @@ RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'sigma_alpha'
+PARAM                = 'gamma'
 DATE                 = '2019-01-31'
 MOLECULE             = 'NO2'
+SHOW_WARMUP_DRAWS    = False
 PLOT_STUDY_REGION    = True
 PLOT_FLARES          = True
 SHOW_QAD_PIXELS_ONLY = True
@@ -72,17 +73,20 @@ if COMPARE_MODELS:
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
     #results.calculate_fractional_metric()
-    p.trace(results, PARAM, date=DATE,
-             compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.observations_scatterplot(DATE, RUN_NAME)
-    p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    p.dropout_scatterplot(DATE, RUN_NAME)
+    p.trace(results,
+            PARAM,
+            date=DATE,
+            compare_to_ground_truth=SHOW_GROUND_TRUTH,
+            show_warmup_draws=SHOW_WARMUP_DRAWS)
+    # p.observations_scatterplot(DATE, RUN_NAME)
+    # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.dropout_scatterplot(DATE, RUN_NAME)
     # p.reduced_chi_squared(RUN_NAME)
     # p.residuals(START_DATE + '-' + END_DATE + '-daily_mean_error',
     #             START_DATE + '-' + END_DATE + '-individual_error')
-    p.beta_flare_time_series(results)
-    p.tropomi_plot(DATE, MOLECULE,
-                   plot_study_region=PLOT_STUDY_REGION,
-                   qa_only=SHOW_QAD_PIXELS_ONLY,
-                   show_flares=PLOT_FLARES)
+    # p.beta_flare_time_series(results)
+    # p.tropomi_plot(DATE, MOLECULE,
+    #                plot_study_region=PLOT_STUDY_REGION,
+    #                qa_only=SHOW_QAD_PIXELS_ONLY,
+    #                show_flares=PLOT_FLARES)
