@@ -1,8 +1,10 @@
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import matplotlib.gridspec as gridspec
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 import matplotlib.patches as patches
+import matplotlib.path as path
 import matplotlib.cm as cm
 import seaborn as sns
 import pandas as pd
@@ -33,14 +35,14 @@ class PlotHelper:
         date = filename.split("T")[0]
 
         if molecule == "NO2":
-            self.legend = "Column density [$\mu$mol m$^{-2}$]"
+            self.legend = "Column density [mmol m$^{-2}$]"
             self.title = 'Tropospheric column density NO$_2$' + \
                          '\n' + datetime.datetime.strptime(date, '%Y%m%d').strftime('%B %-d, %Y')
-            self.vmax  = 100.0
+            self.vmax  = 0.1
             self.vmin  = 0.0
 
-            # Access pixel values, convert to micromols / m^2
-            no2 = np.array(f.groups['PRODUCT'].variables['nitrogendioxide_tropospheric_column'][0]) * 1e6
+            # Access pixel values, convert to mmmol / m^2
+            no2 = np.array(f.groups['PRODUCT'].variables['nitrogendioxide_tropospheric_column'][0]) * 1e3
 
 
             if not qa_only:
@@ -142,8 +144,8 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
     # Set necessary details with the plot helper
     plot_helper = PlotHelper(file, molecule, qa_only)
 
-    # Get the oulines of counties
-    reader = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
+    # Get the outlines of counties
+    reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
     counties = list(reader.geometries())
     COUNTIES = cfeature.ShapelyFeature(counties, ccrs.PlateCarree())
 
@@ -319,7 +321,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
         plt.plot(fitted_model.draws['sampled']['chain_4'][model_key])
     plt.xlabel('Samples')
     plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
-    plt.axhline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--')
+    plt.axhline(fitted_model.mode_values[model_key], color='black', lw=2, linestyle='--')
     if show_warmup_draws:
         plt.axvline(500, linestyle='--', color='grey', linewidth=0.5, label='Sampling begins')
     if compare_to_ground_truth:
@@ -336,7 +338,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
     sns.kdeplot(fitted_model.full_trace[model_key], shade=True)
     plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
-    plt.axvline(fitted_model.mean_values[model_key], color='black', lw=2, linestyle='--', label='Mean value')
+    plt.axvline(fitted_model.mode_values[model_key], color='black', lw=2, linestyle='--', label='Mode value')
     if compare_to_ground_truth:
         plt.axvline(ground_truth, color='red', lw=2, linestyle='--', label='True value')
     plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'95% CI')
@@ -532,16 +534,16 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
     alpha_values = []
     alpha_error_bounds = []
 
-    for parameter in fitted_model.mean_values.keys():
+    for parameter in fitted_model.parameter_list:
         if 'beta.' in parameter:
-            beta_values.append(fitted_model.mean_values[parameter])
-            beta_error_bounds.append([fitted_model.mean_values[parameter] - fitted_model.credible_intervals[parameter][0],
-                                      fitted_model.credible_intervals[parameter][1] - fitted_model.mean_values[parameter]])
+            beta_values.append(fitted_model.mode_values[parameter])
+            beta_error_bounds.append([fitted_model.mode_values[parameter] - fitted_model.credible_intervals[parameter][0],
+                                      fitted_model.credible_intervals[parameter][1] - fitted_model.mode_values[parameter]])
         elif 'alpha.' in parameter:
-            alpha_values.append(fitted_model.mean_values[parameter])
+            alpha_values.append(fitted_model.mode_values[parameter])
             alpha_error_bounds.append(
-                [fitted_model.mean_values[parameter] - fitted_model.credible_intervals[parameter][0],
-                 fitted_model.credible_intervals[parameter][1] - fitted_model.mean_values[parameter]])
+                [fitted_model.mode_values[parameter] - fitted_model.credible_intervals[parameter][0],
+                 fitted_model.credible_intervals[parameter][1] - fitted_model.mode_values[parameter]])
 
     ax0.errorbar(alpha_values,
                  beta_values,
@@ -554,13 +556,13 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
                  color='red',
                  ms=4)
 
-    pearson = fitted_model.mean_values['rho']
+    pearson = fitted_model.mode_values['rho']
 
-    sigma_alpha = fitted_model.mean_values['sigma_alpha']
-    mu_alpha    = fitted_model.mean_values['mu_alpha']
+    sigma_alpha = fitted_model.mode_values['sigma_alpha']
+    mu_alpha    = fitted_model.mode_values['mu_alpha']
 
-    sigma_beta = fitted_model.mean_values['sigma_beta']
-    mu_beta    = fitted_model.mean_values['mu_beta']
+    sigma_beta = fitted_model.mode_values['sigma_beta']
+    mu_beta    = fitted_model.mode_values['mu_beta']
 
     ellipse(pearson,
             sigma_alpha,
@@ -707,10 +709,10 @@ def beta_flare_time_series(fitted_results):
 
     for date in summary_df.index:
         parameter = 'beta.' + str(int(summary_df.loc[date].Day_ID))
-        mean_beta = fitted_results.mean_values[parameter]
+        mode_beta = fitted_results.mode_values[parameter]
         lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
         beta_df = beta_df.append({'Date': date,
-                                  'Beta': mean_beta,
+                                  'Beta': mode_beta,
                                   'Lower_bound_95_CI': lower_bound,
                                   'Upper_bound_95_CI': upper_bound},
                                  ignore_index=True)
@@ -786,3 +788,379 @@ def beta_flare_time_series(fitted_results):
 
     plt.tight_layout()
     plt.show()
+
+def alpha_flarestack_crossplot(fitted_results):
+    '''This function is for plotting a cross plot of alpha and flare stack count.
+
+    :param fitted_results: The results of this model run.
+    :type fitted_results: FittedResults
+    '''
+
+    # Read in the flare stack count time series.
+    flare_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/flare_counts.csv', header=0)
+
+    # Read in the summary.csv file, index by date
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
+                             index_col=0)
+
+    # Create the time series of mean inferred beta values and their credible intervals.
+    alpha_df = pd.DataFrame(columns=('Date', 'Alpha', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
+    for date in summary_df.index:
+        parameter = 'alpha.' + str(int(summary_df.loc[date].Day_ID))
+        mode_alpha = fitted_results.mode_values[parameter]
+        lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
+        alpha_df = alpha_df.append({'Date': date,
+                                  'Alpha': mode_alpha,
+                                  'Lower_bound_95_CI': lower_bound,
+                                  'Upper_bound_95_CI': upper_bound},
+                                 ignore_index=True)
+    errors = [[alpha_df.Alpha[i] - alpha_df.Lower_bound_95_CI[i], alpha_df.Upper_bound_95_CI[i] - alpha_df.Alpha[i]]
+              for i in alpha_df.index]
+
+
+    # Only use the flare data for dates that we have inferences on beta on.
+    shared_index        = flare_df[flare_df.Date.isin(alpha_df.Date)].index.to_list()
+    shared_flare_counts = flare_df.Flare_count[shared_index]
+
+    # Plot the cross plot.
+    plt.errorbar(shared_flare_counts,
+                  alpha_df.Alpha,
+                  yerr=np.array(errors).T,
+                  linestyle="None",
+                  ecolor="black",
+                  fmt='D',
+                  mfc='w',
+                  color='black',
+                  capsize=3,
+                  ms=4,
+                  zorder=1,
+                  elinewidth=0.7)
+
+    # Set the title on the plot using the start and end date of the model run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    plt.title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+                        datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
+    # Set the x and y labels of the plot.
+    plt.xlabel('Flare count')
+    plt.ylabel(r'$\alpha$ [ppbv]')
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig('figures/autosaved/alpha_flarestack_crossplot.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    plt.show()
+
+def figure_1(date):
+    '''This function is for creating and saving Figure 1 of the paper. Figure 1 will be a page-wide, two-panel figure
+    of TROPOMI and VIIRS observations that establish the physical context of the paper.
+
+    :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
+    :type date: string
+    '''
+
+    # Get the relevant .nc4 files of the TROPOMI observations using the date.
+    file_date_prefix = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
+    potential_tropomi_files = [file.split('/')[-1] for file in
+                               glob.glob(
+                                   ct.FILE_PREFIX + '/observations/NO2/' + file_date_prefix + '*.nc')]
+    if len(potential_tropomi_files) > 1:
+        print('Multiple files match the input date. Enter index of desired file:')
+        for i in range(len(potential_tropomi_files)):
+            print(f'[{i}]: {potential_tropomi_files[i]}')
+        index = int(input('File index: '))
+        file = potential_tropomi_files[index]
+    else:
+        file = potential_tropomi_files[0]
+
+    # Get necessary details with the plot helper.
+    ch4_plot_helper = PlotHelper(file, 'CH4', qa_only=True)
+    no2_plot_helper = PlotHelper(file, 'NO2', qa_only=True)
+
+    # Get the outlines of counties, these will be used in both plots.
+    reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
+    counties = list(reader.geometries())
+    COUNTIES = cfeature.ShapelyFeature(counties, ccrs.PlateCarree())
+
+    # Find and open the relevant VIIRS observation file, and get the location of active flares in the study region.
+    viirs_file        = glob.glob(ct.FILE_PREFIX + '/observations/VIIRS/*' + file_date_prefix + '*.csv')[0]
+    viirs_df          = pd.read_csv(viirs_file)
+    flare_location_df = pd.DataFrame(columns=('Latitude', 'Longitude'))
+    for index in viirs_df.index:
+        if (ct.STUDY_REGION['Permian_Basin'][2] < viirs_df.Lat_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][3]):
+            if (ct.STUDY_REGION['Permian_Basin'][0] < viirs_df.Lon_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][1]):
+                if viirs_df.Temp_BB[index] != 999999:
+                    flare_location_df = flare_location_df.append({'Latitude': viirs_df.Lat_GMTCO[index],
+                                                                  'Longitude': viirs_df.Lon_GMTCO[index]},
+                                                                 ignore_index=True)
+
+    # Define the colors that we will use for the plots.
+    colors = copy.copy(cm.RdYlBu_r)
+    colors.set_bad('grey', 1.0)
+
+    # Create figure, use gridspec to divide it up into subplots. 2-column subplot, each molecule gets a column.
+    plt.figure(figsize=(10, 4))
+    G = gridspec.GridSpec(1, 2, wspace=0.03)
+
+    # ax_1 is the subplot for the CH4 observation, left hand side (first column), set projection here.
+    ax_1 = plt.subplot(G[0, 0],
+                       projection=ccrs.PlateCarree(),
+                       extent=ch4_plot_helper.extent)
+
+    # Set the ticks for the CH4 subplot.
+    ax_1.set_xlabel('Longitude', labelpad=0)
+    ax_1.set_xticks(ch4_plot_helper.xticks)
+    ax_1.set_yticks(ch4_plot_helper.yticks)
+    ax_1.yaxis.tick_right()
+
+    # Add the latitude label, this will be for both subplots.
+    ax_1.text(1.05, 1.03,
+              'Latitude',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes)
+
+    # Plot the CH4 data.
+    ch4_im = ax_1.pcolormesh(ch4_plot_helper.longitudes,
+                             ch4_plot_helper.latitudes,
+                             ch4_plot_helper.data,
+                             cmap=colors,
+                             vmin=ch4_plot_helper.vmin,
+                             vmax=ch4_plot_helper.vmax,
+                             zorder=0)
+
+    # Add a colorbar to the methane plot, show it on the left hand side of the plot.
+    ch4_cbar_ax = ax_1.inset_axes([-0.13, 0.05, 0.05, 0.9], #x0, y0, width, height
+                                  transform=ax_1.transAxes)
+    ch4_cbar = plt.colorbar(ch4_im,
+                            cax=ch4_cbar_ax,
+                            ticks=[1830, 1860, 1890])
+    ch4_cbar.ax.set_yticklabels(['1830', '1860', '1890'],
+                                rotation=90,
+                                va='center',
+                                ha='left')
+    ch4_cbar.ax.yaxis.set_ticks_position('right')
+    ch4_cbar.set_label(r'CH$_4$ column-average mixing ratio [ppbv]',
+                       rotation=90,
+                       labelpad=-45)
+
+    # Add the borders to the CH4 subplot.
+    ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
+
+    # Add the study region as a red box on the CH4 subplot.
+    box = ct.STUDY_REGION['Permian_Basin']
+    rectangle = patches.Rectangle((box[0], box[2]),
+                                  box[1] - box[0],
+                                  box[3] - box[2],
+                                  linewidth=2,
+                                  edgecolor='r',
+                                  fill=False,
+                                  zorder=2)
+    ax_1.add_patch(rectangle)
+
+    # ax_2 is the subplot for the NO2 observation, right hand side (second column), set projection here.
+    ax_2 = plt.subplot(G[0, 1],
+                       projection=ccrs.PlateCarree(),
+                       sharey=ax_1,
+                       extent=ch4_plot_helper.extent)
+
+    # Set the ticks for the NO2 subplot, have ticks on left, but don't show the numbers.
+    ax_2.set_xlabel('Longitude', labelpad=0)
+    ax_2.set_xticks(no2_plot_helper.xticks)
+    ax_2.set_yticks(no2_plot_helper.yticks)
+    ax_2.tick_params(axis='y',
+                     labelleft=False)
+
+    # Plot the NO2 data.
+    no2_im = ax_2.pcolormesh(no2_plot_helper.longitudes,
+                             no2_plot_helper.latitudes,
+                             no2_plot_helper.data,
+                             cmap=colors,
+                             vmin=no2_plot_helper.vmin,
+                             vmax=no2_plot_helper.vmax,
+                             zorder=0)
+    
+    # Plot the location of the VIIRS flares on top of the NO2 data.
+    ax_2.scatter(flare_location_df.Longitude,
+                 flare_location_df.Latitude,
+                 marker="^",
+                 s=20,
+                 color='limegreen',
+                 edgecolors='black',
+                 zorder=1)
+
+    # Add a colorbar to the NO2 plot, show it on the right hand side of the plot.
+    no2_cbar_ax = ax_2.inset_axes([1.08, 0.05, 0.05, 0.9],  # x0, y0, width, height
+                                  transform=ax_2.transAxes)
+    no2_cbar = plt.colorbar(no2_im,
+                            cax=no2_cbar_ax,
+                            ticks=[0.01, 0.03, 0.05, 0.07, 0.09])
+    no2_cbar.ax.set_yticklabels(['0.01', '0.03', '0.05', '0.07', '0.09'],
+                               rotation=270,
+                               va='center',
+                               ha='right')
+    no2_cbar.ax.yaxis.set_ticks_position('left')
+    no2_cbar.set_label(r'NO$_2$ column density [mmol m$^{-2}$]',
+                       rotation=270,
+                       labelpad=15)
+
+    # Add the borders to the NO2 subplot.
+    ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig('figures/paper/figure_1.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    # Show the plot on-screen.
+    plt.show()
+
+def figure_3(fitted_results):
+    '''This function is for plotting Figure 3 of the paper. Figure 3 is a page-wide figure of two time series together
+    of :math:`\\beta` values and flare stack counts for the specified run. There is also an extra panel on the right
+    showing a cross plot of :math:`\\beta` and flare stack counts.
+
+    :param fitted_results: The fitted results.
+    :type fitted_results: FittedResults
+    '''
+
+    # Read in the flare stack count time series.
+    flare_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/flare_counts.csv', header=0)
+
+    # Read in the summary.csv file, index by date
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
+                             index_col=0)
+
+    # Create the time series of mode inferred beta values and their credible intervals.
+    beta_df = pd.DataFrame(columns=('Date', 'Beta', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
+    for date in summary_df.index:
+        parameter = 'beta.' + str(int(summary_df.loc[date].Day_ID))
+        mode_beta = fitted_results.mode_values[parameter]
+        lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
+        beta_df = beta_df.append({'Date': date,
+                                  'Beta': mode_beta,
+                                  'Lower_bound_95_CI': lower_bound,
+                                  'Upper_bound_95_CI': upper_bound},
+                                 ignore_index=True)
+
+    # Create the datetime objects for all the dates we have beta inferences for ("data rich" days).
+    beta_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in beta_df.Date]
+    errors = [[beta_df.Beta[i] - beta_df.Lower_bound_95_CI[i], beta_df.Upper_bound_95_CI[i] - beta_df.Beta[i]]
+              for i in beta_df.index]
+
+    # Create figure, use gridspec to divide it up into subplots. 3-column subplot where first plot spans two columns.
+    plt.figure(figsize=(12.0, 4.45))
+    G    = gridspec.GridSpec(1, 3)
+    # Need just a little bit of space between the subplots to have y-axis tick marks in between.
+    G.update(wspace=0.17)
+
+    # Left hand side plot (the time series). Needs to span the first two columns.
+    ax_1 = plt.subplot(G[0, 0:2])
+    ax_1.set_xlabel("Date", fontsize=12)
+    ax_1.set_ylabel(r'$\beta$ [ppbv / mmol / m$^2$]', color="black", fontsize=12)
+
+    # Set the title on the time series plot using the start and end date of the model run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    ax_1.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+                        datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
+    # Only use the flare data for dates that we have inferences on beta on.
+    shared_index           = flare_df[flare_df.Date.isin(beta_df.Date)].index.to_list()
+    shared_flare_counts    = flare_df.Flare_count[shared_index]
+
+    # Plot the time series of beta.
+    ax_1.errorbar(beta_datetimes,
+                  beta_df.Beta,
+                  yerr=np.array(errors).T,
+                  linestyle="None",
+                  ecolor="black",
+                  fmt='D',
+                  mfc='w',
+                  color='black',
+                  capsize=3,
+                  ms=4,
+                  elinewidth=0.7)
+
+    # Make a twin axes object that shares the x axis with the time series of beta.
+    ax_twin = ax_1.twinx()
+
+    # Plot the time series of flare count on this twin axes object.
+    ax_twin.scatter(beta_datetimes,
+                    shared_flare_counts,
+                    color="red",
+                    marker="x",
+                    s=30,
+                    alpha=0.7)
+
+    # Make the tick marks on the y axis of the flare count time series red, but don't include the numbers.
+    ax_twin.tick_params(axis='y',
+                        color='red',
+                        labelright=False)
+
+    # Move the time series of beta on top of the time series of flare count.
+    ax_1.set_zorder(2)
+    ax_twin.set_zorder(1)
+    ax_1.patch.set_visible(False)
+
+    # Figure out the locations of the first and last tick mark in the date range of this run.
+    first_tick_date = datetime.datetime.strptime(start_date, "%Y%m%d").replace(day=1).strftime("%Y-%m-%d")
+    last_tick_date = (
+                datetime.datetime.strptime(end_date, "%Y%m%d").replace(day=1) + datetime.timedelta(days=32)).replace(
+        day=1).strftime("%Y-%m-%d")
+
+    # Use pandas to create the date range, ticks on first of the month ('MS'), every two months ('2MS').
+    tick_locations = pd.date_range(first_tick_date, last_tick_date, freq='2MS')
+    # Change the tick labels to be abbreviated month and year.
+    tick_labels    = tick_locations.strftime('%b-%y')
+
+    # Add date ticks to the x axis of the time series plot.
+    plt.setp(ax_twin,
+             xticks=tick_locations,
+             xticklabels=tick_labels)
+
+    # Add vertical dashed lines at the location of the date tick marks.
+    for location in tick_locations:
+        plt.axvline(location, linestyle='--', color='grey', linewidth=0.5)
+
+    # Right hand side plot (the cross plot). Needs to span the third column and share y axis with the time series.
+    ax_2 = plt.subplot(G[0, 2], sharey=ax_twin)
+
+    # Set the tick marks on y axis of the cross plot to be red, on the left hand side of the plot, include numbers.
+    ax_2.tick_params(axis='y', colors='red', labelleft=True)
+
+    # Plot the cross plot of beta and flare count, including 95% CI on beta.
+    ax_2.errorbar(beta_df.Beta,
+                  shared_flare_counts,
+                  xerr=np.array(errors).T,
+                  linestyle="None",
+                  ecolor="black",
+                  fmt='D',
+                  mfc='w',
+                  color='black',
+                  capsize=3,
+                  ms=4,
+                  elinewidth=0.7)
+
+    # Set the x-axis label on the cross plot.
+    ax_2.set_xlabel(r'$\beta$ [ppbv / mmol / m$^2$]', fontsize=12, labelpad=0)
+
+    # Plot some red text to show that the red y-axis is the flare count. Plot in axes coordinates of the cross plot.
+    ax_2.text(-0.07, 1.03,
+              'Flare count',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes,
+              fontsize=12)
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig('figures/paper/figure_3.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    # Show the plot on-screen.
+    plt.show()
+
+
+

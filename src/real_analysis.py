@@ -19,14 +19,14 @@ MAKE_PLOTS            = True
 #   --- Flags for real runs ---
 #-----------------------------------
 START_DATE = '20190101'
-END_DATE   = '20190131'
+END_DATE   = '20191231'
 MODEL      = 'non_centered'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'gamma'
+PARAM                = 'mu_alpha'
 DATE                 = '2019-01-31'
 MOLECULE             = 'NO2'
 SHOW_WARMUP_DRAWS    = False
@@ -73,14 +73,14 @@ if COMPARE_MODELS:
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
     #results.calculate_fractional_metric()
-    p.trace(results,
-            PARAM,
-            date=DATE,
-            compare_to_ground_truth=SHOW_GROUND_TRUTH,
-            show_warmup_draws=SHOW_WARMUP_DRAWS)
+    # p.trace(results,
+    #         PARAM,
+    #         date=DATE,
+    #         compare_to_ground_truth=SHOW_GROUND_TRUTH,
+    #         show_warmup_draws=SHOW_WARMUP_DRAWS)
     # p.observations_scatterplot(DATE, RUN_NAME)
     # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    #p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.dropout_scatterplot(DATE, RUN_NAME)
     # p.reduced_chi_squared(RUN_NAME)
     # p.residuals(START_DATE + '-' + END_DATE + '-daily_mean_error',
@@ -90,3 +90,7 @@ if MAKE_PLOTS:
     #                plot_study_region=PLOT_STUDY_REGION,
     #                qa_only=SHOW_QAD_PIXELS_ONLY,
     #                show_flares=PLOT_FLARES)
+    #p.alpha_flarestack_crossplot(results)
+    # PLOTS FOR THE PAPER
+    p.figure_1(DATE)
+    #p.figure_3(results)

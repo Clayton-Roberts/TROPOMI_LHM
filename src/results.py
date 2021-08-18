@@ -1,11 +1,13 @@
+from src import constants as ct
 import os
 import pandas as pd
 import numpy as np
 from tabulate import tabulate
 import random
-from scipy.stats import norm
+from scipy.stats import norm, mode
 from tqdm import tqdm
-from src import constants as ct
+import matplotlib.pyplot as plt
+
 
 class FittedResults:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
@@ -335,19 +337,24 @@ class FittedResults:
 
         # Calculate median value, standard deviation and 95% CI for all model parameter values
         credible_intervals  = {}
-        mean_values         = {}
+        mode_values         = {}
         standard_deviations = {}
         for parameter in parameter_list:
             credible_intervals[parameter]  = [np.percentile(full_trace[parameter], 2.5),
                                               np.percentile(full_trace[parameter], 97.5)]
-            mean_values[parameter]         = np.mean(full_trace[parameter])
+            # Calculate the mode
+            histogram  = np.histogram(full_trace[parameter], 50)
+            bin_index  = histogram[0].argmax()
+            mode_value = histogram[1][bin_index] + (histogram[1][bin_index+1] - histogram[1][bin_index])/2
+
+            mode_values[parameter]         = mode_value
             standard_deviations[parameter] = np.std(full_trace[parameter])
 
         # Assign accessible attributes
         self.full_trace         = full_trace
         self.parameter_list     = parameter_list
         self.credible_intervals = credible_intervals
-        self.mean_values        = mean_values
+        self.mode_values        = mode_values
         self.draws              = draws
         self.run_name           = run_name
 
