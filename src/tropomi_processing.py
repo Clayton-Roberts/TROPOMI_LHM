@@ -376,3 +376,10 @@ def create_dataset(run_name):
     f.write("Total number of data-rich days in range: " + str(data_rich_days) + '\n')
     f.write("Total number of observations in range: " + str(total_observations) + '\n')
     f.close()
+
+def augment_data_rich_days(fitted_results):
+    '''This function is for creating augmented .nc4 TROPOMI files that were part of the hierarchical model run
+    using "data rich" days.
+
+    :param fitted_results: The hierarchical model run.
+    '''

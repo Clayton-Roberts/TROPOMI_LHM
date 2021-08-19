@@ -1028,7 +1028,7 @@ def figure_2(fitted_results, date):
 
     # Set up the figure. Page-wide, two-panel figure.
     plt.figure(figsize=(7.2, 4.45))
-    G = gridspec.GridSpec(1, 2, wspace=0.1)
+    G = gridspec.GridSpec(1, 2, wspace=0.05)
 
     # ax_1 is the subplot for the scatterplot of observations, left hand side (first column).
     ax_1 = plt.subplot(G[0, 0])
