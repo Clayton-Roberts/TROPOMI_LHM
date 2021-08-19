@@ -92,5 +92,6 @@ if MAKE_PLOTS:
     #                show_flares=PLOT_FLARES)
     #p.alpha_flarestack_crossplot(results)
     # PLOTS FOR THE PAPER
-    p.figure_1(DATE)
+    #p.figure_1(DATE)
+    p.figure_2(results, DATE)
     #p.figure_3(results)

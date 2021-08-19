@@ -915,10 +915,11 @@ def figure_1(date):
     ax_1.yaxis.tick_right()
 
     # Add the latitude label, this will be for both subplots.
-    ax_1.text(1.05, 1.03,
+    ax_1.text(1.05, 0.85,
               'Latitude',
               horizontalalignment='center',
               verticalalignment='center',
+              rotation=90,
               transform=ax_1.transAxes)
 
     # Plot the CH4 data.
@@ -930,20 +931,16 @@ def figure_1(date):
                              vmax=ch4_plot_helper.vmax,
                              zorder=0)
 
-    # Add a colorbar to the methane plot, show it on the left hand side of the plot.
-    ch4_cbar_ax = ax_1.inset_axes([-0.13, 0.05, 0.05, 0.9], #x0, y0, width, height
+    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
+    ch4_cbar_ax = ax_1.inset_axes([0.25, 0.02, 0.73, 0.05], #x0, y0, width, height
                                   transform=ax_1.transAxes)
     ch4_cbar = plt.colorbar(ch4_im,
                             cax=ch4_cbar_ax,
-                            ticks=[1830, 1860, 1890])
-    ch4_cbar.ax.set_yticklabels(['1830', '1860', '1890'],
-                                rotation=90,
-                                va='center',
-                                ha='left')
-    ch4_cbar.ax.yaxis.set_ticks_position('right')
-    ch4_cbar.set_label(r'CH$_4$ column-average mixing ratio [ppbv]',
-                       rotation=90,
-                       labelpad=-45)
+                            orientation='horizontal')
+    ch4_cbar.set_ticks([])
+    ch4_cbar_ax.text(1830, 1830, '1830', ha='center')
+    ch4_cbar_ax.text(1860, 1830, '1860', ha='center')
+    ch4_cbar_ax.text(1890, 1830, '1890', ha='center')
 
     # Add the borders to the CH4 subplot.
     ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
@@ -958,6 +955,7 @@ def figure_1(date):
                                   fill=False,
                                   zorder=2)
     ax_1.add_patch(rectangle)
+    ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]', fontsize=10)
 
     # ax_2 is the subplot for the NO2 observation, right hand side (second column), set projection here.
     ax_2 = plt.subplot(G[0, 1],
@@ -990,30 +988,191 @@ def figure_1(date):
                  edgecolors='black',
                  zorder=1)
 
-    # Add a colorbar to the NO2 plot, show it on the right hand side of the plot.
-    no2_cbar_ax = ax_2.inset_axes([1.08, 0.05, 0.05, 0.9],  # x0, y0, width, height
+    # Add a colorbar to the NO2 plot, show it inside the plot.
+    no2_cbar_ax = ax_2.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
                                   transform=ax_2.transAxes)
     no2_cbar = plt.colorbar(no2_im,
                             cax=no2_cbar_ax,
-                            ticks=[0.01, 0.03, 0.05, 0.07, 0.09])
-    no2_cbar.ax.set_yticklabels(['0.01', '0.03', '0.05', '0.07', '0.09'],
-                               rotation=270,
-                               va='center',
-                               ha='right')
-    no2_cbar.ax.yaxis.set_ticks_position('left')
-    no2_cbar.set_label(r'NO$_2$ column density [mmol m$^{-2}$]',
-                       rotation=270,
-                       labelpad=15)
+                            orientation='horizontal')
+    no2_cbar.set_ticks([])
+    no2_cbar_ax.text(0.01, 0.02, '0.01', ha='center')
+    no2_cbar_ax.text(0.05, 0.02, '0.05', ha='center')
+    no2_cbar_ax.text(0.09, 0.02, '0.09', ha='center')
 
     # Add the borders to the NO2 subplot.
     ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
-    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig('figures/paper/figure_1.pdf',
+    # Plot the title for the NO2 plot.
+    ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]', fontsize=10)
+
+    # Save the figure as a png, too large otherwise, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_1.png',
+                dpi=600,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
     # Show the plot on-screen.
+    plt.show()
+
+def figure_2(fitted_results, date):
+    '''This function is for creating and saving Figure 2 of the paper. Figure 2 will be a page-wide, two-panel figure.
+    Left hand panel is a scatterplot of observations with errorbars and a subset of regression lines. Right hand panel
+    is an alpha-beta cross plot with errorbars in both dimensions, with a 95% CI ellipse plotted underneath using the
+    mode estimated value of mu and Sigma.
+
+    :param fitted_results: The results of this model run.
+    :type fitted_results: FittedResults
+    :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
+    :type date: string
+    '''
+
+    # Set up the figure. Page-wide, two-panel figure.
+    plt.figure(figsize=(7.2, 4.45))
+    G = gridspec.GridSpec(1, 2, wspace=0.1)
+
+    # ax_1 is the subplot for the scatterplot of observations, left hand side (first column).
+    ax_1 = plt.subplot(G[0, 0])
+
+    #sns.set()
+    # Seed the random number generator.
+    np.random.seed(101)
+
+    # Read in the observations for this model run and then extract the particular observations for the date in question.
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/dataset.csv', header=0)
+    date_df    = dataset_df[dataset_df.Date == date]
+
+    beta_values        = []
+    beta_error_bounds  = []
+    alpha_values       = []
+    alpha_error_bounds = []
+
+    # Fill the lists of mode values and the errors needed for the scatterplot.
+    for parameter in fitted_results.parameter_list:
+        if 'beta.' in parameter:
+            beta_values.append(fitted_results.mode_values[parameter])
+            beta_error_bounds.append(
+                [fitted_results.mode_values[parameter] - fitted_results.credible_intervals[parameter][0],
+                 fitted_results.credible_intervals[parameter][1] - fitted_results.mode_values[parameter]])
+        elif 'alpha.' in parameter:
+            alpha_values.append(fitted_results.mode_values[parameter])
+            alpha_error_bounds.append(
+                [fitted_results.mode_values[parameter] - fitted_results.credible_intervals[parameter][0],
+                 fitted_results.credible_intervals[parameter][1] - fitted_results.mode_values[parameter]])
+
+    # Needed to plot the regression lines.
+    x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
+    x_domain = np.linspace(x_min, x_max, 100)
+
+    # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
+    # using the passed date. Use the summary.csv file and index by date
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0, index_col=0)
+    day_id     = int(summary_df.loc[date].Day_ID)
+
+    # Get mode and upper and lower 95% CI bounds for alpha and beta on this day.
+    mode_beta  = fitted_results.mode_values['beta.' + str(day_id)]
+    mode_alpha = fitted_results.mode_values['alpha.' + str(day_id)]
+    lower_beta_bound, upper_beta_bound   = fitted_results.credible_intervals['beta.' + str(day_id)]
+    lower_alpha_bound, upper_alpha_bound = fitted_results.credible_intervals['alpha.' + str(day_id)]
+
+    # Extract a random subset of 500 alpha-beta draws that the sampler drew.
+    draws = np.arange(len(fitted_results.full_trace['alpha.' + str(day_id)]))
+    np.random.shuffle(draws)
+    alpha = fitted_results.full_trace['alpha.' + str(day_id)][draws]
+    beta  = fitted_results.full_trace['beta.' + str(day_id)][draws]
+    for i in range(500):
+        ax_1.plot(x_domain,
+                 alpha[i] + beta[i] * x_domain,
+                 color='lime',
+                 alpha=0.01,
+                 zorder=2)
+
+    # Plot the observations with TROPOMI errors.
+    ax_1.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
+                 ecolor="blue",
+                 capsize=3,
+                 fmt='D',
+                 mfc='w',
+                 color='red',
+                 ms=4,
+                 zorder=1,
+                 alpha=0.5)
+
+    # Plot values of alpha and beta in axes coordinates.
+    ax_1.text(0.65, 0.05,
+              r'$\beta={}^{}_{}$'.format(round(mode_beta),
+                                         '{' + str(round(upper_beta_bound)) + '}',
+                                         '{' + str(round(lower_beta_bound)) + '}') + '\n' +
+              r'$\alpha={}^{}_{}$'.format(round(mode_alpha),
+                                         '{' + str(round(upper_alpha_bound)) + '}',
+                                         '{' + str(round(lower_alpha_bound)) + '}'),
+              transform=ax_1.transAxes,
+              fontsize=10)
+
+    # Customise ticks for the left hand panel.
+    ax_1.set_yticks([1840, 1880, 1920, 1960])
+    plt.setp(ax_1.yaxis.get_majorticklabels(),
+             rotation=90,
+             va='center')
+
+    ax_1.set_xlabel(r'NO$_{2}^{\mathrm{obs}}$ [mmol m$^{-2}$]')
+    ax_1.set_ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
+    ax_1.title.set_text(datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%b %-d, %Y'))
+
+    # ax_2 is the subplot for the cross plot of alpha and beta, right hand side (second column).
+    ax_2 = plt.subplot(G[0, 1])
+
+    # Plot the alpha and beta parameters.
+    ax_2.errorbar(alpha_values,
+                  beta_values,
+                  yerr=np.array(beta_error_bounds).T,
+                  xerr=np.array(alpha_error_bounds).T,
+                  ecolor="blue",
+                  capsize=3,
+                  fmt='D',
+                  mfc='w',
+                  color='red',
+                  ms=4)
+
+    # Add in the 95% CI ellipse using mode estimated values of the hyperparameters.
+    pearson     = fitted_results.mode_values['rho']
+    sigma_alpha = fitted_results.mode_values['sigma_alpha']
+    mu_alpha    = fitted_results.mode_values['mu_alpha']
+    sigma_beta  = fitted_results.mode_values['sigma_beta']
+    mu_beta     = fitted_results.mode_values['mu_beta']
+
+    ellipse(pearson,
+            sigma_alpha,
+            sigma_beta,
+            mu_alpha,
+            mu_beta,
+            ax_2,
+            n_std=2.0,
+            edgecolor='red',
+            facecolor='red',
+            alpha=0.3)
+
+    ax_2.set_ylabel(r'$\beta$ [ppbv / mmol m$^{-2}$]',
+                    rotation=270,
+                    labelpad=20)
+    ax_2.set_xlabel(r'$\alpha$ [ppbv]')
+
+    # Set the title of the right hand subplot.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    ax_2.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%b %-d') + ' - ' +
+                    datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%b %-d, %Y'))
+
+    # Customise ticks for the right hand panel.
+    ax_2.set_yticks([400, 800, 1200, 1600])
+    ax_2.yaxis.tick_right()
+    ax_2.yaxis.set_label_position("right")
+    plt.setp(ax_2.yaxis.get_majorticklabels(),
+             rotation=270,
+             va='center')
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_2.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
     plt.show()
 
 def figure_3(fitted_results):
@@ -1058,7 +1217,7 @@ def figure_3(fitted_results):
     # Left hand side plot (the time series). Needs to span the first two columns.
     ax_1 = plt.subplot(G[0, 0:2])
     ax_1.set_xlabel("Date", fontsize=12)
-    ax_1.set_ylabel(r'$\beta$ [ppbv / mmol / m$^2$]', color="black", fontsize=12)
+    ax_1.set_ylabel(r'$\beta$ [ppbv / mmol m$^{-2}$]', color="black", fontsize=12)
 
     # Set the title on the time series plot using the start and end date of the model run.
     start_date, end_date, model = fitted_results.run_name.split('-')
@@ -1143,7 +1302,7 @@ def figure_3(fitted_results):
                   elinewidth=0.7)
 
     # Set the x-axis label on the cross plot.
-    ax_2.set_xlabel(r'$\beta$ [ppbv / mmol / m$^2$]', fontsize=12, labelpad=0)
+    ax_2.set_xlabel(r'$\beta$ [ppbv / mmol m$^{-2}$]', fontsize=12, labelpad=0)
 
     # Plot some red text to show that the red y-axis is the flare count. Plot in axes coordinates of the cross plot.
     ax_2.text(-0.07, 1.03,
@@ -1155,7 +1314,7 @@ def figure_3(fitted_results):
               fontsize=12)
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig('figures/paper/figure_3.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_3.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
 
