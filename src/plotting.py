@@ -23,7 +23,7 @@ from src import constants as ct
 
 class PlotHelper:
     #TODO make the docstring
-    def __init__(self, filename, molecule, qa_only=False):
+    def __init__(self, filename, molecule, qa_only=False, augment_ch4=False):
         self.figsize = (10.0, 6.0)
         self.extent  = (-106, -99, 29, 35)
         self.xticks  = range(-106, -99, 2)
@@ -72,7 +72,8 @@ class PlotHelper:
             ch4 = np.array(f.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
 
             if not qa_only:
-                self.data = np.ma.masked_greater(ch4, 1e30)
+                data = ch4
+
             # If you only want high-quality pixels, have to do the below.
             else:
                 filtered_ch4 = np.empty(np.shape(ch4))
@@ -85,7 +86,22 @@ class PlotHelper:
                         else:
                             filtered_ch4[i, j] = ch4[i, j]
 
-                self.data = np.ma.masked_greater(filtered_ch4, 1e30)
+                data = filtered_ch4
+
+            if augment_ch4:
+                #TODO change this hardcoded model run name
+                g = nc4.Dataset(ct.FILE_PREFIX +
+                                '/augmented_observations/20190101-20191231-non_centered/data_rich/' +
+                                filename,
+                                'r')
+
+                augmented_pixel_values = np.array(g.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+                for i in range(f.groups['PRODUCT'].dimensions['scanline'].size):
+                    for j in range(f.groups['PRODUCT'].dimensions['ground_pixel'].size):
+                        if (data[i, j] >= 1e32) and (augmented_pixel_values[i, j] < 1e32):
+                            data[i, j] = augmented_pixel_values[i, j]
+
+            self.data = np.ma.masked_greater(data, 1e30)
 
         # Acess pixel corner latitudes and longitudes
         lat_corners = np.array(
@@ -113,7 +129,7 @@ class PlotHelper:
         self.latitudes = latitude_corners
         self.longitudes = longitude_corners
 
-def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_flares=False):
+def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_flares=False, augment_ch4=False):
     '''This is a function for plotting TROPOMI observations of either :math:`\\mathrm{NO}_2` or :math:`\\mathrm{CH}_4`.
 
     :param date: Date you want to plot observations for, format as %Y-%m-%d
@@ -126,6 +142,8 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
     :type qa_only: bool
     :param show_flares: A flag to determine if you want to plot flare stack locations that are "on" from VIIRS.
     :type show_flares: bool
+    :param augment_ch4: A flag to determine if you want to show the possible augmented methane pixels.
+    :type augment_ch4: bool
     '''
 
     file_date_prefix        = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
@@ -142,7 +160,7 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
         file = potential_tropomi_files[0]
 
     # Set necessary details with the plot helper
-    plot_helper = PlotHelper(file, molecule, qa_only)
+    plot_helper = PlotHelper(file, molecule, qa_only, augment_ch4)
 
     # Get the outlines of counties
     reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
@@ -221,7 +239,7 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
     ax.add_feature(cfeature.COASTLINE.with_scale('10m'), edgecolor="lightgray")
     plt.title(plot_helper.title)
     plt.tight_layout()
-    plt.savefig('figures/autosaved/tropomi_observation.png', dpi=300, bbox_inches='tight')
+    plt.savefig('figures/autosaved/tropomi_ch4_good_pixels_plus_augmented_pixels.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, show_warmup_draws=False):
@@ -643,6 +661,7 @@ def reduced_chi_squared(model_run):
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
     title = 'Reduced chi-squared values by day'
+    plt.figure(figsize=(3.5, 2.2))
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
 
@@ -654,7 +673,13 @@ def reduced_chi_squared(model_run):
         title += '\n' + datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
                  datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y")
     plt.title(title)
-    plt.tight_layout()
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/reduced_chi_squared.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    # Show the plot on-screen.
     plt.show()
 
 def residuals(daily_mean_error_model_run, individual_error_model_run=None):
@@ -945,16 +970,6 @@ def figure_1(date):
     # Add the borders to the CH4 subplot.
     ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
-    # Add the study region as a red box on the CH4 subplot.
-    box = ct.STUDY_REGION['Permian_Basin']
-    rectangle = patches.Rectangle((box[0], box[2]),
-                                  box[1] - box[0],
-                                  box[3] - box[2],
-                                  linewidth=2,
-                                  edgecolor='r',
-                                  fill=False,
-                                  zorder=2)
-    ax_1.add_patch(rectangle)
     ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]', fontsize=10)
 
     # ax_2 is the subplot for the NO2 observation, right hand side (second column), set projection here.
@@ -986,7 +1001,7 @@ def figure_1(date):
                  s=20,
                  color='limegreen',
                  edgecolors='black',
-                 zorder=1)
+                 zorder=3)
 
     # Add a colorbar to the NO2 plot, show it inside the plot.
     no2_cbar_ax = ax_2.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
@@ -1002,12 +1017,23 @@ def figure_1(date):
     # Add the borders to the NO2 subplot.
     ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
+    # Add the study region as a red box on the CH4 subplot.
+    box = ct.STUDY_REGION['Permian_Basin']
+    rectangle = patches.Rectangle((box[0], box[2]),
+                                  box[1] - box[0],
+                                  box[3] - box[2],
+                                  linewidth=2,
+                                  edgecolor='r',
+                                  fill=False,
+                                  zorder=2)
+    ax_2.add_patch(rectangle)
+
     # Plot the title for the NO2 plot.
     ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]', fontsize=10)
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_1.png',
-                dpi=600,
+                dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
@@ -1072,7 +1098,10 @@ def figure_2(fitted_results, date):
     mode_beta  = fitted_results.mode_values['beta.' + str(day_id)]
     mode_alpha = fitted_results.mode_values['alpha.' + str(day_id)]
     lower_beta_bound, upper_beta_bound   = fitted_results.credible_intervals['beta.' + str(day_id)]
+    beta_diff                            = (upper_beta_bound - lower_beta_bound) / 2.
     lower_alpha_bound, upper_alpha_bound = fitted_results.credible_intervals['alpha.' + str(day_id)]
+    alpha_diff                           = (upper_alpha_bound - lower_alpha_bound) / 2.
+
 
     # Extract a random subset of 500 alpha-beta draws that the sampler drew.
     draws = np.arange(len(fitted_results.full_trace['alpha.' + str(day_id)]))
@@ -1093,18 +1122,16 @@ def figure_2(fitted_results, date):
                  fmt='D',
                  mfc='w',
                  color='red',
-                 ms=4,
+                 ms=3.5,
                  zorder=1,
                  alpha=0.5)
 
     # Plot values of alpha and beta in axes coordinates.
     ax_1.text(0.65, 0.05,
-              r'$\beta={}^{}_{}$'.format(round(mode_beta),
-                                         '{' + str(round(upper_beta_bound)) + '}',
-                                         '{' + str(round(lower_beta_bound)) + '}') + '\n' +
-              r'$\alpha={}^{}_{}$'.format(round(mode_alpha),
-                                         '{' + str(round(upper_alpha_bound)) + '}',
-                                         '{' + str(round(lower_alpha_bound)) + '}'),
+              r'$\beta={}\pm{}$'.format(round(mode_beta),
+                                         '{' + str(round(beta_diff)) + '}') + '\n' +
+              r'$\alpha={}\pm{}$'.format(round(mode_alpha),
+                                         '{' + str(round(alpha_diff)) + '}'),
               transform=ax_1.transAxes,
               fontsize=10)
 
@@ -1127,11 +1154,11 @@ def figure_2(fitted_results, date):
                   yerr=np.array(beta_error_bounds).T,
                   xerr=np.array(alpha_error_bounds).T,
                   ecolor="blue",
-                  capsize=3,
+                  capsize=3.5,
                   fmt='D',
                   mfc='w',
                   color='red',
-                  ms=4)
+                  ms=3)
 
     # Add in the 95% CI ellipse using mode estimated values of the hyperparameters.
     pearson     = fitted_results.mode_values['rho']
@@ -1151,7 +1178,7 @@ def figure_2(fitted_results, date):
             facecolor='red',
             alpha=0.3)
 
-    ax_2.set_ylabel(r'$\beta$ [ppbv / mmol m$^{-2}$]',
+    ax_2.set_ylabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]',
                     rotation=270,
                     labelpad=20)
     ax_2.set_xlabel(r'$\alpha$ [ppbv]')
@@ -1217,7 +1244,7 @@ def figure_3(fitted_results):
     # Left hand side plot (the time series). Needs to span the first two columns.
     ax_1 = plt.subplot(G[0, 0:2])
     ax_1.set_xlabel("Date", fontsize=12)
-    ax_1.set_ylabel(r'$\beta$ [ppbv / mmol m$^{-2}$]', color="black", fontsize=12)
+    ax_1.set_ylabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]', color="black", fontsize=12)
 
     # Set the title on the time series plot using the start and end date of the model run.
     start_date, end_date, model = fitted_results.run_name.split('-')
@@ -1302,7 +1329,7 @@ def figure_3(fitted_results):
                   elinewidth=0.7)
 
     # Set the x-axis label on the cross plot.
-    ax_2.set_xlabel(r'$\beta$ [ppbv / mmol m$^{-2}$]', fontsize=12, labelpad=0)
+    ax_2.set_xlabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]', fontsize=12, labelpad=0)
 
     # Plot some red text to show that the red y-axis is the flare count. Plot in axes coordinates of the cross plot.
     ax_2.text(-0.07, 1.03,
@@ -1321,5 +1348,253 @@ def figure_3(fitted_results):
     # Show the plot on-screen.
     plt.show()
 
+def figure_4(date):
+    '''This function is for creating and saving Figure 4 of the paper. Figure 4 will be a page-wide, four-panel figure.
+    Each panel will be for one of QA'd TROPOMI methane observations, "all" observations, and then the addition to each
+    of the augmented observations based off of the corresponding nitrogen dioxide observation.
+
+    :param fitted_results: The results of this model run.
+    :type fitted_results: FittedResults
+    :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
+    :type date: string
+    '''
+
+    # Get the relevant .nc4 files of the TROPOMI  CH4 observation using the date.
+    file_date_prefix = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
+    # Sometimes there is more than one overpass per day.
+    potential_tropomi_files = [file.split('/')[-1] for file in
+                               glob.glob(
+                                   ct.FILE_PREFIX + '/observations/NO2/' + file_date_prefix + '*.nc')]
+    if len(potential_tropomi_files) > 1:
+        print('Multiple files match the input date. Enter index of desired file:')
+        for i in range(len(potential_tropomi_files)):
+            print(f'[{i}]: {potential_tropomi_files[i]}')
+        index = int(input('File index: '))
+        file = potential_tropomi_files[index]
+    else:
+        file = potential_tropomi_files[0]
+
+    # Get necessary details with the plot helper.
+    good_pixels = PlotHelper(file, 'CH4', qa_only=True)
+    all_pixels  = PlotHelper(file, 'CH4', qa_only=False)
+    good_pixels_plus_augmentation = PlotHelper(file, 'CH4', qa_only=True, augment_ch4=True)
+    all_pixels_plus_augmentation  = PlotHelper(file, 'CH4', qa_only=False, augment_ch4=True)
+
+    # Get the outlines of counties, these will be used in both plots.
+    reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
+    counties = list(reader.geometries())
+    COUNTIES = cfeature.ShapelyFeature(counties, ccrs.PlateCarree())
+
+    # Define the colors that we will use for the plots.
+    colors = copy.copy(cm.RdYlBu_r)
+    colors.set_bad('grey', 1.0)
+
+    # Create figure, use gridspec to divide it up into subplots. 2-column subplot, each molecule gets a column.
+    plt.figure(figsize=(10, 9))
+    G = gridspec.GridSpec(2, 2, wspace=0.09, hspace=0.00)
+
+    #------------------------------------------------------------------------------------------------------------
+    # ax_1 is the subplot for the 'good' pixels TROPOMI observation, first row, first column, set projection here.
+    ax_1 = plt.subplot(G[0, 0],
+                       projection=ccrs.PlateCarree(),
+                       extent=good_pixels.extent)
+
+    # Plot the CH4 data.
+    good_im = ax_1.pcolormesh(good_pixels.longitudes,
+                              good_pixels.latitudes,
+                              good_pixels.data,
+                              cmap=colors,
+                              vmin=good_pixels.vmin,
+                              vmax=good_pixels.vmax,
+                              zorder=0)
+
+    # Set the ticks for the CH4 subplot.
+    ax_1.set_xticks([-104, -102, -100])
+    ax_1.set_yticks(good_pixels.yticks)
+    ax_1.yaxis.tick_right()
+
+    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
+    good_cbar_ax = ax_1.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
+                                   transform=ax_1.transAxes)
+    good_cbar = plt.colorbar(good_im,
+                            cax=good_cbar_ax,
+                            orientation='horizontal')
+    good_cbar.set_ticks([])
+    good_cbar_ax.text(1830, 1830, '1830', ha='center')
+    good_cbar_ax.text(1860, 1830, '1860', ha='center')
+    good_cbar_ax.text(1890, 1830, '1890', ha='center')
+
+    # Add the borders to the CH4 subplot.
+    ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
+
+    # Add the latitude label, this will be for both subplots 1 and 2.
+    ax_1.text(1.05, 0.85,
+              'Latitude',
+              horizontalalignment='center',
+              verticalalignment='center',
+              rotation=90,
+              transform=ax_1.transAxes)
+
+    # Add the longitude label, this will be for both subplots 1 and 3.
+    ax_1.text(0.1, -0.05,
+              'Longitude',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes)
+
+    # Set title
+    ax_1.set_title('QA>=0.5', pad=0)
+
+    #------------------------------------------------------------------------------------------------------------
+    # ax_2 is the subplot for all pixels TROPOMI observation, first row, second column, set projection here.
+    ax_2 = plt.subplot(G[0, 1],
+                       projection=ccrs.PlateCarree(),
+                       extent=all_pixels.extent)
+
+    # Plot the CH4 data.
+    all_im = ax_2.pcolormesh(all_pixels.longitudes,
+                             all_pixels.latitudes,
+                             all_pixels.data,
+                             cmap=colors,
+                             vmin=all_pixels.vmin,
+                             vmax=all_pixels.vmax,
+                             zorder=0)
+
+    # Set the ticks for the CH4 subplot.
+    ax_2.set_xticks([-106, -104, -102])
+    ax_2.set_yticks(all_pixels.yticks)
+    ax_2.tick_params(axis='y',
+                     labelleft=False)
+
+    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
+    all_cbar_ax = ax_2.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
+                                   transform=ax_2.transAxes)
+    all_cbar = plt.colorbar(all_im,
+                            cax=all_cbar_ax,
+                            orientation='horizontal')
+    all_cbar.set_ticks([])
+    all_cbar_ax.text(1830, 1830, '1830', ha='center')
+    all_cbar_ax.text(1860, 1830, '1860', ha='center')
+    all_cbar_ax.text(1890, 1830, '1890', ha='center')
+
+    # Add the borders to the CH4 subplot.
+    ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
+
+    # Set title
+    ax_2.set_title('QA>0', pad=0)
+
+    # Add the longitude label, this will be for both subplots 1 and 3.
+    ax_2.text(0.9, -0.05,
+              'Longitude',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes)
+
+    #------------------------------------------------------------------------------------------------------------
+    # ax_3 is the subplot for the 'good' pixels TROPOMI observation + the augmented values, second row, first column, set projection here.
+    ax_3 = plt.subplot(G[1, 0],
+                       projection=ccrs.PlateCarree(),
+                       extent=good_pixels_plus_augmentation.extent)
+
+    # Plot the CH4 data.
+    good_plus_augmented_im = ax_3.pcolormesh(good_pixels_plus_augmentation.longitudes,
+                                             good_pixels_plus_augmentation.latitudes,
+                                             good_pixels_plus_augmentation.data,
+                                             cmap=colors,
+                                             vmin=good_pixels_plus_augmentation.vmin,
+                                             vmax=good_pixels_plus_augmentation.vmax,
+                                             zorder=0)
+
+    # Set the ticks for the CH4 subplot.
+    ax_3.set_xticks([-104, -102, -100])
+    ax_3.set_yticks([31, 33, 35])
+    ax_3.yaxis.tick_right()
+    ax_3.tick_params(axis='x',          # changes apply to the x-axis
+                     which='both',      # both major and minor ticks are affected
+                     bottom=False,      # ticks along the bottom edge are off
+                     top=True,          # ticks along the top edge are on
+                     labeltop=False,    # labels along the top edge are off
+                     labelbottom=False) # labels along the bottom edge are off
+
+    # Add the latitude label, this will be for both subplots 1 and 2.
+    ax_3.text(1.05, 0.15,
+              'Latitude',
+              horizontalalignment='center',
+              verticalalignment='center',
+              rotation=90,
+              transform=ax_3.transAxes)
+
+    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
+    good_plus_augmentation_cbar_ax = ax_3.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
+                                                     transform=ax_3.transAxes)
+    ax_3_cbar = plt.colorbar(good_plus_augmented_im,
+                             cax=good_plus_augmentation_cbar_ax,
+                             orientation='horizontal')
+    ax_3_cbar.set_ticks([])
+    good_plus_augmentation_cbar_ax.text(1830, 1830, '1830', ha='center')
+    good_plus_augmentation_cbar_ax.text(1860, 1830, '1860', ha='center')
+    good_plus_augmentation_cbar_ax.text(1890, 1830, '1890', ha='center')
+
+    # Add the borders to the CH4 subplot.
+    ax_3.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
+
+    # Set title
+    ax_3.set_title('QA>=0.5 + Predictions',
+                   y=-0.07)
+
+    #------------------------------------------------------------------------------------------------------------
+    # ax_4 is the subplot for all pixels TROPOMI observation + the augmented values, second row, second column, set projection here.
+    ax_4 = plt.subplot(G[1, 1],
+                       projection=ccrs.PlateCarree(),
+                       extent=all_pixels_plus_augmentation.extent)
+
+    # Plot the CH4 data.
+    all_plus_augmented_im = ax_4.pcolormesh(all_pixels_plus_augmentation.longitudes,
+                                            all_pixels_plus_augmentation.latitudes,
+                                            all_pixels_plus_augmentation.data,
+                                            cmap=colors,
+                                            vmin=all_pixels_plus_augmentation.vmin,
+                                            vmax=all_pixels_plus_augmentation.vmax,
+                                            zorder=0)
+
+    # Set the ticks for the CH4 subplot.
+    ax_4.set_xticks([-104, -102, -100])
+    ax_4.set_yticks([31, 33, 35])
+    ax_4.yaxis.tick_left()
+    ax_4.tick_params(axis='x',  # changes apply to the x-axis
+                     which='both',  # both major and minor ticks are affected
+                     bottom=False,  # ticks along the bottom edge are off
+                     top=True,  # ticks along the top edge are on
+                     labelbottom=False)  # labels along the bottom edge are off
+    ax_4.tick_params(axis='y',
+                     which='both',
+                     labelleft=False)
+
+    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
+    all_plus_augmentation_cbar_ax = ax_4.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
+                                                     transform=ax_4.transAxes)
+    ax_4_cbar = plt.colorbar(all_plus_augmented_im,
+                             cax=all_plus_augmentation_cbar_ax,
+                             orientation='horizontal')
+    ax_4_cbar.set_ticks([])
+    all_plus_augmentation_cbar_ax.text(1830, 1830, '1830', ha='center')
+    all_plus_augmentation_cbar_ax.text(1860, 1830, '1860', ha='center')
+    all_plus_augmentation_cbar_ax.text(1890, 1830, '1890', ha='center')
+
+    # Add the borders to the CH4 subplot.
+    ax_4.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
+
+    # Set title
+    ax_4.set_title('QA>0 + Predictions',
+                   y=-0.07)
+
+    # Save the figure as a png, too large otherwise, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_4.png',
+                dpi=300,
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    # Show the plot on-screen.
+    plt.show()
 
 

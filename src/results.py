@@ -95,7 +95,7 @@ class FittedResults:
             sigma_N = list(dropout_day_df.sigma_N)
 
             for i in range(len(obs_NO2)):
-                prediction, std_deviation = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+                prediction, std_deviation = self.predict_ch4(obs_NO2[i], sigma_N[i], day_id)
 
                 if np.abs(prediction - obs_CH4[i]) < 2.*std_deviation:
                     well_predicted_pixels += 1
@@ -132,7 +132,7 @@ class FittedResults:
             residuals   = []
 
             for i in range(len(obs_NO2)):
-                prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+                prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], day_id)
                 predictions.append(round(prediction, 2))
                 residuals.append(round(prediction - obs_CH4[i], 2))
 
@@ -178,7 +178,7 @@ class FittedResults:
             sigma_pred_CH4 = []
 
             for i in range(len(obs_NO2)):
-                prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], 'day_id', day_id)
+                prediction, uncertainty = self.predict_ch4(obs_NO2[i], sigma_N[i], day_id)
                 pred_CH4.append(prediction)
                 sigma_pred_CH4.append(uncertainty)
 
@@ -198,7 +198,7 @@ class FittedResults:
             reduced_chi_squared_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv',
                                           index=False)
 
-    def predict_ch4(self, obs_no2, sigma_N, identifier, value):
+    def predict_ch4(self, obs_no2, sigma_N, day_id):
         '''
         This function is for predicting an observed value of CH4 with an associated standard deviation on the estimate.
 
@@ -206,25 +206,10 @@ class FittedResults:
         :type obs_no2: float
         :param sigma_N: The reported error on the observation of NO2, also in micro mol / m^2.
         :type sigma_N: float
-        :param identifier: Either 'date' or 'day_id'.
-        :type identifier: str
-        :param value: Value of either 'date' or 'day_id'. If year, then value must be in format YYYYMMDD.
-        :type value: int
+        :param day_id: Day_ID for the date in question.
+        :type day_id: int
         :return: A value for predicted CH4 and associated uncertainty.
         '''
-
-        # Open the full dataset.csv to see which day id we need.
-
-        if identifier == 'date':
-            if 'dropout' in self.run_name:
-                dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name.split('/')[0] + '/dataset.csv')
-            else:
-                dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dataset.csv')
-
-            day_id     = dataset_df[dataset_df.Date == value].Day_ID.iloc[0]
-
-        elif identifier == 'day_id':
-            day_id = value
 
         alphas = self.full_trace['alpha.' + str(day_id)]
         betas  = self.full_trace['beta.' + str(day_id)]
@@ -338,17 +323,15 @@ class FittedResults:
         # Calculate median value, standard deviation and 95% CI for all model parameter values
         credible_intervals  = {}
         mode_values         = {}
-        standard_deviations = {}
         for parameter in parameter_list:
-            credible_intervals[parameter]  = [np.percentile(full_trace[parameter], 2.5),
-                                              np.percentile(full_trace[parameter], 97.5)]
+            credible_intervals[parameter]  = [np.percentile(full_trace[parameter], 16),
+                                              np.percentile(full_trace[parameter], 84)]
             # Calculate the mode
             histogram  = np.histogram(full_trace[parameter], 50)
             bin_index  = histogram[0].argmax()
             mode_value = histogram[1][bin_index] + (histogram[1][bin_index+1] - histogram[1][bin_index])/2
 
             mode_values[parameter]         = mode_value
-            standard_deviations[parameter] = np.std(full_trace[parameter])
 
         # Assign accessible attributes
         self.full_trace         = full_trace
