@@ -661,7 +661,6 @@ def reduced_chi_squared(model_run):
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
     title = 'Reduced chi-squared values by day'
-    plt.figure(figsize=(3.5, 2.2))
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
 
@@ -695,10 +694,9 @@ def residuals(daily_mean_error_model_run, individual_error_model_run=None):
                                     header=0)
         plt.hist(residual_df_2.Residuals, alpha=0.5, label='Individual error model')
 
-    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + daily_mean_error_model_run + '/dropout/residuals.csv',
-                                header=0)
+    residual_df_1 = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + daily_mean_error_model_run + '/dropout/residuals.csv')
 
-    plt.hist(residual_df_1.Residuals, alpha=0.5, label='Average error model')
+    sns.displot(residual_df_1.Residuals, kde=True)
 
     title = 'Residual comparison'
     # Check if this is a test dataset
@@ -709,10 +707,14 @@ def residuals(daily_mean_error_model_run, individual_error_model_run=None):
         title += '\n' + datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
                  datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y")
 
-    plt.title(title)
-    plt.legend()
     plt.xlabel(r'$\mathregular{CH_4^{pred}} - \mathregular{CH_4^{obs}}$ [ppbv]')
-    plt.tight_layout()
+    plt.title(title)
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/dropout_residuals.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    # Show the plot on-screen.
     plt.show()
 
 def beta_flare_time_series(fitted_results):
@@ -1597,4 +1599,86 @@ def figure_4(date):
     # Show the plot on-screen.
     plt.show()
 
+def figure_6(fitted_results):
+    '''This function is for creating and saving Figure 6 of the paper. Figure 6 will be a page-wide, 3-panel figure.
+    Each panel is a page-wide row. Each panel shows a time series of a quantity calculated three times, once with just
+    TROPOMI CH4 observations that pass the QA threshold, again with all TROPOMI CH4 observations, and then again including
+    the predicted CH4 values from the model.
 
+    :param fitted_results: The results of this model run.
+    :type fitted_results: FittedResults
+    '''
+
+    # Read in the necessary time series.
+    pixel_coverage_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/pixel_coverage.csv', header=0)
+    median_pixel_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/median_pixel_value.csv', header=0)
+
+
+
+    # Create the datetime objects for all the dates we have calculated quantities for.
+    datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in pixel_coverage_df.Date]
+
+    # Create figure, use gridspec to divide it up into subplots. 3-row subplot.
+    plt.figure(figsize=(10.0, 12.0))
+    G    = gridspec.GridSpec(3, 1)
+    # Need just a little bit of space between the subplots to have y-axis tick marks in between.
+    G.update(wspace=0.0)
+
+    # ------------------------------------------------------------------------------------------------------
+    # Top row plot (the time series). Needs to span the first two columns.
+    ax_1 = plt.subplot(G[0, 0])
+
+    # Set the title on the time series plot using the start and end date of the model run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    ax_1.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+                        datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
+    # Plot the three quantities, all same color, but different markers and line styles.
+    ax_1.plot(datetimes,
+              pixel_coverage_df.QA_coverage,
+              marker='o',
+              linestyle='solid')
+    ax_1.plot(datetimes,
+              pixel_coverage_df.QA_plus_poor_pixel_coverage,
+              marker='s',
+              linestyle='dashed')
+    ax_1.plot(datetimes,
+              pixel_coverage_df.Augmented_coverage,
+              marker='^',
+              linestyle='dotted')
+
+    # Set the ylabel
+    ax_1.set_ylabel('% Pixel coverage of study region')
+
+    ax_1.tick_params(axis='x',          # changes apply to the x-axis
+                     which='both',      # both major and minor ticks are affected
+                     bottom=False,     # labels along the top edge are off
+                     labelbottom=False) # labels along the bottom edge are off
+
+    # ------------------------------------------------------------------------------------------------------
+    ax_2 = plt.subplot(G[1, 0])
+
+    # Plot the three quantities, all same color, but different markers and line styles.
+    ax_2.plot(datetimes,
+              median_pixel_df.Median_QA_pixel_value,
+              marker='o',
+              linestyle='solid')
+    ax_2.plot(datetimes,
+              median_pixel_df.Median_QA_plus_poor_pixel_value,
+              marker='s',
+              linestyle='dashed')
+    ax_2.plot(datetimes,
+              median_pixel_df.Median_augmented_coverage_value,
+              marker='^',
+              linestyle='dotted')
+
+    # Set the ylabel
+    ax_2.set_ylabel('Median pixel value [ppbv]')
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_6.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    # Show the plot on-screen.
+    plt.show()

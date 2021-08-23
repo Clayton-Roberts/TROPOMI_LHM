@@ -499,7 +499,7 @@ def create_methane_mass_time_series(fitted_results):
     of pixel usage.'''
     print(2)
 
-def create_pixel_coverage_time_series(fitted_results):
+def create_time_series(fitted_results):
     '''This function is for creating a .csv file that describes a time series of total pixel coverage in the Permian
     Basin, one time series for just "good" TROPOMI observations of methane and another for when we include augmented
     pixels.
@@ -511,14 +511,26 @@ def create_pixel_coverage_time_series(fitted_results):
     # Open the summary csv file for this model run
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv')
 
-    # Create the csv file that we will save our time series to
-    time_series_df = pd.DataFrame(columns=('Date', 'Raw_coverage', 'Augmented_coverage'))
+    # Create the csv files that we will save our time series to
+    pixel_coverage_df     = pd.DataFrame(columns=('Date',
+                                                  'QA_coverage',
+                                                  'QA_plus_poor_pixel_coverage',
+                                                  'Augmented_coverage'))
+    median_pixel_value_df = pd.DataFrame(columns=('Date',
+                                                  'Median_QA_pixel_value',
+                                                  'Median_QA_plus_poor_pixel_value',
+                                                  'Median_augmented_coverage_value'))
+
+
 
     for date in tqdm(summary_df.Date, desc='Creating pixel-coverage time series'):
-        total_pixels     = 0
-        qa_pixels        = 0
-        all_pixels       = 0
-        augmented_pixels = 0
+        qa_pixel_values              = []
+        poor_pixel_values            = []
+        used_prediction_pixel_values = []
+        total_pixels      = 0
+        qa_pixels         = 0
+        poor_pixels       = 0
+        prediction_pixels = 0
 
         # Create string from the date datetime
         date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
@@ -532,12 +544,57 @@ def create_pixel_coverage_time_series(fitted_results):
         for filename in tropomi_overpasses:
             # Open the original CH4 file.
             original_ch4_file   = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
+            original_no2_file   = nc4.Dataset(ct.FILE_PREFIX + '/observations/NO2/' + filename, 'r')
             # Open the file of CH4 predictions.
-            prediction_ch4_file =
-            print(2)
-            # Open both the original CH4 TROPOMI observation file and it's augmented counterpart.
+            prediction_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name +
+                                              '/data_rich/' + filename, 'r')
 
-    print(2)
+            # Generate the arrays of CH4 pixel centre latitudes and longitudes, same between both files.
+            pixel_centre_latitudes  = np.array(original_ch4_file.groups['PRODUCT'].variables['latitude'])[0]
+            pixel_centre_longitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['longitude'])[0]
 
-def create_median_pixel_time_series(fitted_results):
-    print(2)
+            original_pixel_values   = np.array(original_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
+            qa_values               = np.array(original_ch4_file.groups['PRODUCT'].variables['qa_value'])[0]
+            prediction_pixel_values = np.array(prediction_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
+
+            # Get the dry air subcolumns
+            dry_air_subcolumns = np.array(original_ch4_file.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['INPUT_DATA'].variables['dry_air_subcolumns'])[0]
+
+            for i in range(original_ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
+                for j in range(original_ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
+                    if (ct.EXTENT['Permian_Basin'][2] < pixel_centre_latitudes[i, j] < ct.EXTENT['Permian_Basin'][3]) and \
+                            (ct.EXTENT['Permian_Basin'][0] < pixel_centre_longitudes[i, j] <ct.EXTENT['Permian_Basin'][1]):
+                        total_pixels += 1
+                        if original_pixel_values[i, j] < 1e30:
+                            if qa_values[i, j] >= 0.5:
+                                qa_pixels += 1
+                                qa_pixel_values.append(original_pixel_values[i, j])
+                            else:
+                                poor_pixels += 1
+                                poor_pixel_values.append(original_pixel_values[i, j])
+                        elif prediction_pixel_values[i, j] < 1e30:
+                            prediction_pixels += 1
+                            used_prediction_pixel_values.append(prediction_pixel_values[i, j])
+
+        qa_coverage                 = qa_pixels / total_pixels
+        qa_plus_poor_pixel_coverage = (qa_pixels + poor_pixels) / total_pixels
+        augmented_coverage          = (qa_pixels + poor_pixels + prediction_pixels) / total_pixels
+
+        median_qa_value                       = np.median(qa_pixel_values)
+        median_qa_plus_poor_pixel_value       = np.median(qa_pixel_values + poor_pixel_values)
+        median_augmented_coverage_pixel_value = np.median(qa_pixel_values + poor_pixel_values + used_prediction_pixel_values)
+
+        pixel_coverage_df = pixel_coverage_df.append({'Date': date,
+                                                'QA_coverage': qa_coverage * 100,
+                                                'QA_plus_poor_pixel_coverage': qa_plus_poor_pixel_coverage * 100,
+                                                'Augmented_coverage': augmented_coverage * 100},
+                                               ignore_index=True)
+
+        median_pixel_value_df = median_pixel_value_df.append({'Date': date,
+                                                              'Median_QA_pixel_value': median_qa_value,
+                                                              'Median_QA_plus_poor_pixel_value': median_qa_plus_poor_pixel_value,
+                                                              'Median_augmented_coverage_value': median_augmented_coverage_pixel_value},
+                                                             ignore_index=True)
+
+    pixel_coverage_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/pixel_coverage.csv')
+    median_pixel_value_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/median_pixel_value.csv')

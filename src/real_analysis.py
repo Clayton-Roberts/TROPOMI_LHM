@@ -11,11 +11,11 @@ from src import plotting as p
 #-----------------------------------
 PROCESS_TROPOMI_FILES  = False
 PROCESS_VIIRS_FILES    = False
-PERFORM_DROPOUT_FIT    = True
+PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
-MAKE_TIME_SERIES       = False
+MAKE_TIME_SERIES       = True
 MAKE_PLOTS             = False
 #-----------------------------------
 #   --- Flags for real runs ---
@@ -80,7 +80,7 @@ if AUGMENT_DATA_RICH_DAYS:
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
-    tp.create_pixel_coverage_time_series(results)
+    tp.create_time_series(results)
 
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
@@ -92,11 +92,10 @@ if MAKE_PLOTS:
     #         show_warmup_draws=SHOW_WARMUP_DRAWS)
     # p.observations_scatterplot(DATE, RUN_NAME)
     # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
-    #p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.dropout_scatterplot(DATE, RUN_NAME)
     # p.reduced_chi_squared(RUN_NAME)
-    # p.residuals(START_DATE + '-' + END_DATE + '-daily_mean_error',
-    #             START_DATE + '-' + END_DATE + '-individual_error')
+    # p.residuals(RUN_NAME)
     # p.beta_flare_time_series(results)
     # p.tropomi_plot(DATE, MOLECULE,
     #                plot_study_region=PLOT_STUDY_REGION,
@@ -106,6 +105,7 @@ if MAKE_PLOTS:
     # p.alpha_flarestack_crossplot(results)
     # PLOTS FOR THE PAPER
     # p.figure_1(DATE)
-    p.figure_2(results, DATE)
+    # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
+    p.figure_6(results)
