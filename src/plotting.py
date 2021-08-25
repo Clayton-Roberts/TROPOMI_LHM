@@ -891,59 +891,33 @@ def dry_air_column_density_cross_plot(fitted_results):
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
                              index_col=0)
 
-    era5_columns    = []
-    tropomi_columns = []
+    # Read in the dry air column density datafram
+    dry_air_column_density_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_densities.csv', header=0)
 
     for date in tqdm(summary_df.index, desc='Creating dry air subcolumn cross plot'):
-        # Create string from the date datetime
-        date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
 
-        # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
-        # that are a couple hours apart. Usually one overpass captures the whole study region.
-        tropomi_overpasses = [file.split('/')[-1] for file in
-                              glob.glob(
-                                  ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+        # Want to plot by date to see if there's anything weird going on.
+        sub_df = dry_air_column_density_df[dry_air_column_density_df.Date == date]
 
-        for filename in tropomi_overpasses:
-            # Open the original CH4 file.
-            original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
-            # Open the augmented CH4 file containing all the predictions.
-            augmented_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/'
-                                             + fitted_results.run_name + '/data_rich/' + filename, 'r')
+        plt.scatter(sub_df.ERA5_dry_air_column,
+                    sub_df.TROPOMI_dry_air_column,
+                    alpha=0.3)
 
-            # Get the array of the ERA5-derived dry air column density.
-            era5_column = np.array(augmented_ch4_file.groups['PRODUCT'].variables['dry_air_column_density'])[0]
-
-            # Generate the arrays of CH4 pixel centre latitudes and longitudes, same between both files.
-            pixel_centre_latitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['latitude'])[0]
-            pixel_centre_longitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['longitude'])[0]
-
-            # Get the arrays of the TROPOMI QA values and dry air sub columns
-            qa_values           = np.array(original_ch4_file.groups['PRODUCT'].variables['qa_value'])[0]
-            tropomi_sub_columns = np.array(original_ch4_file.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['INPUT_DATA'].variables['dry_air_subcolumns'])[0]
-
-            for i in range(original_ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
-                for j in range(original_ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
-                    if (ct.STUDY_REGION['Permian_Basin'][2] < pixel_centre_latitudes[i, j] < ct.STUDY_REGION['Permian_Basin'][
-                        3]) and \
-                            (ct.STUDY_REGION['Permian_Basin'][0] < pixel_centre_longitudes[i, j] <
-                             ct.STUDY_REGION['Permian_Basin'][1]):
-                        if qa_values[i, j] >= 0.5:
-                            era5_columns.append(era5_column[i, j])
-                            tropomi_columns.append(sum(tropomi_sub_columns[i, j, :]))
-
-    plt.scatter(era5_columns,
-                tropomi_columns,
-                alpha=0.3,
-                color='black')
-    x = np.linspace(np.min(era5_columns), np.max(era5_columns))
+    x = np.linspace(np.min(dry_air_column_density_df.ERA5_dry_air_column),
+                    np.max(dry_air_column_density_df.ERA5_dry_air_column))
     y = x * 1.
     plt.xlabel(r'ERA5-derived dry air column density [mol m$^{-2}$]')
     plt.ylabel(r'TROPOMI-derived dry air column density [mol m$^{-2}$]')
     plt.plot(x, y, color='red')
 
+    # Set the title on the plot using the start and end date of the model run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    plt.title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+              datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/dry_air_column_density_crossplot.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/dry_air_column_density_crossplot.png',
+                dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
@@ -1705,15 +1679,19 @@ def figure_6(fitted_results):
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_1.plot(datetimes,
               pixel_coverage_df.QA_coverage,
+              color='darkorange',
               marker='o',
               linestyle='solid')
     ax_1.plot(datetimes,
               pixel_coverage_df.QA_plus_poor_pixel_coverage,
-              marker='s',
+              color='darkorange',
+              alpha=0.5,
+              marker='o',
               linestyle='dashed')
     ax_1.plot(datetimes,
               pixel_coverage_df.Augmented_coverage,
-              marker='^',
+              color='green',
+              marker='o',
               linestyle='dotted')
 
     # Set the ylabel
@@ -1724,7 +1702,10 @@ def figure_6(fitted_results):
                      bottom=False,     # labels along the top edge are off
                      labelbottom=False) # labels along the bottom edge are off
 
-    ax_1.grid()
+    ax_1.grid(which='both',
+              linestyle='dashed',
+              color='grey',
+              alpha=0.5)
 
     # ------------------------------------------------------------------------------------------------------
     ax_2 = plt.subplot(G[1, 0], sharex=ax_1)
@@ -1732,22 +1713,26 @@ def figure_6(fitted_results):
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_2.plot(datetimes,
               median_pixel_df.Median_QA_pixel_value,
+              color='darkorange',
               marker='o',
               linestyle='solid',
-              label='QA>=0.5')
+              label='QA>0.5')
     ax_2.plot(datetimes,
               median_pixel_df.Median_QA_plus_poor_pixel_value,
-              marker='s',
+              color='darkorange',
+              alpha=0.5,
+              marker='o',
               linestyle='dashed',
               label='All pixels')
     ax_2.plot(datetimes,
               median_pixel_df.Median_augmented_coverage_value,
-              marker='^',
+              color='green',
+              marker='o',
               linestyle='dotted',
               label='Augmented')
 
     # Set the ylabel
-    ax_2.set_ylabel('Median observed pixel value [ppbv]')
+    ax_2.set_ylabel(r'Median CH$_4$ concentration [ppbv]')
 
     ax_2.tick_params(axis='x',          # changes apply to the x-axis
                      which='both',      # both major and minor ticks are affected
@@ -1756,29 +1741,41 @@ def figure_6(fitted_results):
 
     ax_2.legend(loc='lower right')
 
-    ax_2.grid()
+    ax_2.grid(which='both',
+              linestyle='dashed',
+              color='grey',
+              alpha=0.5)
 
     # ------------------------------------------------------------------------------------------------------
     ax_3 = plt.subplot(G[2, 0], sharex=ax_1)
 
-    # We have methane load saved in the .csv file in mols of CH4, we will plot in megatonnes
-    ax_3.errorbar(datetimes,
-                  methane_load_df.QA_methane_load * 16.04 / 1e6 / 1e6,
-                  yerr=methane_load_df.QA_methane_load_precision * 16.04 / 1e6 / 1e6,
+    # We have methane load saved in the .csv file in mols of CH4, we will plot in kilotonnes
+    ax_3.plot(datetimes,
+                  methane_load_df.QA_methane_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
+                  color='darkorange',
                   linestyle="solid",
+                  marker='o')
+                  # capsize=3,
+                  # elinewidth=0.7)
+    ax_3.plot(datetimes,
+                  methane_load_df.QA_plus_poor_pixel_methane_load * 16.04 / 1e6 / 1e3,
+                  color='darkorange',
+                  alpha=0.5,
                   marker='o',
-                  capsize=3,
-                  elinewidth=0.7)
-    ax_3.errorbar(datetimes,
-                  methane_load_df.QA_plus_poor_pixel_methane_load * 16.04 / 1e6 / 1e6,
-                  yerr=methane_load_df.QA_plus_poor_pixel_methane_load_precision * 16.04 / 1e6 / 1e6,
-                  marker='s',
-                  linestyle='dashed',
-                  capsize=3,
-                  elinewidth=0.7)
+                  linestyle='dashed')
+                  # capsize=3,
+                  # elinewidth=0.7)
+
+    ax_3.plot(datetimes,
+                  methane_load_df.Augmented_methane_load * 16.04 / 1e6 / 1e3,
+                  color='green',
+                  marker='o',
+                  linestyle='dotted')
+                  # capsize=3,
+                  # elinewidth=0.7)
 
     # Set the ylabel
-    ax_3.set_ylabel('Observed methane load [mega tonnes]')
+    ax_3.set_ylabel('Observed methane load above' + '\n' + 'NOAA background [kilotonnes]')
 
     # Set the x axis ticks for the plot
     first_tick_date = datetime.datetime.strptime('20190101', "%Y%m%d").strftime("%Y-%m-%d")
@@ -1794,7 +1791,10 @@ def figure_6(fitted_results):
              xticks=tick_locations,
              xticklabels=tick_labels)
 
-    ax_3.grid()
+    ax_3.grid(which='both',
+              linestyle='dashed',
+              color='grey',
+              alpha=0.5)
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_6.pdf',

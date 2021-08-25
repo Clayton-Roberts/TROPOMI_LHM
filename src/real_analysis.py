@@ -15,8 +15,8 @@ PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
-MAKE_TIME_SERIES       = False
-MAKE_PLOTS             = True
+MAKE_TIME_SERIES       = True
+MAKE_PLOTS             = False
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -76,8 +76,9 @@ if COMPARE_MODELS:
 
 if AUGMENT_DATA_RICH_DAYS:
     results = sr.FittedResults(RUN_NAME)
-    #tp.augment_data_rich_days(results)
+    tp.augment_data_rich_days(results)
     tp.add_dry_air_column_densities(results)
+    tp.calculate_dry_air_column_density_residuals(results)
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
@@ -103,11 +104,11 @@ if MAKE_PLOTS:
     #                qa_only=SHOW_QAD_PIXELS_ONLY,
     #                show_flares=PLOT_FLARES,
     #                augment_ch4=SHOW_AUGMENTED_CH4)
-    p.dry_air_column_density_cross_plot(results)
+    # p.dry_air_column_density_cross_plot(results)
     # p.alpha_flarestack_crossplot(results)
     # PLOTS FOR THE PAPER
     # p.figure_1(DATE)
     # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
-    # p.figure_6(results)
+    p.figure_6(results)
