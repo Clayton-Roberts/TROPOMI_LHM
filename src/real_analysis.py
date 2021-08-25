@@ -15,8 +15,8 @@ PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
-MAKE_TIME_SERIES       = True
-MAKE_PLOTS             = False
+MAKE_TIME_SERIES       = False
+MAKE_PLOTS             = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -30,7 +30,7 @@ RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 SHOW_GROUND_TRUTH    = False
 PARAM                = 'mu_alpha'
 DATE                 = '2019-01-31'
-MOLECULE             = 'CH4'
+QUANTITY             = 'CH4'
 SHOW_WARMUP_DRAWS    = False
 PLOT_STUDY_REGION    = False
 PLOT_FLARES          = False
@@ -76,7 +76,8 @@ if COMPARE_MODELS:
 
 if AUGMENT_DATA_RICH_DAYS:
     results = sr.FittedResults(RUN_NAME)
-    tp.augment_data_rich_days(results)
+    #tp.augment_data_rich_days(results)
+    tp.add_dry_air_column_densities(results)
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
@@ -97,15 +98,16 @@ if MAKE_PLOTS:
     # p.reduced_chi_squared(RUN_NAME)
     # p.residuals(RUN_NAME)
     # p.beta_flare_time_series(results)
-    # p.tropomi_plot(DATE, MOLECULE,
+    # p.tropomi_plot(DATE, QUANTITY,
     #                plot_study_region=PLOT_STUDY_REGION,
     #                qa_only=SHOW_QAD_PIXELS_ONLY,
     #                show_flares=PLOT_FLARES,
     #                augment_ch4=SHOW_AUGMENTED_CH4)
+    p.dry_air_column_density_cross_plot(results)
     # p.alpha_flarestack_crossplot(results)
     # PLOTS FOR THE PAPER
     # p.figure_1(DATE)
     # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
-    p.figure_6(results)
+    # p.figure_6(results)
