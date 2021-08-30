@@ -15,8 +15,8 @@ PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
-MAKE_TIME_SERIES       = False
-MAKE_PLOTS             = True
+MAKE_TIME_SERIES       = True
+MAKE_PLOTS             = False
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -82,7 +82,8 @@ if AUGMENT_DATA_RICH_DAYS:
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
-    tp.create_time_series(results)
+    #tp.create_time_series(results)
+    tp.write_plotable_quantities_csv_file(results)
 
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)

@@ -776,7 +776,7 @@ def create_time_series(fitted_results):
         # Type 2 = a quantity calculated from TROPOMI CH4 pixels with a qa value of 0.5 or greater and predicted values of CH4 from
                 #  NO2 pixel values that had a qa value of 0.75 or greater.
 
-        # The following three lists are used to track how observed pixel values change as the type of observations used changes
+        # The following two lists are used to hold pixel values contained within the study region
         type1_pixel_values = []
         type2_pixel_values = []
 
@@ -909,13 +909,15 @@ def write_plotable_quantities_csv_file(fitted_results):
     :type fitted_results: FittedResults
     '''
 
-    # Open the data summary csv file for this model run
-    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv')
+    # Open the data summary csv file for this model run, index by date
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', index_col=0)
 
     # Create the pandas dataframe that we will eventually save as a csv file.
     plotable_quantities_df = pd.DataFrame(columns=('date',
                                                    'day_id',
                                                    'day_type',
+                                                   'N',
+                                                   'R',
                                                    'flare_count',
                                                    'noaa_background',
                                                    'alpha_50',
@@ -938,9 +940,241 @@ def write_plotable_quantities_csv_file(fitted_results):
                                                    'original_no2_load',
                                                    'original_no2_load_precision'))
 
-    
+    # Open the .csv containing the residuals of the dry air column densities, and calculate the RMS that we will use
+    # to propogate the error from the dry air column density as we calculate the methane column density.
+    dry_air_column_density_residual_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name +
+                                                     '/dry_air_column_densities.csv', header=0)
+    residuals = np.array(dry_air_column_density_residual_df.Residuals)
+    dry_air_column_density_error = np.std(residuals)
 
+    # Open the .csv file containing the NOAA monthly CH4 background data
+    noaa_ch4_df = pd.read_csv(ct.FILE_PREFIX + '/data/noaa_ch4_background.csv',
+                              comment='#', delim_whitespace=True)
+    # Create the interpolation function for determining the reference background level of methane.
+    ch4_interpolation_function = interp1d(noaa_ch4_df.decimal, noaa_ch4_df.average, kind='linear')
+    start_of_year              = datetime.datetime(year=2019, month=1, day=1)
+    end_of_year                = datetime.datetime(year=2020, month=1, day=1)
+    year_length                = end_of_year - start_of_year
 
+    for date in tqdm(summary_df.index, desc='Calculating results'):
+
+        # Set day_id, day_type, N and R
+        day_id   = summary_df.Day_ID.loc[date]
+        N        = summary_df.M.loc[date]
+        R        = summary_df.R.loc[date]
+        #TODO change away from this hard-coding
+        day_type = 'data-rich'
+
+        # Create string from the date datetime
+        date_string = datetime.datetime.strptime(date, '%Y-%m-%d').strftime("%Y%m%d")
+
+        # Determine the number of active flares spotted on this day.
+        # Get the corrresponding VIIRS observation file, there should only be one.
+        viirs_file = glob.glob(ct.FILE_PREFIX + '/observations/VIIRS/*' + date_string + '*.csv')[0]
+        # Set number of active flares to zero and count up from here.
+        flare_count = 0
+        # Open the file.
+        viirs_df = pd.read_csv(viirs_file)
+        # Examine every active flare
+        for index in viirs_df.index:
+            # If latitudes of flare in study region:
+            if (ct.STUDY_REGION['Permian_Basin'][2] < viirs_df.Lat_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][3]):
+                # If longitudes of flare in study region:
+                if (ct.STUDY_REGION['Permian_Basin'][0] < viirs_df.Lon_GMTCO[index] < ct.STUDY_REGION['Permian_Basin'][1]):
+                    if viirs_df.Temp_BB[index] != 999999:
+                        flare_count += 1
+
+        # Determine the reference background level of methane.
+        current_date    = datetime.datetime.strptime(date, '%Y-%m-%d')
+        elapsed_time    = current_date - start_of_year
+        fraction        = elapsed_time / year_length
+        decimal_year    = 2019 + fraction
+        noaa_background = float(ch4_interpolation_function(decimal_year))
+
+        # Determine the centile levels of alpha, beta and gamma
+        alpha_50 = fitted_results.median_values['alpha.' + str(day_id)]
+        beta_50  = fitted_results.median_values['beta.' + str(day_id)]
+        gamma_50 = fitted_results.median_values['gamma.' + str(day_id)]
+
+        alpha_16, alpha_84 = fitted_results.credible_intervals['alpha.' + str(day_id)]
+        beta_16, beta_84   = fitted_results.credible_intervals['beta.' + str(day_id)]
+        gamma_16, gamma_84 = fitted_results.credible_intervals['gamma.' + str(day_id)]
+
+        # ------------------------------------------------------------------------------------------------
+        # The following key is needed to understand some list names.
+        # Type 1 = a qauntity calculated purely from TROPOMI CH4 pixels with a qa value of 0.5 or greater
+        # Type 2 = a quantity calculated from TROPOMI CH4 pixels with a qa value of 0.5 or greater and predicted
+        #          values of CH4 from NO2 pixel values that had a qa value of 0.75 or greater.
+        # ------------------------------------------------------------------------------------------------
+
+        # The following two lists are used to hold pixel values contained within the study region
+        type1_pixel_values = []
+        type2_pixel_values = []
+
+        # The following list is used to hold [value, uncertaintly] pairs of mols of nitrogen dioxide contained
+        # in a pixel.
+        mols_nitrogen_dioxide = []
+
+        # The following lists are used to hold [value, uncertainty] pairs of mols of methane contained in a pixel.
+        type1_mols_methane = []
+        type2_mols_methane = []
+
+        # The following variables are used to track how the total pixel coverage in the study region changes with
+        # the type of observation used
+        total_pixels      = 0
+        type1_pixel_count = 0
+        type2_pixel_count = 0
+
+        # Create list of TROPOMI filenames that match the date. Sometimes there are two TROPOMI overpasses
+        # that are a couple hours apart. Usually one overpass captures the whole study region.
+        tropomi_overpasses = [file.split('/')[-1] for file in
+                              glob.glob(
+                                  ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+
+        for filename in tropomi_overpasses:
+
+            # Open the original CH4 file.
+            original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
+
+            # Open the file of CH4 predictions.
+            prediction_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name +
+                                              '/data_rich/' + filename, 'r')
+
+            # Open the original NO2 file.
+            original_no2_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/NO2/' + filename, 'r')
+
+            # Generate the arrays of CH4 pixel centre latitudes and longitudes, same between both files.
+            ch4_pixel_centre_latitudes  = np.array(original_ch4_file.groups['PRODUCT'].variables['latitude'])[0]
+            ch4_pixel_centre_longitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['longitude'])[0]
+
+            # Get the arrays of pixel corner coordinates, needed to calculate pixel areas.
+            ch4_pixel_corner_latitudes  = np.array(original_ch4_file.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['GEOLOCATIONS'].variables['latitude_bounds'][0])
+            ch4_pixel_corner_longitudes = np.array(original_ch4_file.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['GEOLOCATIONS'].variables['longitude_bounds'][0])
+
+            # Get the arrays of the original methane observational data.
+            original_ch4_pixel_values     = np.array(original_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
+            original_ch4_pixel_precisions = np.array(original_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio_precision'])[0]
+            ch4_qa_values                 = np.array(original_ch4_file.groups['PRODUCT'].variables['qa_value'])[0]
+
+            # Get the arrays of the predicted methane observational data.
+            predicted_ch4_pixel_values     = np.array(prediction_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
+            predicted_ch4_pixel_precisions = np.array(prediction_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio_precision'])[0]
+            predicted_ch4_qa_values        = np.array(prediction_ch4_file.groups['PRODUCT'].variables['prediction_pixel_qa_value'])[0]
+            dry_air_column_densities       = np.array(prediction_ch4_file.groups['PRODUCT'].variables['dry_air_column_density'])[0]
+
+            # Get the arrays needed for calculating total load of nitrogen dioxide in the study region.
+            no2_pixel_centre_latitudes    = np.array(original_no2_file.groups['PRODUCT'].variables['latitude'])[0]
+            no2_pixel_centre_longitudes   = np.array(original_no2_file.groups['PRODUCT'].variables['longitude'])[0]
+            no2_pixel_corner_latitudes    = np.array(original_no2_file.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['GEOLOCATIONS'].variables['latitude_bounds'][0])
+            no2_pixel_corner_longitudes   = np.array(original_no2_file.groups['PRODUCT'].groups['SUPPORT_DATA'].groups['GEOLOCATIONS'].variables['longitude_bounds'][0])
+            original_no2_pixel_values     = np.array(original_no2_file.groups['PRODUCT'].variables['nitrogendioxide_tropospheric_column'])[0]
+            original_no2_pixel_precisions = np.array(original_no2_file.groups['PRODUCT'].variables['nitrogendioxide_tropospheric_column_precision'])[0]
+            no2_qa_values                 = np.array(original_no2_file.groups['PRODUCT'].variables['qa_value'])[0]
+
+            for i in range(original_no2_file.groups['PRODUCT'].dimensions['scanline'].size):
+                for j in range(original_no2_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
+                    if (ct.STUDY_REGION['Permian_Basin'][2] < no2_pixel_centre_latitudes[i, j] < ct.STUDY_REGION['Permian_Basin'][3]) and \
+                            (ct.STUDY_REGION['Permian_Basin'][0] < no2_pixel_centre_longitudes[i, j] < ct.STUDY_REGION['Permian_Basin'][1]):
+                        if no2_qa_values[i, j] >= 0.75:
+                            pixel_area = calculate_pixel_area(list(no2_pixel_corner_latitudes[i, j, :]),
+                                                              list(no2_pixel_corner_longitudes[i, j, :]))
+                            pixel_value            = original_no2_pixel_values[i, j]
+                            pixel_value_error      = original_no2_pixel_precisions[i, j]
+                            no2_mols               = pixel_value * pixel_area
+                            no2_mols_precision     = no2_mols * (pixel_value / pixel_value_error)
+                            mols_nitrogen_dioxide.append([no2_mols, no2_mols_precision])
+
+            for i in range(original_ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
+                for j in range(original_ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
+                    if (ct.STUDY_REGION['Permian_Basin'][2] < ch4_pixel_centre_latitudes[i, j] < ct.STUDY_REGION['Permian_Basin'][3]) and \
+                            (ct.STUDY_REGION['Permian_Basin'][0] < ch4_pixel_centre_longitudes[i, j] < ct.STUDY_REGION['Permian_Basin'][1]):
+                        total_pixels += 1
+                        if ch4_qa_values[i, j] >= 0.5:
+                            pixel_area = calculate_pixel_area(list(ch4_pixel_corner_latitudes[i, j, :]),
+                                                              list(ch4_pixel_corner_longitudes[i, j, :]))
+                            pixel_value            = original_ch4_pixel_values[i, j]
+                            delta_pixel_value      = pixel_value - noaa_background
+                            pixel_value_error      = original_ch4_pixel_precisions[i, j]
+                            dry_air_column_density = dry_air_column_densities[i, j]  # [mol m^-2]
+                            methane_mols           = delta_pixel_value * 1e-9 * dry_air_column_density * pixel_area  # [mol], need the 1e-9 to convert out from ppbv
+                            methane_mols_precision = methane_mols * np.sqrt((pixel_value_error / delta_pixel_value) ** 2
+                                                                            + (dry_air_column_density_error / dry_air_column_density) ** 2)
+
+                            # Append necessary values to lists for type 1 quantities
+                            type1_pixel_count += 1
+                            type1_pixel_values.append(pixel_value)
+                            type1_mols_methane.append([methane_mols, methane_mols_precision])
+
+                            # Append necessary values to lists for type 2 quantities
+                            type2_pixel_count += 1
+                            type2_pixel_values.append(pixel_value)
+                            type2_mols_methane.append([methane_mols, methane_mols_precision])
+
+                        elif (predicted_ch4_qa_values[i, j] >= 0.75) and (predicted_ch4_pixel_values[i, j] < 1e30):
+                            pixel_area = calculate_pixel_area(list(ch4_pixel_corner_latitudes[i, j, :]),
+                                                              list(ch4_pixel_corner_longitudes[i, j, :]))
+                            pixel_value            = predicted_ch4_pixel_values[i, j]
+                            delta_pixel_value      = pixel_value - noaa_background
+                            pixel_value_error      = predicted_ch4_pixel_precisions[i, j]
+                            dry_air_column_density = dry_air_column_densities[i, j]  # [mol m^-2]
+                            methane_mols           = delta_pixel_value * 1e-9 * dry_air_column_density * pixel_area  # [mol], need the 1e-9 to convert out from ppbv
+                            methane_mols_precision = methane_mols * np.sqrt((pixel_value_error / delta_pixel_value) ** 2
+                                                                            + (dry_air_column_density_error / dry_air_column_density) ** 2)
+
+                            # Append necessary values to lists for type 2 quantities
+                            type2_pixel_count += 1
+                            type2_pixel_values.append(pixel_value)
+                            type2_mols_methane.append([methane_mols, methane_mols_precision])
+
+        type1_coverage = type1_pixel_count / total_pixels
+        type2_coverage = type2_pixel_count / total_pixels
+
+        median_type1_value = np.median(type1_pixel_values)
+        median_type2_value = np.median(type2_pixel_values)
+
+        no2_load           = sum(np.array(mols_nitrogen_dioxide)[:, 0])
+        no2_load_precision = np.sqrt(
+            sum([precision ** 2 for precision in np.array(mols_nitrogen_dioxide)[:, 1]]))
+
+        type1_methane_load           = sum(np.array(type1_mols_methane)[:, 0])
+        type1_methane_load_precision = np.sqrt(
+            sum([precision ** 2 for precision in np.array(type1_mols_methane)[:, 1]]))
+
+        type2_methane_load           = sum(np.array(type2_mols_methane)[:, 0])
+        type2_methane_load_precision = np.sqrt(
+            sum([precision ** 2 for precision in np.array(type2_mols_methane)[:, 1]]))
+
+        # Append all quantities for this day as a new row in the dataframe.
+        plotable_quantities_df = plotable_quantities_df.append({'date': date,
+                                                                'day_id': day_id,
+                                                                'day_type': day_type,
+                                                                'N': N,
+                                                                'R': R,
+                                                                'flare_count': flare_count,
+                                                                'noaa_background': noaa_background,
+                                                                'alpha_50': alpha_50,
+                                                                'alpha_16': alpha_16,
+                                                                'alpha_84': alpha_84,
+                                                                'beta_50': beta_50,
+                                                                'beta_16': beta_16,
+                                                                'beta_84': beta_84,
+                                                                'gamma_50': gamma_50,
+                                                                'gamma_16': gamma_16,
+                                                                'gamma_84': gamma_84,
+                                                                'original_pixel_value_50': median_type1_value,
+                                                                'augmented_pixel_value_50': median_type2_value,
+                                                                'original_pixel_coverage': type1_coverage,
+                                                                'augmented_pixel_coverage': type2_coverage,
+                                                                'original_ch4_load': type1_methane_load,
+                                                                'original_ch4_load_precision': type1_methane_load_precision,
+                                                                'augmented_ch4_load': type2_methane_load,
+                                                                'augmented_ch4_load_precision': type2_methane_load_precision,
+                                                                'original_no2_load': no2_load,
+                                                                'original_no2_load_precision': no2_load_precision},
+                                                               ignore_index=True)
+
+        plotable_quantities_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+                                      index=False)
 
 def calculate_prediction_vs_poor_pixel_value(fitted_results):
     '''This function is for creating a csv file where one column is the CH4 pixel value for pixels with qa < 0.5, and
