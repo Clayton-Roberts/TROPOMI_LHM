@@ -6,7 +6,6 @@ from tabulate import tabulate
 import random
 from scipy.stats import norm, mode
 from tqdm import tqdm
-import matplotlib.pyplot as plt
 
 
 class FittedResults:
@@ -232,7 +231,7 @@ class FittedResults:
             # include anything to do with sigma_C in the variance term.
             predictions.append(np.random.normal(alpha + beta * obs_no2, np.sqrt(gamma**2 + (beta**2 * sigma_N**2))))
 
-        mean_observation = np.mean(predictions)
+        mean_observation   = np.mean(predictions)
         standard_deviation = np.std(predictions)
 
         return mean_observation, standard_deviation
@@ -322,22 +321,18 @@ class FittedResults:
 
         # Calculate median value, standard deviation and 95% CI for all model parameter values
         credible_intervals  = {}
-        mode_values         = {}
+        median_values       = {}
         for parameter in parameter_list:
             credible_intervals[parameter]  = [np.percentile(full_trace[parameter], 16),
                                               np.percentile(full_trace[parameter], 84)]
-            # Calculate the mode
-            histogram  = np.histogram(full_trace[parameter], 50)
-            bin_index  = histogram[0].argmax()
-            mode_value = histogram[1][bin_index] + (histogram[1][bin_index+1] - histogram[1][bin_index])/2
-
-            mode_values[parameter]         = mode_value
+            # Calculate the median
+            median_values[parameter]         = np.median(full_trace[parameter])
 
         # Assign accessible attributes
         self.full_trace         = full_trace
         self.parameter_list     = parameter_list
         self.credible_intervals = credible_intervals
-        self.mode_values        = mode_values
+        self.median_values        = median_values
         self.draws              = draws
         self.run_name           = run_name
 

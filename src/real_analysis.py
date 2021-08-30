@@ -15,8 +15,8 @@ PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
-MAKE_TIME_SERIES       = True
-MAKE_PLOTS             = False
+MAKE_TIME_SERIES       = False
+MAKE_PLOTS             = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -110,5 +110,5 @@ if MAKE_PLOTS:
     # p.figure_1(DATE)
     # p.figure_2(results, DATE)
     # p.figure_3(results)
-    # p.figure_4(DATE)
-    p.figure_6(results)
+    p.figure_4(DATE)
+    # p.figure_6(results)

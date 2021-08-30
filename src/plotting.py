@@ -23,7 +23,7 @@ from src import constants as ct
 
 class PlotHelper:
     #TODO make the docstring
-    def __init__(self, filename, quantity, qa_only=False, augment_ch4=False):
+    def __init__(self, filename, quantity, qa_only=False, augment_ch4=False, good_predictions_only=True):
         self.figsize = (10.0, 6.0)
         self.extent  = (-106, -99, 29, 35)
         self.xticks  = range(-106, -99, 2)
@@ -96,11 +96,15 @@ class PlotHelper:
                                 filename,
                                 'r')
 
-                augmented_pixel_values = np.array(g.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+                augmented_pixel_values  = np.array(g.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+                prediction_pixel_values = np.array(g.groups['PRODUCT'].variables['prediction_pixel_qa_value'][0])
+
                 for i in range(f.groups['PRODUCT'].dimensions['scanline'].size):
                     for j in range(f.groups['PRODUCT'].dimensions['ground_pixel'].size):
                         if (data[i, j] >= 1e32) and (augmented_pixel_values[i, j] < 1e32):
-                            data[i, j] = augmented_pixel_values[i, j]
+                            if good_predictions_only:
+                                if prediction_pixel_values[i, j] >= 0.75: data[i, j] = augmented_pixel_values[i, j]
+                            else: data[i, j] = augmented_pixel_values[i, j]
 
             self.data = np.ma.masked_greater(data, 1e30)
 
@@ -340,7 +344,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
         plt.plot(fitted_model.draws['sampled']['chain_4'][model_key])
     plt.xlabel('Samples')
     plt.ylabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
-    plt.axhline(fitted_model.mode_values[model_key], color='black', lw=2, linestyle='--')
+    plt.axhline(fitted_model.median_values[model_key], color='black', lw=2, linestyle='--')
     if show_warmup_draws:
         plt.axvline(500, linestyle='--', color='grey', linewidth=0.5, label='Sampling begins')
     if compare_to_ground_truth:
@@ -357,7 +361,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
     sns.kdeplot(fitted_model.full_trace[model_key], shade=True)
     plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
-    plt.axvline(fitted_model.mode_values[model_key], color='black', lw=2, linestyle='--', label='Mode value')
+    plt.axvline(fitted_model.median_values[model_key], color='black', lw=2, linestyle='--', label='Mode value')
     if compare_to_ground_truth:
         plt.axvline(ground_truth, color='red', lw=2, linestyle='--', label='True value')
     plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'95% CI')
@@ -555,14 +559,14 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
 
     for parameter in fitted_model.parameter_list:
         if 'beta.' in parameter:
-            beta_values.append(fitted_model.mode_values[parameter])
-            beta_error_bounds.append([fitted_model.mode_values[parameter] - fitted_model.credible_intervals[parameter][0],
-                                      fitted_model.credible_intervals[parameter][1] - fitted_model.mode_values[parameter]])
+            beta_values.append(fitted_model.median_values[parameter])
+            beta_error_bounds.append([fitted_model.median_values[parameter] - fitted_model.credible_intervals[parameter][0],
+                                      fitted_model.credible_intervals[parameter][1] - fitted_model.median_values[parameter]])
         elif 'alpha.' in parameter:
-            alpha_values.append(fitted_model.mode_values[parameter])
+            alpha_values.append(fitted_model.median_values[parameter])
             alpha_error_bounds.append(
-                [fitted_model.mode_values[parameter] - fitted_model.credible_intervals[parameter][0],
-                 fitted_model.credible_intervals[parameter][1] - fitted_model.mode_values[parameter]])
+                [fitted_model.median_values[parameter] - fitted_model.credible_intervals[parameter][0],
+                 fitted_model.credible_intervals[parameter][1] - fitted_model.median_values[parameter]])
 
     ax0.errorbar(alpha_values,
                  beta_values,
@@ -575,13 +579,13 @@ def alpha_beta_scatterplot(fitted_model, compare_to_ground_truth=False):
                  color='red',
                  ms=4)
 
-    pearson = fitted_model.mode_values['rho']
+    pearson = fitted_model.median_values['rho']
 
-    sigma_alpha = fitted_model.mode_values['sigma_alpha']
-    mu_alpha    = fitted_model.mode_values['mu_alpha']
+    sigma_alpha = fitted_model.median_values['sigma_alpha']
+    mu_alpha    = fitted_model.median_values['mu_alpha']
 
-    sigma_beta = fitted_model.mode_values['sigma_beta']
-    mu_beta    = fitted_model.mode_values['mu_beta']
+    sigma_beta = fitted_model.median_values['sigma_beta']
+    mu_beta    = fitted_model.median_values['mu_beta']
 
     ellipse(pearson,
             sigma_alpha,
@@ -737,7 +741,7 @@ def beta_flare_time_series(fitted_results):
 
     for date in summary_df.index:
         parameter = 'beta.' + str(int(summary_df.loc[date].Day_ID))
-        mode_beta = fitted_results.mode_values[parameter]
+        mode_beta = fitted_results.median_values[parameter]
         lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
         beta_df = beta_df.append({'Date': date,
                                   'Beta': mode_beta,
@@ -835,7 +839,7 @@ def alpha_flarestack_crossplot(fitted_results):
     alpha_df = pd.DataFrame(columns=('Date', 'Alpha', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
     for date in summary_df.index:
         parameter = 'alpha.' + str(int(summary_df.loc[date].Day_ID))
-        mode_alpha = fitted_results.mode_values[parameter]
+        mode_alpha = fitted_results.median_values[parameter]
         lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
         alpha_df = alpha_df.append({'Date': date,
                                   'Alpha': mode_alpha,
@@ -1018,6 +1022,15 @@ def figure_1(date):
 
     ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]', fontsize=10)
 
+    # Plot the text of panel B
+    ax_1.text(0.05, 0.95,
+              'A',
+              color='red',
+              transform=ax_1.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center', )
+
     # ax_2 is the subplot for the NO2 observation, right hand side (second column), set projection here.
     ax_2 = plt.subplot(G[0, 1],
                        projection=ccrs.PlateCarree(),
@@ -1077,6 +1090,15 @@ def figure_1(date):
     # Plot the title for the NO2 plot.
     ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]', fontsize=10)
 
+    # Plot the text of panel B
+    ax_2.text(0.95, 0.95,
+              'B',
+              color='red',
+              transform=ax_2.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center', )
+
     # Save the figure as a png, too large otherwise, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_1.png',
                 dpi=300,
@@ -1121,15 +1143,15 @@ def figure_2(fitted_results, date):
     # Fill the lists of mode values and the errors needed for the scatterplot.
     for parameter in fitted_results.parameter_list:
         if 'beta.' in parameter:
-            beta_values.append(fitted_results.mode_values[parameter])
+            beta_values.append(fitted_results.median_values[parameter])
             beta_error_bounds.append(
-                [fitted_results.mode_values[parameter] - fitted_results.credible_intervals[parameter][0],
-                 fitted_results.credible_intervals[parameter][1] - fitted_results.mode_values[parameter]])
+                [fitted_results.median_values[parameter] - fitted_results.credible_intervals[parameter][0],
+                 fitted_results.credible_intervals[parameter][1] - fitted_results.median_values[parameter]])
         elif 'alpha.' in parameter:
-            alpha_values.append(fitted_results.mode_values[parameter])
+            alpha_values.append(fitted_results.median_values[parameter])
             alpha_error_bounds.append(
-                [fitted_results.mode_values[parameter] - fitted_results.credible_intervals[parameter][0],
-                 fitted_results.credible_intervals[parameter][1] - fitted_results.mode_values[parameter]])
+                [fitted_results.median_values[parameter] - fitted_results.credible_intervals[parameter][0],
+                 fitted_results.credible_intervals[parameter][1] - fitted_results.median_values[parameter]])
 
     # Needed to plot the regression lines.
     x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
@@ -1141,8 +1163,8 @@ def figure_2(fitted_results, date):
     day_id     = int(summary_df.loc[date].Day_ID)
 
     # Get mode and upper and lower 95% CI bounds for alpha and beta on this day.
-    mode_beta  = fitted_results.mode_values['beta.' + str(day_id)]
-    mode_alpha = fitted_results.mode_values['alpha.' + str(day_id)]
+    median_beta  = fitted_results.median_values['beta.' + str(day_id)]
+    median_alpha = fitted_results.median_values['alpha.' + str(day_id)]
     lower_beta_bound, upper_beta_bound   = fitted_results.credible_intervals['beta.' + str(day_id)]
     beta_diff                            = (upper_beta_bound - lower_beta_bound) / 2.
     lower_alpha_bound, upper_alpha_bound = fitted_results.credible_intervals['alpha.' + str(day_id)]
@@ -1174,12 +1196,21 @@ def figure_2(fitted_results, date):
 
     # Plot values of alpha and beta in axes coordinates.
     ax_1.text(0.65, 0.05,
-              r'$\beta={}\pm{}$'.format(round(mode_beta),
+              r'$\beta={}\pm{}$'.format(round(median_beta),
                                          '{' + str(round(beta_diff)) + '}') + '\n' +
-              r'$\alpha={}\pm{}$'.format(round(mode_alpha),
+              r'$\alpha={}\pm{}$'.format(round(median_alpha),
                                          '{' + str(round(alpha_diff)) + '}'),
               transform=ax_1.transAxes,
               fontsize=10)
+
+    # Add the letter A to plot 1.
+    ax_1.text(0.05, 0.95,
+              'A',
+              color='red',
+              transform=ax_1.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center',)
 
     # Customise ticks for the left hand panel.
     ax_1.set_yticks([1840, 1880, 1920, 1960])
@@ -1190,6 +1221,11 @@ def figure_2(fitted_results, date):
     ax_1.set_xlabel(r'NO$_{2}^{\mathrm{obs}}$ [mmol m$^{-2}$]')
     ax_1.set_ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
     ax_1.title.set_text(datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%b %-d, %Y'))
+
+    ax_1.grid(which='both',
+              linestyle='dashed',
+              color='grey',
+              alpha=0.5)
 
     # ax_2 is the subplot for the cross plot of alpha and beta, right hand side (second column).
     ax_2 = plt.subplot(G[0, 1])
@@ -1207,11 +1243,11 @@ def figure_2(fitted_results, date):
                   ms=3)
 
     # Add in the 95% CI ellipse using mode estimated values of the hyperparameters.
-    pearson     = fitted_results.mode_values['rho']
-    sigma_alpha = fitted_results.mode_values['sigma_alpha']
-    mu_alpha    = fitted_results.mode_values['mu_alpha']
-    sigma_beta  = fitted_results.mode_values['sigma_beta']
-    mu_beta     = fitted_results.mode_values['mu_beta']
+    pearson     = fitted_results.median_values['rho']
+    sigma_alpha = fitted_results.median_values['sigma_alpha']
+    mu_alpha    = fitted_results.median_values['mu_alpha']
+    sigma_beta  = fitted_results.median_values['sigma_beta']
+    mu_beta     = fitted_results.median_values['mu_beta']
 
     ellipse(pearson,
             sigma_alpha,
@@ -1242,6 +1278,19 @@ def figure_2(fitted_results, date):
              rotation=270,
              va='center')
 
+    ax_2.grid(which='both',
+              linestyle='dashed',
+              color='grey',
+              alpha=0.5)
+
+    ax_2.text(0.95, 0.95,
+              'B',
+              color='red',
+              transform=ax_2.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center', )
+
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_2.pdf',
                 bbox_inches='tight',
@@ -1267,11 +1316,11 @@ def figure_3(fitted_results):
     # Create the time series of mode inferred beta values and their credible intervals.
     beta_df = pd.DataFrame(columns=('Date', 'Beta', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
     for date in summary_df.index:
-        parameter = 'beta.' + str(int(summary_df.loc[date].Day_ID))
-        mode_beta = fitted_results.mode_values[parameter]
+        parameter   = 'beta.' + str(int(summary_df.loc[date].Day_ID))
+        median_beta = fitted_results.median_values[parameter]
         lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
         beta_df = beta_df.append({'Date': date,
-                                  'Beta': mode_beta,
+                                  'Beta': median_beta,
                                   'Lower_bound_95_CI': lower_bound,
                                   'Upper_bound_95_CI': upper_bound},
                                  ignore_index=True)
@@ -1292,11 +1341,6 @@ def figure_3(fitted_results):
     ax_1.set_xlabel("Date", fontsize=12)
     ax_1.set_ylabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]', color="black", fontsize=12)
 
-    # Set the title on the time series plot using the start and end date of the model run.
-    start_date, end_date, model = fitted_results.run_name.split('-')
-    ax_1.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
-                        datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
-
     # Only use the flare data for dates that we have inferences on beta on.
     shared_index           = flare_df[flare_df.Date.isin(beta_df.Date)].index.to_list()
     shared_flare_counts    = flare_df.Flare_count[shared_index]
@@ -1313,6 +1357,15 @@ def figure_3(fitted_results):
                   capsize=3,
                   ms=4,
                   elinewidth=0.7)
+
+    # Plot the text of panel A
+    ax_1.text(0.03, 0.95,
+              'A',
+              color='red',
+              transform=ax_1.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center', )
 
     # Make a twin axes object that shares the x axis with the time series of beta.
     ax_twin = ax_1.twinx()
@@ -1336,6 +1389,7 @@ def figure_3(fitted_results):
     ax_1.patch.set_visible(False)
 
     # Figure out the locations of the first and last tick mark in the date range of this run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
     first_tick_date = datetime.datetime.strptime(start_date, "%Y%m%d").replace(day=1).strftime("%Y-%m-%d")
     last_tick_date = (
                 datetime.datetime.strptime(end_date, "%Y%m%d").replace(day=1) + datetime.timedelta(days=32)).replace(
@@ -1374,6 +1428,15 @@ def figure_3(fitted_results):
                   ms=4,
                   elinewidth=0.7)
 
+    # Plot the text of panel B
+    ax_2.text(0.95, 0.95,
+              'B',
+              color='red',
+              transform=ax_2.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center', )
+
     # Set the x-axis label on the cross plot.
     ax_2.set_xlabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]', fontsize=12, labelpad=0)
 
@@ -1385,6 +1448,11 @@ def figure_3(fitted_results):
               verticalalignment='center',
               transform=ax_2.transAxes,
               fontsize=12)
+
+    ax_2.grid(which='both',
+              linestyle='dashed',
+              linewidth=0.5,
+              color='grey')
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_3.pdf',
@@ -1422,9 +1490,7 @@ def figure_4(date):
 
     # Get necessary details with the plot helper.
     good_pixels = PlotHelper(file, 'CH4', qa_only=True)
-    all_pixels  = PlotHelper(file, 'CH4', qa_only=False)
-    good_pixels_plus_augmentation = PlotHelper(file, 'CH4', qa_only=True, augment_ch4=True)
-    all_pixels_plus_augmentation  = PlotHelper(file, 'CH4', qa_only=False, augment_ch4=True)
+    good_pixels_and_good_predictions = PlotHelper(file, 'CH4', qa_only=True, augment_ch4=True)
 
     # Get the outlines of counties, these will be used in both plots.
     reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
@@ -1436,8 +1502,8 @@ def figure_4(date):
     colors.set_bad('grey', 1.0)
 
     # Create figure, use gridspec to divide it up into subplots. 2-column subplot, each molecule gets a column.
-    plt.figure(figsize=(10, 9))
-    G = gridspec.GridSpec(2, 2, wspace=0.09, hspace=0.00)
+    plt.figure(figsize=(10, 4.5))
+    G = gridspec.GridSpec(1, 2, wspace=0.09, hspace=0.00)
 
     #------------------------------------------------------------------------------------------------------------
     # ax_1 is the subplot for the 'good' pixels TROPOMI observation, first row, first column, set projection here.
@@ -1458,6 +1524,15 @@ def figure_4(date):
     ax_1.set_xticks([-104, -102, -100])
     ax_1.set_yticks(good_pixels.yticks)
     ax_1.yaxis.tick_right()
+
+    # Plot the text of panel A
+    ax_1.text(0.05, 0.95,
+              'A',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes,
+              fontsize=20)
 
     # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
     good_cbar_ax = ax_1.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
@@ -1489,33 +1564,33 @@ def figure_4(date):
               transform=ax_1.transAxes)
 
     # Set title
-    ax_1.set_title('QA>=0.5', pad=0)
+    # ax_1.set_title(r'TROPOMI pixels with $\mathrm{QA}\geq 0.5$', pad=0)
 
     #------------------------------------------------------------------------------------------------------------
     # ax_2 is the subplot for all pixels TROPOMI observation, first row, second column, set projection here.
     ax_2 = plt.subplot(G[0, 1],
                        projection=ccrs.PlateCarree(),
-                       extent=all_pixels.extent)
+                       extent=good_pixels_and_good_predictions.extent)
 
     # Plot the CH4 data.
-    all_im = ax_2.pcolormesh(all_pixels.longitudes,
-                             all_pixels.latitudes,
-                             all_pixels.data,
-                             cmap=colors,
-                             vmin=all_pixels.vmin,
-                             vmax=all_pixels.vmax,
-                             zorder=0)
+    augmented_im = ax_2.pcolormesh(good_pixels_and_good_predictions.longitudes,
+                                   good_pixels_and_good_predictions.latitudes,
+                                   good_pixels_and_good_predictions.data,
+                                   cmap=colors,
+                                   vmin=good_pixels_and_good_predictions.vmin,
+                                   vmax=good_pixels_and_good_predictions.vmax,
+                                   zorder=0)
 
     # Set the ticks for the CH4 subplot.
     ax_2.set_xticks([-106, -104, -102])
-    ax_2.set_yticks(all_pixels.yticks)
+    ax_2.set_yticks(good_pixels_and_good_predictions.yticks)
     ax_2.tick_params(axis='y',
                      labelleft=False)
 
     # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
     all_cbar_ax = ax_2.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
                                    transform=ax_2.transAxes)
-    all_cbar = plt.colorbar(all_im,
+    all_cbar = plt.colorbar(augmented_im,
                             cax=all_cbar_ax,
                             orientation='horizontal')
     all_cbar.set_ticks([])
@@ -1527,7 +1602,7 @@ def figure_4(date):
     ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
     # Set title
-    ax_2.set_title('QA>0', pad=0)
+    # ax_2.set_title('All TROPOMI pixels', pad=0)
 
     # Add the longitude label, this will be for both subplots 1 and 3.
     ax_2.text(0.9, -0.05,
@@ -1536,103 +1611,14 @@ def figure_4(date):
               verticalalignment='center',
               transform=ax_2.transAxes)
 
-    #------------------------------------------------------------------------------------------------------------
-    # ax_3 is the subplot for the 'good' pixels TROPOMI observation + the augmented values, second row, first column, set projection here.
-    ax_3 = plt.subplot(G[1, 0],
-                       projection=ccrs.PlateCarree(),
-                       extent=good_pixels_plus_augmentation.extent)
-
-    # Plot the CH4 data.
-    good_plus_augmented_im = ax_3.pcolormesh(good_pixels_plus_augmentation.longitudes,
-                                             good_pixels_plus_augmentation.latitudes,
-                                             good_pixels_plus_augmentation.data,
-                                             cmap=colors,
-                                             vmin=good_pixels_plus_augmentation.vmin,
-                                             vmax=good_pixels_plus_augmentation.vmax,
-                                             zorder=0)
-
-    # Set the ticks for the CH4 subplot.
-    ax_3.set_xticks([-104, -102, -100])
-    ax_3.set_yticks([31, 33, 35])
-    ax_3.yaxis.tick_right()
-    ax_3.tick_params(axis='x',          # changes apply to the x-axis
-                     which='both',      # both major and minor ticks are affected
-                     bottom=False,      # ticks along the bottom edge are off
-                     top=True,          # ticks along the top edge are on
-                     labeltop=False,    # labels along the top edge are off
-                     labelbottom=False) # labels along the bottom edge are off
-
-    # Add the latitude label, this will be for both subplots 1 and 2.
-    ax_3.text(1.05, 0.15,
-              'Latitude',
+    # Add the text of panel B
+    ax_2.text(0.95, 0.95,
+              'B',
+              color='red',
               horizontalalignment='center',
               verticalalignment='center',
-              rotation=90,
-              transform=ax_3.transAxes)
-
-    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
-    good_plus_augmentation_cbar_ax = ax_3.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
-                                                     transform=ax_3.transAxes)
-    ax_3_cbar = plt.colorbar(good_plus_augmented_im,
-                             cax=good_plus_augmentation_cbar_ax,
-                             orientation='horizontal')
-    ax_3_cbar.set_ticks([])
-    good_plus_augmentation_cbar_ax.text(1830, 1830, '1830', ha='center')
-    good_plus_augmentation_cbar_ax.text(1860, 1830, '1860', ha='center')
-    good_plus_augmentation_cbar_ax.text(1890, 1830, '1890', ha='center')
-
-    # Add the borders to the CH4 subplot.
-    ax_3.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
-
-    # Set title
-    ax_3.set_title('QA>=0.5 + Predictions',
-                   y=-0.07)
-
-    #------------------------------------------------------------------------------------------------------------
-    # ax_4 is the subplot for all pixels TROPOMI observation + the augmented values, second row, second column, set projection here.
-    ax_4 = plt.subplot(G[1, 1],
-                       projection=ccrs.PlateCarree(),
-                       extent=all_pixels_plus_augmentation.extent)
-
-    # Plot the CH4 data.
-    all_plus_augmented_im = ax_4.pcolormesh(all_pixels_plus_augmentation.longitudes,
-                                            all_pixels_plus_augmentation.latitudes,
-                                            all_pixels_plus_augmentation.data,
-                                            cmap=colors,
-                                            vmin=all_pixels_plus_augmentation.vmin,
-                                            vmax=all_pixels_plus_augmentation.vmax,
-                                            zorder=0)
-
-    # Set the ticks for the CH4 subplot.
-    ax_4.set_xticks([-104, -102, -100])
-    ax_4.set_yticks([31, 33, 35])
-    ax_4.yaxis.tick_left()
-    ax_4.tick_params(axis='x',  # changes apply to the x-axis
-                     which='both',  # both major and minor ticks are affected
-                     bottom=False,  # ticks along the bottom edge are off
-                     top=True,  # ticks along the top edge are on
-                     labelbottom=False)  # labels along the bottom edge are off
-    ax_4.tick_params(axis='y',
-                     which='both',
-                     labelleft=False)
-
-    # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
-    all_plus_augmentation_cbar_ax = ax_4.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
-                                                     transform=ax_4.transAxes)
-    ax_4_cbar = plt.colorbar(all_plus_augmented_im,
-                             cax=all_plus_augmentation_cbar_ax,
-                             orientation='horizontal')
-    ax_4_cbar.set_ticks([])
-    all_plus_augmentation_cbar_ax.text(1830, 1830, '1830', ha='center')
-    all_plus_augmentation_cbar_ax.text(1860, 1830, '1860', ha='center')
-    all_plus_augmentation_cbar_ax.text(1890, 1830, '1890', ha='center')
-
-    # Add the borders to the CH4 subplot.
-    ax_4.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
-
-    # Set title
-    ax_4.set_title('QA>0 + Predictions',
-                   y=-0.07)
+              transform=ax_2.transAxes,
+              fontsize=20)
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_4.png',
@@ -1673,26 +1659,27 @@ def figure_6(fitted_results):
 
     # Set the title on the time series plot using the start and end date of the model run.
     start_date, end_date, model = fitted_results.run_name.split('-')
-    ax_1.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
-                        datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
 
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_1.plot(datetimes,
-              pixel_coverage_df.QA_coverage,
+              pixel_coverage_df.Original_coverage,
               color='darkorange',
               marker='o',
               linestyle='solid')
-    ax_1.plot(datetimes,
-              pixel_coverage_df.QA_plus_poor_pixel_coverage,
-              color='darkorange',
-              alpha=0.5,
-              marker='o',
-              linestyle='dashed')
     ax_1.plot(datetimes,
               pixel_coverage_df.Augmented_coverage,
               color='green',
               marker='o',
               linestyle='dotted')
+
+    # Plot the text of panel A
+    ax_1.text(0.03, 0.05,
+              'A',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes,
+              fontsize=20)
 
     # Set the ylabel
     ax_1.set_ylabel('% Pixel coverage of study region')
@@ -1712,20 +1699,13 @@ def figure_6(fitted_results):
 
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_2.plot(datetimes,
-              median_pixel_df.Median_QA_pixel_value,
+              median_pixel_df.Original_median_pixel_value,
               color='darkorange',
               marker='o',
               linestyle='solid',
-              label='QA>0.5')
+              label='Original')
     ax_2.plot(datetimes,
-              median_pixel_df.Median_QA_plus_poor_pixel_value,
-              color='darkorange',
-              alpha=0.5,
-              marker='o',
-              linestyle='dashed',
-              label='All pixels')
-    ax_2.plot(datetimes,
-              median_pixel_df.Median_augmented_coverage_value,
+              median_pixel_df.Augmented_median_pixel_value,
               color='green',
               marker='o',
               linestyle='dotted',
@@ -1746,33 +1726,30 @@ def figure_6(fitted_results):
               color='grey',
               alpha=0.5)
 
+    # Plot the text of panel B
+    ax_2.text(0.03, 0.05,
+              'B',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes,
+              fontsize=20)
+
     # ------------------------------------------------------------------------------------------------------
     ax_3 = plt.subplot(G[2, 0], sharex=ax_1)
 
     # We have methane load saved in the .csv file in mols of CH4, we will plot in kilotonnes
     ax_3.plot(datetimes,
-                  methane_load_df.QA_methane_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
-                  color='darkorange',
-                  linestyle="solid",
-                  marker='o')
-                  # capsize=3,
-                  # elinewidth=0.7)
-    ax_3.plot(datetimes,
-                  methane_load_df.QA_plus_poor_pixel_methane_load * 16.04 / 1e6 / 1e3,
-                  color='darkorange',
-                  alpha=0.5,
-                  marker='o',
-                  linestyle='dashed')
-                  # capsize=3,
-                  # elinewidth=0.7)
+              methane_load_df.Original_methane_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
+              color='darkorange',
+              linestyle="solid",
+              marker='o')
 
     ax_3.plot(datetimes,
-                  methane_load_df.Augmented_methane_load * 16.04 / 1e6 / 1e3,
-                  color='green',
-                  marker='o',
-                  linestyle='dotted')
-                  # capsize=3,
-                  # elinewidth=0.7)
+              methane_load_df.Augmented_methane_load * 16.04 / 1e6 / 1e3,
+              color='green',
+              marker='o',
+              linestyle='dotted')
 
     # Set the ylabel
     ax_3.set_ylabel('Observed methane load above' + '\n' + 'NOAA background [kilotonnes]')
@@ -1795,6 +1772,15 @@ def figure_6(fitted_results):
               linestyle='dashed',
               color='grey',
               alpha=0.5)
+
+    # Plot the text of panel C
+    ax_3.text(0.03, 0.05,
+              'C',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_3.transAxes,
+              fontsize=20)
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_6.pdf',
