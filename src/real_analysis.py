@@ -15,8 +15,8 @@ PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
-MAKE_TIME_SERIES       = True
-MAKE_PLOTS             = False
+MAKE_TIME_SERIES       = False
+MAKE_PLOTS             = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -82,8 +82,10 @@ if AUGMENT_DATA_RICH_DAYS:
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
-    #tp.create_time_series(results)
     tp.write_plotable_quantities_csv_file(results)
+    tp.calculate_prediction_vs_poor_pixel_value(results)
+    # Need the RUN_NAME to include 'dropout' to run the below function.
+    #tp.calculate_prediction_vs_heldout_pixel_value(results)
 
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
@@ -100,16 +102,21 @@ if MAKE_PLOTS:
     # p.reduced_chi_squared(RUN_NAME)
     # p.residuals(RUN_NAME)
     # p.beta_flare_time_series(results)
-    # p.tropomi_plot(DATE, QUANTITY,
-    #                plot_study_region=PLOT_STUDY_REGION,
-    #                qa_only=SHOW_QAD_PIXELS_ONLY,
-    #                show_flares=PLOT_FLARES,
-    #                augment_ch4=SHOW_AUGMENTED_CH4)
+    # p.tropomi_plot('2019-01-31', 'CH4',
+    #                plot_study_region=False,
+    #                qa_only=True,
+    #                show_flares=False,
+    #                include_predictions=True,
+    #                good_predictions_only=True,
+    #                show_precisions=True)
     # p.dry_air_column_density_cross_plot(results)
-    # p.alpha_flarestack_crossplot(results)
+    # p.alpha_time_series(results)
+    # p.no2_ch4_flarestack_crossplot(results, 'CH4', show_augmented_load=True)
+    # p.poor_pixel_predicted_pixel_cross_plot(results)
+    # p.heldout_pixel_predicted_pixel_cross_plot(results)
     # PLOTS FOR THE PAPER
     # p.figure_1(DATE)
     # p.figure_2(results, DATE)
     # p.figure_3(results)
-    p.figure_4(DATE)
-    # p.figure_6(results)
+    # p.figure_4(DATE)
+    p.figure_6(results)

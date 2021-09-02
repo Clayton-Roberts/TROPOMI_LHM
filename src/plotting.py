@@ -1,6 +1,6 @@
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Ellipse
 import matplotlib.transforms as transforms
 import matplotlib.patches as patches
@@ -23,7 +23,12 @@ from src import constants as ct
 
 class PlotHelper:
     #TODO make the docstring
-    def __init__(self, filename, quantity, qa_only=False, augment_ch4=False, good_predictions_only=True):
+    def __init__(self, filename, quantity,
+                 qa_only=False,
+                 include_predictions=False,
+                 good_predictions_only=False,
+                 show_precisions=False):
+
         self.figsize = (10.0, 6.0)
         self.extent  = (-106, -99, 29, 35)
         self.xticks  = range(-106, -99, 2)
@@ -63,48 +68,75 @@ class PlotHelper:
         elif quantity == 'CH4':
             # Open the TROPOMI observation file
             f = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
-            self.legend = "Mixing ratio [ppbv]"
-            self.title = 'Column averaged mixing ratio CH$_4$' + \
-                         '\n' + datetime.datetime.strptime(date, '%Y%m%d').strftime('%B %-d, %Y')
-            self.vmax  = 1900.0
-            self.vmin  = 1820.0
 
-            # Access pixel values
-            ch4 = np.array(f.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+            if not show_precisions:
+                self.vmax  = 1900.0
+                self.vmin  = 1820.0
+                self.legend = "Mixing ratio [ppbv]"
+                self.title = 'Column averaged mixing ratio CH$_4$' + \
+                             '\n' + datetime.datetime.strptime(date, '%Y%m%d').strftime('%B %-d, %Y')
+
+            else:
+                self.vmax = 1.0
+                self.vmin = 15.0
+                self.legend = "Mixing ratio precision [ppbv]"
+                self.title = 'Column averaged mixing ratio CH$_4$ precision' + \
+                             '\n' + datetime.datetime.strptime(date, '%Y%m%d').strftime('%B %-d, %Y')
+
+            # Access pixel values and precisions
+            ch4         = np.array(f.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+            precisions  = np.array(f.groups['PRODUCT'].variables['methane_mixing_ratio_precision'][0])
 
             if not qa_only:
-                data = ch4
+                if not show_precisions:
+                    data = ch4
+                else:
+                    data = precisions
 
             # If you only want high-quality pixels, have to do the below.
             else:
-                filtered_ch4 = np.empty(np.shape(ch4))
-                qa_values    = np.array(f.groups['PRODUCT'].variables['qa_value'][0])
+                filtered_ch4        = np.full(np.shape(ch4), 1e32)
+                filtered_precisions = np.full(np.shape(ch4), 1e32)
+                qa_values           = np.array(f.groups['PRODUCT'].variables['qa_value'][0])
 
                 for i in range(np.shape(ch4)[0]):
                     for j in range(np.shape(ch4)[1]):
-                        if qa_values[i, j] < 0.5:
-                            filtered_ch4[i, j] = 1e32
-                        else:
-                            filtered_ch4[i, j] = ch4[i, j]
+                        if qa_values[i, j] >= 0.5:
+                            filtered_ch4[i, j]        = ch4[i, j]
+                            filtered_precisions[i, j] = precisions[i, j]
 
-                data = filtered_ch4
+                if not show_precisions:
+                    data = filtered_ch4
+                else:
+                    data = filtered_precisions
 
-            if augment_ch4:
+            if include_predictions:
                 #TODO change this hardcoded model run name
                 g = nc4.Dataset(ct.FILE_PREFIX +
-                                '/augmented_observations/20190101-20191231-non_centered/data_rich/' +
+                                '/augmented_observations/20190101-20191231-non_centered/data_rich_days/' +
                                 filename,
                                 'r')
 
-                augmented_pixel_values  = np.array(g.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
-                prediction_pixel_values = np.array(g.groups['PRODUCT'].variables['prediction_pixel_qa_value'][0])
+                prediction_pixel_values     = np.array(g.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+                prediction_precision_values = np.array(g.groups['PRODUCT'].variables['methane_mixing_ratio_precision'][0])
+                prediction_pixel_qa_values  = np.array(g.groups['PRODUCT'].variables['prediction_pixel_qa_value'][0])
 
                 for i in range(f.groups['PRODUCT'].dimensions['scanline'].size):
                     for j in range(f.groups['PRODUCT'].dimensions['ground_pixel'].size):
-                        if (data[i, j] >= 1e32) and (augmented_pixel_values[i, j] < 1e32):
+                        if (data[i, j] >= 1e32) and (prediction_pixel_values[i, j] < 1e32):
+                            pixel_value = prediction_pixel_values[i, j]
+                            precision   = prediction_precision_values[i, j]
                             if good_predictions_only:
-                                if prediction_pixel_values[i, j] >= 0.75: data[i, j] = augmented_pixel_values[i, j]
-                            else: data[i, j] = augmented_pixel_values[i, j]
+                                if prediction_pixel_qa_values[i, j] >= 0.75:
+                                    if not show_precisions:
+                                        data[i, j] = pixel_value
+                                    else:
+                                        data[i, j] = precision
+                            else:
+                                if not show_precisions:
+                                    data[i, j] = pixel_value
+                                else:
+                                    data[i, j] = precision
 
             self.data = np.ma.masked_greater(data, 1e30)
 
@@ -134,7 +166,13 @@ class PlotHelper:
         self.latitudes = latitude_corners
         self.longitudes = longitude_corners
 
-def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_flares=False, augment_ch4=False):
+def tropomi_plot(date, molecule,
+                 plot_study_region=False,
+                 qa_only=False,
+                 show_flares=False,
+                 include_predictions=False,
+                 good_predictions_only=False,
+                 show_precisions=False):
     '''This is a function for plotting TROPOMI observations of either :math:`\\mathrm{NO}_2` or :math:`\\mathrm{CH}_4`.
 
     :param date: Date you want to plot observations for, format as %Y-%m-%d
@@ -165,7 +203,7 @@ def tropomi_plot(date, molecule, plot_study_region=False, qa_only=False, show_fl
         file = potential_tropomi_files[0]
 
     # Set necessary details with the plot helper
-    plot_helper = PlotHelper(file, molecule, qa_only, augment_ch4)
+    plot_helper = PlotHelper(file, molecule, qa_only, include_predictions, good_predictions_only, show_precisions)
 
     # Get the outlines of counties
     reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
@@ -665,16 +703,15 @@ def reduced_chi_squared(model_run):
 
     reduced_chi_square_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + model_run + '/dropout/reduced_chi_squared.csv')
 
-    title = 'Reduced chi-squared values by day'
     sns.displot(reduced_chi_square_df.Reduced_chi_squared, kde=True)
     plt.xlabel(r'$\mathregular{\chi^2_{\nu}}$')
 
     # Check if this is a test dataset or not
     if 'days' in model_run:
-        title += '\n Test Dataset'
+        title = '\n Test Dataset'
     else:
         start_date, end_date, model = model_run.split('-')
-        title += '\n' + datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
+        title = datetime.datetime.strptime(start_date, "%Y%m%d").strftime("%B %-d, %Y") + ' - ' + \
                  datetime.datetime.strptime(end_date, "%Y%m%d").strftime("%B %-d, %Y")
     plt.title(title)
 
@@ -821,67 +858,175 @@ def beta_flare_time_series(fitted_results):
     plt.tight_layout()
     plt.show()
 
-def alpha_flarestack_crossplot(fitted_results):
-    '''This function is for plotting a cross plot of alpha and flare stack count.
+def alpha_time_series(fitted_results):
+    '''This function is for plotting a time series of alpha and some other quantities.
 
     :param fitted_results: The results of this model run.
     :type fitted_results: FittedResults
     '''
 
-    # Read in the flare stack count time series.
-    flare_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/flare_counts.csv', header=0)
+    # Open the plotables csv file.
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+                               header=0,
+                               index_col=0)
 
-    # Read in the summary.csv file, index by date
-    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
-                             index_col=0)
+    # Read in the summary data file with the R correlations.
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv')
 
-    # Create the time series of mean inferred beta values and their credible intervals.
-    alpha_df = pd.DataFrame(columns=('Date', 'Alpha', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
-    for date in summary_df.index:
-        parameter = 'alpha.' + str(int(summary_df.loc[date].Day_ID))
-        mode_alpha = fitted_results.median_values[parameter]
-        lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
-        alpha_df = alpha_df.append({'Date': date,
-                                  'Alpha': mode_alpha,
-                                  'Lower_bound_95_CI': lower_bound,
-                                  'Upper_bound_95_CI': upper_bound},
-                                 ignore_index=True)
-    errors = [[alpha_df.Alpha[i] - alpha_df.Lower_bound_95_CI[i], alpha_df.Upper_bound_95_CI[i] - alpha_df.Alpha[i]]
-              for i in alpha_df.index]
+    # Create the datetime objects for all the dates we have beta inferences for ("data rich" days).
+    alpha_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in plotables_df.index]
 
+    # Calculate the difference between alpha and the noaa background.
+    alpha_noaa_diff = [plotables_df.alpha_50[i] - plotables_df.noaa_background[i] for i in plotables_df.index]
 
-    # Only use the flare data for dates that we have inferences on beta on.
-    shared_index        = flare_df[flare_df.Date.isin(alpha_df.Date)].index.to_list()
-    shared_flare_counts = flare_df.Flare_count[shared_index]
+    # Create figure, use gridspec to divide it up into subplots. 3-column subplot where first plot spans two columns.
+    plt.figure(figsize=(12.0, 4.45))
+    G = gridspec.GridSpec(1, 3)
+    # Need just a little bit of space between the subplots to have y-axis tick marks in between.
+    G.update(wspace=0.19)
 
-    # Plot the cross plot.
-    plt.errorbar(shared_flare_counts,
-                  alpha_df.Alpha,
-                  yerr=np.array(errors).T,
-                  linestyle="None",
-                  ecolor="black",
-                  fmt='D',
-                  mfc='w',
-                  color='black',
-                  capsize=3,
-                  ms=4,
-                  zorder=1,
-                  elinewidth=0.7)
+    #-------------------------------------------------------------------------------------------------
+    # Right hand side plot (the time series). Needs to span the first two columns.
+    ax_1 = plt.subplot(G[0, 1:])
+    ax_1.set_xlabel("Date", fontsize=12)
 
-    # Set the title on the plot using the start and end date of the model run.
+    # Plot the time series of beta.
+    ax_1.scatter(alpha_datetimes,
+                 alpha_noaa_diff,
+                 color='black')
+
+    # Plot the text of panel B, right hand side
+    ax_1.text(0.03, 0.95,
+              'B',
+              color='red',
+              transform=ax_1.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center', )
+
+    #-------------------------------------------------------------------------------------------------
+    # Make a twin axes object that shares the x axis with the time series of beta.
+    ax_twin = ax_1.twinx()
+
+    # Plot the time series of flare count on this twin axes object.
+    ax_twin.scatter(alpha_datetimes,
+                    plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
+                    color="red",
+                    marker="x",
+                    s=30,
+                    alpha=0.7)
+
+    # Make the tick marks on the y axis of the flare count time series red, but don't include the numbers.
+    ax_twin.tick_params(axis='y', colors='red', labelright=True)
+    ax_twin.set_ylabel('Observed methane load above \n NOAA background [kilotonnes]',
+                       color='red',
+                       rotation=270,
+                       labelpad=15,
+                       fontsize=12)
+
+    # Move the time series of beta on top of the time series of flare count.
+    ax_1.set_zorder(2)
+    ax_twin.set_zorder(1)
+    ax_1.patch.set_visible(False)
+
+    # Figure out the locations of the first and last tick mark in the date range of this run.
     start_date, end_date, model = fitted_results.run_name.split('-')
-    plt.title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
-                        datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+    first_tick_date = datetime.datetime.strptime(start_date, "%Y%m%d").replace(day=1).strftime("%Y-%m-%d")
+    last_tick_date = (
+            datetime.datetime.strptime(end_date, "%Y%m%d").replace(day=1) + datetime.timedelta(days=32)).replace(
+        day=1).strftime("%Y-%m-%d")
 
-    # Set the x and y labels of the plot.
-    plt.xlabel('Flare count')
-    plt.ylabel(r'$\alpha$ [ppbv]')
+    # Use pandas to create the date range, ticks on first of the month ('MS'), every two months ('2MS').
+    tick_locations = pd.date_range(first_tick_date, last_tick_date, freq='2MS')
+    # Change the tick labels to be abbreviated month and year.
+    tick_labels = tick_locations.strftime('%b-%y')
+
+    # Add date ticks to the x axis of the time series plot.
+    plt.setp(ax_twin,
+             xticks=tick_locations,
+             xticklabels=tick_labels)
+
+    # Add vertical dashed lines at the location of the date tick marks.
+    for location in tick_locations:
+        ax_twin.axvline(location, linestyle='--', color='grey', linewidth=0.5)
+
+    # Add a horizontal line at zero.
+    ax_1.axhline(0.0, linestyle='--', color='grey', linewidth=0.5)
+
+    #-------------------------------------------------------------------------------------------------
+    # Left hand side plot (the cross plot). Needs to span the third column and share y axis with the time series.
+    ax_2 = plt.subplot(G[0, 0], sharey=ax_1)
+
+    # Set the tick marks on y axis of the cross plot to be red, on the left hand side of the plot, include numbers.
+    ax_2.tick_params(axis='y',
+                     colors='black',
+                     labelleft=False)
+    ax_2.tick_params(axis='x',
+                     colors='red')
+    ax_2.yaxis.tick_right()
+
+    # Define the colors that we will use for the plots.
+    colors = copy.copy(cm.viridis)
+
+    # Plot the cross plot of beta and flare count, including 95% CI on beta.
+    im = ax_2.scatter(plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
+                      alpha_noaa_diff,
+                      c=summary_df.R,
+                      cmap=colors,
+                      s=60,
+                      alpha=0.7)
+    # create an axes on the right side of ax_2. The width of cax will be 5%
+    # of ax and the padding between cax and ax_2 will be fixed at 0.05 inch.
+    divider = make_axes_locatable(ax_2)
+    cax     = divider.append_axes("left", size="10%", pad=0.05)
+    plt.colorbar(im,
+                 cax=cax)
+    cax.text(-2.0, 0.5,
+             'Pearson correlation coefficient',
+             rotation=90,
+             transform=cax.transAxes,
+             horizontalalignment='center',
+             verticalalignment='center'
+             )
+    cax.yaxis.tick_left()
+
+    # Plot the text of panel A
+    ax_2.text(0.05, 0.95,
+              'A',
+              color='red',
+              transform=ax_2.transAxes,
+              fontsize=20,
+              horizontalalignment='center',
+              verticalalignment='center')
+
+    # Set the x-axis label on the cross plot.
+    ax_2.set_xlabel('Observed methane load above \n NOAA background [kilotonnes]',
+                    fontsize=12,
+                    labelpad=0,
+                    color='red')
+
+    ax_2.tick_params(axis='y', colors='black', labelright=False)
+
+    # Plot some red text to show that the red y-axis is the flare count. Plot in axes coordinates of the cross plot.
+    ax_2.text(1.07, 1.05,
+              r'$\alpha$ - NOAA background [ppbv]',
+              color='black',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes,
+              fontsize=12)
+
+    ax_2.grid(which='both',
+              linestyle='dashed',
+              linewidth=0.5,
+              color='grey')
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/alpha_flarestack_crossplot.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/alpha_time_series.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
 
+    # Show the plot on-screen.
     plt.show()
 
 def dry_air_column_density_cross_plot(fitted_results):
@@ -895,7 +1040,7 @@ def dry_air_column_density_cross_plot(fitted_results):
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
                              index_col=0)
 
-    # Read in the dry air column density datafram
+    # Read in the dry air column density dataframe
     dry_air_column_density_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_densities.csv', header=0)
 
     for date in tqdm(summary_df.index, desc='Creating dry air subcolumn cross plot'):
@@ -920,12 +1065,179 @@ def dry_air_column_density_cross_plot(fitted_results):
               datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/dry_air_column_density_crossplot.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/dry_air_column_density_crossplot.png',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
     plt.show()
+
+def heldout_pixel_predicted_pixel_cross_plot(fitted_results):
+    '''This function is for plotting heldout pixels of methane against predicted values at the same location from the
+    dropout model.
+
+    :param fitted_results: The model run we want to plot the pixels for.
+    :type fitted_results: FittedResults
+    '''
+
+    # Read in the summary.csv file, index by date
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
+                             index_col=0)
+
+    # Read in the dry air column density datafram
+    pixels_df = pd.read_csv(
+        ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/heldout_pixels_and_colocated_predictions.csv', header=0)
+
+    for date in tqdm(summary_df.index, desc='Creating heldout pixel cross plot'):
+        # Want to plot by date to see if there's anything weird going on.
+        sub_df = pixels_df[pixels_df.Date == date]
+
+        plt.scatter(sub_df.heldout_pixel_values,
+                    sub_df.colocated_prediction_values,
+                    alpha=0.3)
+
+    x = np.linspace(np.min(pixels_df.heldout_pixel_values),
+                    np.max(pixels_df.heldout_pixel_values))
+    y = x * 1.
+    plt.xlabel(r'Heldout pixel value [ppbv]')
+    plt.ylabel(r'Predicted pixel value [ppbv]')
+    plt.plot(x, y, color='red')
+
+    # Set the title on the plot using the start and end date of the model run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    plt.title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+              datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/paper/heldout_pixel_vs_predicted_pixel_crossplot.png',
+                dpi=300,
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    plt.show()
+
+def poor_pixel_predicted_pixel_cross_plot(fitted_results):
+    '''This function is for plotting poor pixels of methane (QA < 0.5) against predicted values at the same location.
+
+    :param fitted_results: The model run we want to plot the pixels for.
+    :type fitted_results: FittedResults
+    '''
+
+    # Read in the summary.csv file, index by date
+    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
+                             index_col=0)
+
+    # Read in the csv file comparing poor pixels to predictions.
+    pixels_df = pd.read_csv(
+        ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/poor_pixels_and_colocated_predictions.csv', header=0)
+
+    # Read in the grand plotables csv to get the range of NOAA background CH4 values.
+    plotables_df = pd.read_csv(
+        ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv', header=0)
+
+    max_background = np.max(plotables_df.noaa_background)
+
+    for date in tqdm(summary_df.index, desc='Creating poor pixel cross plot'):
+
+        # Want to plot by date to see if there's anything weird going on.
+        sub_df = pixels_df[pixels_df.Date == date]
+
+        plt.scatter(sub_df.poor_pixel_values,
+                    sub_df.colocated_prediction_value,
+                    alpha=0.3)
+
+    x_low  = np.min(pixels_df.poor_pixel_values)
+    x_high = np.max(pixels_df.poor_pixel_values)
+    x = np.linspace(x_low, x_high)
+    y = x * 1.
+    plt.xlabel(r'Poor pixel value [ppbv]')
+    plt.ylabel(r'Predicted pixel value [ppbv]')
+    plt.plot(x, y, color='red')
+
+    # Plot a shaded grey region to show spread of NOAA background values
+    plt.fill_between(np.arange(x_low - 15.0, max_background, 0.01), x_low - 15.0, max_background, alpha=0.3, color='grey')
+
+    # Set the title on the plot using the start and end date of the model run.
+    start_date, end_date, model = fitted_results.run_name.split('-')
+    plt.title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%B %-d, %Y') + ' - ' +
+              datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%B %-d, %Y'))
+
+    plt.xlim([x_low-15.0, x_high+15.0])
+    plt.ylim([x_low - 15.0, x_high + 15.0])
+
+    plt.text(1690, 1675, 'Region below NOAA background')
+
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/poor_pixel_vs_predicted_pixel_crossplot.png',
+                dpi=300,
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    plt.show()
+
+def no2_ch4_flarestack_crossplot(fitted_results, molecule, show_augmented_load=False):
+    '''This function is for plotting a cross plot of either CH4 loading or NO2 loading vs flare stack count in the study
+    region.
+
+    :param fitted_results: The model run that we want to plot results for.
+    :type fitted_results: FittedResults
+    :param molecule: The type of molecule that we want to plot loading for, must be either 'CH4' or 'NO2'
+    :type molecule: string
+    :param show_augmented_load: A flag to determine if you want to plot original or augmented methane load in the study
+        region.
+    :type show_augmented_load: bool
+    '''
+
+    # Open the plotables csv file.
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+                               header=0,
+                               index_col=0)
+
+    if molecule == 'CH4':
+
+        if show_augmented_load:
+            mass   = plotables_df.augmented_ch4_load * 16.04 / 1e6  # Convert to grams, convert to tonnes
+            errors = plotables_df.augmented_ch4_load_precision * 16.04 / 1e6 # Convert to grams, convert to tonnes
+
+        else:
+            mass = plotables_df.original_ch4_load * 16.04 / 1e6   # Convert to grams, convert to tonnes
+            errors = plotables_df.original_ch4_load_precision * 16.04 / 1e6   # Convert to grams, convert to tonnes
+
+        label    = r'CH$_{4}$'
+        filename = 'ch4'
+
+    elif molecule == 'NO2':
+        mass   = plotables_df.original_no2_load * 46.0055 / 1e6 # Convert to grams, convert to tonnes
+        errors = plotables_df.original_no2_load_precision * 46.0055 / 1e6 # Convert to grams, convert to tonnes
+
+        label = r'NO$_{2}$'
+        filename = 'no2'
+
+    # Plot the cross plot.
+    plt.errorbar(plotables_df.flare_count,
+                 np.array(mass),
+                 yerr=np.array(errors),
+                 linestyle="None",
+                 ecolor="black",
+                 fmt='D',
+                 mfc='w',
+                 color='black',
+                 capsize=3,
+                 ms=4,
+                 zorder=1,
+                 elinewidth=0.7)
+
+    plt.ylabel(label + ' [tonnes]')
+    plt.xlabel('Flare count')
+    plt.savefig(ct.FILE_PREFIX + '/figures/autosaved/' + filename + '_flarestack_crossplot.pdf',
+                bbox_inches = 'tight',
+                pad_inches = 0.01)
+
+    plt.show()
+
+# ---------------------------------------------------------------------------------
+# The functions below are used to create the functions that went into the paper.
+# ---------------------------------------------------------------------------------
 
 def figure_1(date):
     '''This function is for creating and saving Figure 1 of the paper. Figure 1 will be a page-wide, two-panel figure
@@ -1023,7 +1335,7 @@ def figure_1(date):
     ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]', fontsize=10)
 
     # Plot the text of panel B
-    ax_1.text(0.05, 0.95,
+    ax_1.text(0.04, 0.94,
               'A',
               color='red',
               transform=ax_1.transAxes,
@@ -1091,7 +1403,7 @@ def figure_1(date):
     ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]', fontsize=10)
 
     # Plot the text of panel B
-    ax_2.text(0.95, 0.95,
+    ax_2.text(0.04, 0.94,
               'B',
               color='red',
               transform=ax_2.transAxes,
@@ -1127,48 +1439,42 @@ def figure_2(fitted_results, date):
     # ax_1 is the subplot for the scatterplot of observations, left hand side (first column).
     ax_1 = plt.subplot(G[0, 0])
 
-    #sns.set()
     # Seed the random number generator.
     np.random.seed(101)
 
-    # Read in the observations for this model run and then extract the particular observations for the date in question.
-    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/dataset.csv', header=0)
-    date_df    = dataset_df[dataset_df.Date == date]
-
-    beta_values        = []
-    beta_error_bounds  = []
-    alpha_values       = []
-    alpha_error_bounds = []
+    # Open the plotables csv file.
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+                               header=0,
+                               index_col=0)
 
     # Fill the lists of mode values and the errors needed for the scatterplot.
-    for parameter in fitted_results.parameter_list:
-        if 'beta.' in parameter:
-            beta_values.append(fitted_results.median_values[parameter])
-            beta_error_bounds.append(
-                [fitted_results.median_values[parameter] - fitted_results.credible_intervals[parameter][0],
-                 fitted_results.credible_intervals[parameter][1] - fitted_results.median_values[parameter]])
-        elif 'alpha.' in parameter:
-            alpha_values.append(fitted_results.median_values[parameter])
-            alpha_error_bounds.append(
-                [fitted_results.median_values[parameter] - fitted_results.credible_intervals[parameter][0],
-                 fitted_results.credible_intervals[parameter][1] - fitted_results.median_values[parameter]])
+    beta_values       = list(plotables_df.beta_50)
+    beta_error_bounds = [[median - lower_bound, higher_bound - median]
+                         for median, lower_bound, higher_bound
+                         in zip(beta_values, list(plotables_df.beta_16), list(plotables_df.beta_84))]
+
+    alpha_values       = list(plotables_df.alpha_50)
+    alpha_error_bounds = [[median - lower_bound, higher_bound - median]
+                        for median, lower_bound, higher_bound
+                        in zip(alpha_values, list(plotables_df.alpha_16), list(plotables_df.alpha_84))]
+
+    # Read in the observations the date in question.
+    dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/dataset.csv', header=0)
+    date_df    = dataset_df[dataset_df.Date == date]
 
     # Needed to plot the regression lines.
     x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
     x_domain = np.linspace(x_min, x_max, 100)
 
-    # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
-    # using the passed date. Use the summary.csv file and index by date
-    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0, index_col=0)
-    day_id     = int(summary_df.loc[date].Day_ID)
-
-    # Get mode and upper and lower 95% CI bounds for alpha and beta on this day.
-    median_beta  = fitted_results.median_values['beta.' + str(day_id)]
-    median_alpha = fitted_results.median_values['alpha.' + str(day_id)]
-    lower_beta_bound, upper_beta_bound   = fitted_results.credible_intervals['beta.' + str(day_id)]
+    # Get mode and upper and lower 68% CI bounds for alpha and beta on this day.
+    median_beta  = plotables_df.loc[date]['beta_50']
+    median_alpha = plotables_df.loc[date]['alpha_50']
+    lower_beta_bound, upper_beta_bound   = plotables_df.loc[date]['beta_16'], plotables_df.loc[date]['beta_84']
     beta_diff                            = (upper_beta_bound - lower_beta_bound) / 2.
-    lower_alpha_bound, upper_alpha_bound = fitted_results.credible_intervals['alpha.' + str(day_id)]
+    lower_alpha_bound, upper_alpha_bound = plotables_df.loc[date]['alpha_16'], plotables_df.loc[date]['alpha_84']
     alpha_diff                           = (upper_alpha_bound - lower_alpha_bound) / 2.
+    # Get the Day ID for this day
+    day_id = plotables_df.loc[date]['day_id']
 
 
     # Extract a random subset of 500 alpha-beta draws that the sampler drew.
@@ -1283,7 +1589,7 @@ def figure_2(fitted_results, date):
               color='grey',
               alpha=0.5)
 
-    ax_2.text(0.95, 0.95,
+    ax_2.text(0.05, 0.95,
               'B',
               color='red',
               transform=ax_2.transAxes,
@@ -1306,48 +1612,35 @@ def figure_3(fitted_results):
     :type fitted_results: FittedResults
     '''
 
-    # Read in the flare stack count time series.
-    flare_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/flare_counts.csv', header=0)
+    # Open the plotables csv file.
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+                               header=0,
+                               index_col=0)
 
-    # Read in the summary.csv file, index by date
-    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
-                             index_col=0)
-
-    # Create the time series of mode inferred beta values and their credible intervals.
-    beta_df = pd.DataFrame(columns=('Date', 'Beta', 'Lower_bound_95_CI', 'Upper_bound_95_CI'))
-    for date in summary_df.index:
-        parameter   = 'beta.' + str(int(summary_df.loc[date].Day_ID))
-        median_beta = fitted_results.median_values[parameter]
-        lower_bound, upper_bound = fitted_results.credible_intervals[parameter]
-        beta_df = beta_df.append({'Date': date,
-                                  'Beta': median_beta,
-                                  'Lower_bound_95_CI': lower_bound,
-                                  'Upper_bound_95_CI': upper_bound},
-                                 ignore_index=True)
+    # Fill the lists of mode values and the errors needed for the scatterplot.
+    beta_values = list(plotables_df.beta_50)
+    errors      = [[median - lower_bound, higher_bound - median]
+                   for median, lower_bound, higher_bound
+                   in zip(beta_values, list(plotables_df.beta_16), list(plotables_df.beta_84))]
 
     # Create the datetime objects for all the dates we have beta inferences for ("data rich" days).
-    beta_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in beta_df.Date]
-    errors = [[beta_df.Beta[i] - beta_df.Lower_bound_95_CI[i], beta_df.Upper_bound_95_CI[i] - beta_df.Beta[i]]
-              for i in beta_df.index]
+    beta_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in plotables_df.index]
+    # errors = [[beta_df.Beta[i] - beta_df.Lower_bound_95_CI[i], beta_df.Upper_bound_95_CI[i] - beta_df.Beta[i]]
+    #           for i in beta_df.index]
 
     # Create figure, use gridspec to divide it up into subplots. 3-column subplot where first plot spans two columns.
     plt.figure(figsize=(12.0, 4.45))
     G    = gridspec.GridSpec(1, 3)
     # Need just a little bit of space between the subplots to have y-axis tick marks in between.
-    G.update(wspace=0.17)
+    G.update(wspace=0.19)
 
     # Left hand side plot (the time series). Needs to span the first two columns.
-    ax_1 = plt.subplot(G[0, 0:2])
+    ax_1 = plt.subplot(G[0, 1:])
     ax_1.set_xlabel("Date", fontsize=12)
-    ax_1.set_ylabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]', color="black", fontsize=12)
-
-    # Only use the flare data for dates that we have inferences on beta on.
-    shared_index           = flare_df[flare_df.Date.isin(beta_df.Date)].index.to_list()
-    shared_flare_counts    = flare_df.Flare_count[shared_index]
 
     # Plot the time series of beta.
     ax_1.errorbar(beta_datetimes,
-                  beta_df.Beta,
+                  beta_values,
                   yerr=np.array(errors).T,
                   linestyle="None",
                   ecolor="black",
@@ -1360,7 +1653,7 @@ def figure_3(fitted_results):
 
     # Plot the text of panel A
     ax_1.text(0.03, 0.95,
-              'A',
+              'B',
               color='red',
               transform=ax_1.transAxes,
               fontsize=20,
@@ -1372,16 +1665,19 @@ def figure_3(fitted_results):
 
     # Plot the time series of flare count on this twin axes object.
     ax_twin.scatter(beta_datetimes,
-                    shared_flare_counts,
+                    plotables_df.flare_count,
                     color="red",
                     marker="x",
                     s=30,
                     alpha=0.7)
 
     # Make the tick marks on the y axis of the flare count time series red, but don't include the numbers.
-    ax_twin.tick_params(axis='y',
-                        color='red',
-                        labelright=False)
+    ax_twin.tick_params(axis='y', colors='red', labelright=True)
+    ax_twin.set_ylabel('Flare count',
+                       color='red',
+                       rotation=270,
+                       labelpad=15,
+                       fontsize=12)
 
     # Move the time series of beta on top of the time series of flare count.
     ax_1.set_zorder(2)
@@ -1410,15 +1706,20 @@ def figure_3(fitted_results):
         plt.axvline(location, linestyle='--', color='grey', linewidth=0.5)
 
     # Right hand side plot (the cross plot). Needs to span the third column and share y axis with the time series.
-    ax_2 = plt.subplot(G[0, 2], sharey=ax_twin)
+    ax_2 = plt.subplot(G[0, 0], sharey=ax_1)
 
     # Set the tick marks on y axis of the cross plot to be red, on the left hand side of the plot, include numbers.
-    ax_2.tick_params(axis='y', colors='red', labelleft=True)
+    ax_2.tick_params(axis='y',
+                     colors='black',
+                     labelleft=False)
+    ax_2.tick_params(axis='x',
+                     colors='red')
+    ax_2.yaxis.tick_right()
 
     # Plot the cross plot of beta and flare count, including 95% CI on beta.
-    ax_2.errorbar(beta_df.Beta,
-                  shared_flare_counts,
-                  xerr=np.array(errors).T,
+    ax_2.errorbar(plotables_df.flare_count,
+                  beta_values,
+                  yerr=np.array(errors).T,
                   linestyle="None",
                   ecolor="black",
                   fmt='D',
@@ -1429,8 +1730,8 @@ def figure_3(fitted_results):
                   elinewidth=0.7)
 
     # Plot the text of panel B
-    ax_2.text(0.95, 0.95,
-              'B',
+    ax_2.text(0.05, 0.95,
+              'A',
               color='red',
               transform=ax_2.transAxes,
               fontsize=20,
@@ -1438,12 +1739,17 @@ def figure_3(fitted_results):
               verticalalignment='center', )
 
     # Set the x-axis label on the cross plot.
-    ax_2.set_xlabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]', fontsize=12, labelpad=0)
+    ax_2.set_xlabel('Flare count',
+                    fontsize=12,
+                    labelpad=0,
+                    color='red')
+
+    ax_2.tick_params(axis='y', colors='black', labelright=False)
 
     # Plot some red text to show that the red y-axis is the flare count. Plot in axes coordinates of the cross plot.
-    ax_2.text(-0.07, 1.03,
-              'Flare count',
-              color='red',
+    ax_2.text(1.07, 1.05,
+              r'$\beta$ [ppbv / (mmol m$^{-2}$)]',
+              color='black',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_2.transAxes,
@@ -1490,7 +1796,7 @@ def figure_4(date):
 
     # Get necessary details with the plot helper.
     good_pixels = PlotHelper(file, 'CH4', qa_only=True)
-    good_pixels_and_good_predictions = PlotHelper(file, 'CH4', qa_only=True, augment_ch4=True)
+    good_pixels_and_good_predictions = PlotHelper(file, 'CH4', qa_only=True, include_predictions=True)
 
     # Get the outlines of counties, these will be used in both plots.
     reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
@@ -1526,7 +1832,7 @@ def figure_4(date):
     ax_1.yaxis.tick_right()
 
     # Plot the text of panel A
-    ax_1.text(0.05, 0.95,
+    ax_1.text(0.04, 0.94,
               'A',
               color='red',
               horizontalalignment='center',
@@ -1612,7 +1918,7 @@ def figure_4(date):
               transform=ax_2.transAxes)
 
     # Add the text of panel B
-    ax_2.text(0.95, 0.95,
+    ax_2.text(0.04, 0.94,
               'B',
               color='red',
               horizontalalignment='center',
@@ -1639,41 +1945,38 @@ def figure_6(fitted_results):
     :type fitted_results: FittedResults
     '''
 
-    # Read in the necessary time series.
-    pixel_coverage_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/pixel_coverage.csv', header=0)
-    median_pixel_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/median_pixel_value.csv', header=0)
-    methane_load_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/methane_load.csv', header=0)
+    # Open the plotables csv file.
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+                               header=0,
+                               index_col=0)
 
     # Create the datetime objects for all the dates we have calculated quantities for.
-    datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in pixel_coverage_df.Date]
+    datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in plotables_df.index]
 
     # Create figure, use gridspec to divide it up into subplots. 3-row subplot.
     plt.figure(figsize=(10.0, 12.0))
-    G    = gridspec.GridSpec(3, 1)
+    G = gridspec.GridSpec(3, 3)
     # Need just a little bit of space between the subplots to have y-axis tick marks in between.
     G.update(hspace=0.05)
 
     # ------------------------------------------------------------------------------------------------------
     # Top row plot (the time series). Needs to span the first two columns.
-    ax_1 = plt.subplot(G[0, 0])
-
-    # Set the title on the time series plot using the start and end date of the model run.
-    start_date, end_date, model = fitted_results.run_name.split('-')
+    ax_1 = plt.subplot(G[0, :])
 
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_1.plot(datetimes,
-              pixel_coverage_df.Original_coverage,
+              plotables_df.original_pixel_coverage,
               color='darkorange',
               marker='o',
               linestyle='solid')
     ax_1.plot(datetimes,
-              pixel_coverage_df.Augmented_coverage,
+              plotables_df.augmented_pixel_coverage,
               color='green',
               marker='o',
               linestyle='dotted')
 
     # Plot the text of panel A
-    ax_1.text(0.03, 0.05,
+    ax_1.text(0.02, 0.94,
               'A',
               color='red',
               horizontalalignment='center',
@@ -1695,21 +1998,21 @@ def figure_6(fitted_results):
               alpha=0.5)
 
     # ------------------------------------------------------------------------------------------------------
-    ax_2 = plt.subplot(G[1, 0], sharex=ax_1)
+    ax_2 = plt.subplot(G[1, :], sharex=ax_1)
 
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_2.plot(datetimes,
-              median_pixel_df.Original_median_pixel_value,
+              plotables_df.original_pixel_value_50,
               color='darkorange',
               marker='o',
               linestyle='solid',
               label='Original')
     ax_2.plot(datetimes,
-              median_pixel_df.Augmented_median_pixel_value,
+              plotables_df.augmented_pixel_value_50,
               color='green',
               marker='o',
               linestyle='dotted',
-              label='Augmented')
+              label='Including predictions')
 
     # Set the ylabel
     ax_2.set_ylabel(r'Median CH$_4$ concentration [ppbv]')
@@ -1727,7 +2030,7 @@ def figure_6(fitted_results):
               alpha=0.5)
 
     # Plot the text of panel B
-    ax_2.text(0.03, 0.05,
+    ax_2.text(0.02, 0.94,
               'B',
               color='red',
               horizontalalignment='center',
@@ -1736,23 +2039,60 @@ def figure_6(fitted_results):
               fontsize=20)
 
     # ------------------------------------------------------------------------------------------------------
-    ax_3 = plt.subplot(G[2, 0], sharex=ax_1)
+    ax_3 = plt.subplot(G[2, :], sharex=ax_1)
 
     # We have methane load saved in the .csv file in mols of CH4, we will plot in kilotonnes
     ax_3.plot(datetimes,
-              methane_load_df.Original_methane_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
+              plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
               color='darkorange',
               linestyle="solid",
               marker='o')
 
     ax_3.plot(datetimes,
-              methane_load_df.Augmented_methane_load * 16.04 / 1e6 / 1e3,
+              plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
               color='green',
               marker='o',
               linestyle='dotted')
 
+    # ------------------------------------------------------------------------------------------------------
+    ax_4 = ax_3.inset_axes([0.8, 0.0, 0.2, 1.0], sharey=ax_3)
+    sns.kdeplot(plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
+                vertical=True,
+                ax=ax_4,
+                color='green',
+                fill=True)
+    ax_4.invert_xaxis()
+    ax_4.patch.set_alpha(0.0)
+    ax_4.set(xticklabels=[])
+    ax_4.set(xticks=[])
+    ax_4.set_xlabel('')
+    ax_4.yaxis.tick_right()
+    ax_4.spines['left'].set_visible(False)
+    ax_4.set_ylabel('')
+
+    # ------------------------------------------------------------------------------------------------------
+    ax_5 = ax_3.inset_axes([0.8, 0.0, 0.2, 1.0], sharey=ax_3)
+    sns.kdeplot(plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
+                vertical=True,
+                ax=ax_5,
+                color='darkorange',
+                fill=True)
+    ax_5.invert_xaxis()
+    ax_5.patch.set_alpha(0.0)
+    ax_5.set(xticklabels=[])
+    ax_5.set(xticks=[])
+    ax_5.set_xlabel('')
+    ax_5.yaxis.tick_right()
+    ax_5.spines['left'].set_visible(False)
+    ax_5.set_ylabel('')
+
+    # ------------------------------------------------------------------------------------------------------
+
     # Set the ylabel
     ax_3.set_ylabel('Observed methane load above' + '\n' + 'NOAA background [kilotonnes]')
+
+    # Set the y limits.
+    ax_3.set_ylim([-10, 20])
 
     # Set the x axis ticks for the plot
     first_tick_date = datetime.datetime.strptime('20190101', "%Y%m%d").strftime("%Y-%m-%d")
@@ -1774,7 +2114,7 @@ def figure_6(fitted_results):
               alpha=0.5)
 
     # Plot the text of panel C
-    ax_3.text(0.03, 0.05,
+    ax_3.text(0.02, 0.94,
               'C',
               color='red',
               horizontalalignment='center',
@@ -1789,3 +2129,6 @@ def figure_6(fitted_results):
 
     # Show the plot on-screen.
     plt.show()
+
+
+
