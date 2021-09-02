@@ -4,4 +4,5 @@ src/test_suite/ground_truths/*
 src/data/*
 src/figures/*
 src/observations/*
+src/augmented_observations/*
 src/misc/*

@@ -34,6 +34,8 @@ def create_csvs(run_name):
     :type run_name: string
     '''
 
+    full_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/'+ run_name + '/summary.csv', index_col=1)
+
     full_dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/'+ run_name + '/dataset.csv')
 
     day_ids = set(full_dataset_df.Day_ID)
@@ -41,12 +43,18 @@ def create_csvs(run_name):
     dropout_dfs   = []
     remaining_dfs = []
 
+    # A summary dataframe for overall metrics of this run's remaining data.
+    remaining_summary_df = pd.DataFrame(columns=(('Date', 'Day_ID', 'M')))
+
     for day_id in tqdm(day_ids, desc='Splitting data-rich days into holdout sets'):
+
+        date = full_summary_df.loc[day_id].Date
 
         day_df = full_dataset_df[full_dataset_df.Day_ID == day_id]
 
         total_observations            = len(day_df.obs_NO2)
         number_dropout_observations   = int(total_observations*0.2)
+        number_remaining_observations = int(total_observations - number_dropout_observations)
 
         randomize = np.arange(total_observations)
         np.random.shuffle(randomize)
@@ -58,6 +66,12 @@ def create_csvs(run_name):
 
         dropout_dfs.append(dropout_df)
         remaining_dfs.append(remaining_df)
+
+        # Append summary of this day to the summary dataframe.
+        remaining_summary_df = remaining_summary_df.append({'Date': date, 'Day_ID': day_id, 'M': number_remaining_observations},
+                                                           ignore_index=True)
+    # Sort the summary dataframe by date.
+    remaining_summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/summary.csv', index=False)
 
     dropout_df = pd.concat(dropout_dfs)
     dropout_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/dropout_dataset.csv', index=False)
@@ -110,7 +124,7 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs'] = obs_no2
     data['CH4_obs'] = obs_ch4
-    if 'daily_mean_error' in run_name:
+    if ('daily_mean_error' in run_name) or ('non_centered' in run_name):
         data['sigma_N'] = avg_sigma_N
         data['sigma_C'] = avg_sigma_C
     else:
