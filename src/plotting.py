@@ -113,7 +113,7 @@ class PlotHelper:
             if include_predictions:
                 #TODO change this hardcoded model run name
                 g = nc4.Dataset(ct.FILE_PREFIX +
-                                '/augmented_observations/20190101-20191231-non_centered/data_rich_days/' +
+                                '/augmented_observations/20190101-20191231-data_poor/data_rich_days/' +
                                 filename,
                                 'r')
 
@@ -322,7 +322,7 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
 
     # Daily parameters are saved in stan as parameter.day_id .
     if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
-        model_key  = parameter + '.' + str(int(summary_df.loc[date].Day_ID))
+        model_key  = parameter + '.' + str(int(summary_df.loc[date].day_id))
         title_date = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%B %-d, %Y")
     else:
         model_key = parameter

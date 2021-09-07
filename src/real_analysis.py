@@ -10,26 +10,28 @@ from src import plotting as p
 #   --- Flags for real analysis ---
 #-----------------------------------
 PROCESS_TROPOMI_FILES  = False
+PROCESS_DATA_POOR_DAYS = False
+FIT_POOR_DAYS          = True
 PROCESS_VIIRS_FILES    = False
 PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
 MAKE_TIME_SERIES       = False
-MAKE_PLOTS             = True
+MAKE_PLOTS             = False
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
 START_DATE = '20190101'
 END_DATE   = '20191231'
-MODEL      = 'non_centered'
+MODEL      = 'data_poor'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'mu_alpha'
-DATE                 = '2019-01-31'
+PARAM                = 'alpha'
+DATE                 = '2019-01-05'
 QUANTITY             = 'CH4'
 SHOW_WARMUP_DRAWS    = False
 PLOT_STUDY_REGION    = False
@@ -38,12 +40,24 @@ SHOW_QAD_PIXELS_ONLY = True
 SHOW_AUGMENTED_CH4   = True
 ##=======================================================
 
+if PROCESS_DATA_POOR_DAYS:
+    #tp.make_directories(RUN_NAME)
+    #tp.create_dataset_data_poor_days(RUN_NAME)
+    tp.prepare_data_rich_dataset_for_cmdstanpy(RUN_NAME)
+
+if FIT_POOR_DAYS:
+
+    fm.fit_data_poor_days(RUN_NAME)
+    # fm.nuts('data/' + RUN_NAME + '/data.json',
+    #         'models/' + MODEL + '.stan',
+    #         RUN_NAME)
+
 if PROCESS_TROPOMI_FILES:
     print('Preparing data for analysis:')
 
     tp.make_directories(RUN_NAME)
-    tp.create_dataset(RUN_NAME)
-    tp.prepare_dataset_for_cmdstanpy(RUN_NAME)
+    tp.create_dataset_data_rich_days(RUN_NAME)
+    tp.prepare_data_rich_dataset_for_cmdstanpy(RUN_NAME)
 
 if PROCESS_VIIRS_FILES:
     vp.generate_flare_time_series(RUN_NAME)
@@ -90,11 +104,11 @@ if MAKE_TIME_SERIES:
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
     #results.calculate_fractional_metric()
-    # p.trace(results,
-    #         PARAM,
-    #         date=DATE,
-    #         compare_to_ground_truth=SHOW_GROUND_TRUTH,
-    #         show_warmup_draws=SHOW_WARMUP_DRAWS)
+    p.trace(results,
+            PARAM,
+            date=DATE,
+            compare_to_ground_truth=SHOW_GROUND_TRUTH,
+            show_warmup_draws=SHOW_WARMUP_DRAWS)
     # p.observations_scatterplot(DATE, RUN_NAME)
     # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
@@ -119,4 +133,4 @@ if MAKE_PLOTS:
     # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
-    p.figure_6(results)
+    # p.figure_6(results)

@@ -1,4 +1,5 @@
 from src import constants as ct
+from src import results as sr
 import netCDF4 as nc4
 import numpy as np
 from pyproj import Geod
@@ -35,7 +36,60 @@ def make_directories(run_name):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name)
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
 
-def prepare_dataset_for_cmdstanpy(run_name):
+def prepare_data_poor_dataset_for_cmdstanpy(run_name, date):
+    #TODO make docstring
+
+    df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', delimiter=',',
+                     header=0, index_col=1)  # Indexing by Date instead of Day_ID
+
+    days_df = df[df.index == date]
+
+    data = {}
+
+    obs_no2     = list(days_df.obs_NO2)
+    obs_ch4     = list(days_df.obs_CH4)
+    avg_sigma_N = round(np.mean(days_df.sigma_N), 2)
+    avg_sigma_C = round(np.mean(days_df.sigma_C), 2)
+    N           = len(obs_no2)
+
+    data['N']         = N
+    data['NO2_obs']   = obs_no2
+    data['CH4_obs']   = obs_ch4
+    data['sigma_N']   = avg_sigma_N
+    data['sigma_C']   = avg_sigma_C
+
+    # Load up the results from the data-rich run to get the information learned on mu and Sigma
+    start_date, end_date, model = run_name.split('-')
+    data_rich_run_name          = start_date + '-' + end_date + '-data_rich'
+    data_rich_results           = sr.FittedResults(data_rich_run_name)
+
+    mu_1      = data_rich_results.full_trace['mu.1']
+    mu_2      = data_rich_results.full_trace['mu.2']
+    Sigma_1_1 = data_rich_results.full_trace['Sigma.1.1']
+    Sigma_1_2 = data_rich_results.full_trace['Sigma.1.2']
+    Sigma_2_2 = data_rich_results.full_trace['Sigma.2.2']
+
+    mean_mu_1      = np.mean(mu_1)
+    mean_mu_2      = np.mean(mu_2)
+    mean_Sigma_1_1 = np.mean(Sigma_1_1)
+    mean_Sigma_1_2 = np.mean(Sigma_1_2)
+    mean_Sigma_2_2 = np.mean(Sigma_2_2)
+
+    theta = [mean_mu_1, mean_mu_2, mean_Sigma_1_1, mean_Sigma_1_2, mean_Sigma_2_2]
+
+    Upsilon = np.cov(np.array([list(mu_1),
+                               list(mu_2),
+                               list(Sigma_1_1),
+                               list(Sigma_1_2),
+                               list(Sigma_2_2)]))
+
+    data['theta']   = theta
+    data['Upsilon'] = Upsilon.tolist()
+
+    with open(ct.FILE_PREFIX + '/outputs/' + run_name + '/dummy/data.json', 'w') as outfile:
+        json.dump(data, outfile)
+
+def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     '''This function takes the "dataset.cvs" file located at "data/run_name" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
     fit our models).
@@ -49,14 +103,14 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     obs_no2 = list(df.obs_NO2)
     obs_ch4 = list(df.obs_CH4)
-    day_id  = list(df.Day_ID)
+    day_id  = list(df.day_id)
     D       = int(np.max(day_id))
-    M       = len(obs_no2)
+    N       = len(obs_no2)
 
     group_sizes = []
     for i in range(D):
         day = i+1
-        size = len(df[df.Day_ID == day])
+        size = len(df[df.day_id == day])
         group_sizes.append(size)
 
     avg_sigma_N = []
@@ -64,28 +118,21 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     for i in range(D):
         day = i+1
-        mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N),2)
-        mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C),2)
+        mean_sigma_N = round(np.mean(df[df.day_id == day].sigma_N),2)
+        mean_sigma_C = round(np.mean(df[df.day_id == day].sigma_C),2)
 
         avg_sigma_N.append(mean_sigma_N)
         avg_sigma_C.append(mean_sigma_C)
 
-    sigma_N = list(df.sigma_N)
-    sigma_C = list(df.sigma_C)
-
     data = {}
-    data['M']           = M
+    data['N']           = N
     data['D']           = D
     data['day_id']      = day_id
     data['group_sizes'] = group_sizes
     data['NO2_obs']     = obs_no2
     data['CH4_obs']     = obs_ch4
-    if ('daily_mean_error' in run_name) or ('non_centered' in run_name):
-        data['sigma_N']     = avg_sigma_N
-        data['sigma_C']     = avg_sigma_C
-    else:
-        data['sigma_N'] = sigma_N
-        data['sigma_C'] = sigma_C
+    data['sigma_N']     = avg_sigma_N
+    data['sigma_C']     = avg_sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
@@ -277,7 +324,118 @@ def get_colocated_measurements(filename):
 
     return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
 
-def create_dataset(run_name):
+def create_dataset_data_poor_days(run_name):
+    # TODO Make docstring
+
+    start_date, end_date, model = run_name.split('-')
+
+    start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+    end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
+
+    total_days         = 0
+    data_poor_days     = 0
+    total_observations = 0
+
+    # It should be okay to have some Day IDs be shared between data-rich and data poor days.
+    # FittedResults will always be segregated between data-rich and data-poor days, and
+    # the "plotables" csv file will let you know if a day was data-rich or data-poor, so as long as we remember
+    # to check that parameter, we should always be able to load up posterior parameter estimates for the correct day.
+    day_id = 1  # Stan starts counting from 1!
+
+    # Empty list to hold dataframes for each day's observations when checks are passed.
+    daily_dfs = []
+
+    # A summary dataframe for overall metrics of for this run's data.
+    summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
+
+    # Create the list of dates to iterate over.
+    num_days  = (end_datetime - start_datetime).days + 1
+    date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
+
+    # Read in the summary of the data-rich days so that we can skip days that were included in the data-rich model run.
+    data_rich_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + start_date + '-' + end_date + '-data_rich/summary.csv')
+    data_rich_date_list  = list(data_rich_summary_df.date)
+
+    # For every date in range for this model run:
+    for date in tqdm(date_list, desc='Processing TROPOMI observations for data-poor days'):
+        if date.strftime('%Y-%m-%d') not in data_rich_date_list:
+
+            total_days += 1
+
+            # Create string from the date datetime
+            date_string = date.strftime("%Y%m%d")
+
+            # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+            # that are a couple hours apart. Usually one overpass captures the whole study region.
+            tropomi_overpasses = [file.split('/')[-1] for file in
+                                  glob.glob(
+                                      ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+
+            total_obs_CH4   = []
+            total_sigma_C   = []
+            total_obs_NO2   = []
+            total_sigma_N   = []
+            total_latitude  = []
+            total_longitude = []
+
+            for overpass in tropomi_overpasses:
+                obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
+
+                total_obs_CH4.extend(obs_CH4)
+                total_sigma_C.extend(sigma_C)
+                total_obs_NO2.extend(obs_NO2)
+                total_sigma_N.extend(sigma_N)
+                total_latitude.extend(latitude)
+                total_longitude.extend(longitude)
+
+            # If there are more than 2 co-located measurements on this day ... (Note: this may change)
+            # Currently 2 because that's the minimum needed to determine correlation coefficient R
+            if len(total_obs_NO2) >= 2:
+
+                r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
+
+                data_poor_days     += 1
+                total_observations += len(total_obs_NO2)
+
+                # Append summary of this day to the summary dataframe.
+                summary_df = summary_df.append({'date': date,
+                                                'day_id': day_id,
+                                                'N': len(total_obs_NO2),
+                                                'R': round(r, 2)},
+                                               ignore_index=True)
+
+                # Create a dataframe containing the observations for this day.
+                day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),
+                                               [date] * len(total_obs_NO2),
+                                               total_obs_NO2,
+                                               total_obs_CH4,
+                                               total_sigma_N,
+                                               total_sigma_C,
+                                               total_latitude,
+                                               total_longitude)),
+                                      columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
+                                               'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+                # Append the dataframe to this day to the list of dataframes to later concatenate together.
+                daily_dfs.append(day_df)
+
+                # Increment day_id
+                day_id += 1
+
+    # Sort the summary dataframe by date.
+    summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
+
+    # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
+    dataset_df = pd.concat(daily_dfs)
+    dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
+
+    f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
+    f.write("Total number of days in range: " + str(total_days) + '\n')
+    f.write("Total number of data-rich days in range: " + str(data_poor_days) + '\n')
+    f.write("Total number of observations in range: " + str(total_observations) + '\n')
+    f.close()
+
+def create_dataset_data_rich_days(run_name):
     #TODO Make docstring
 
     start_date, end_date, model = run_name.split('-')
@@ -302,7 +460,7 @@ def create_dataset(run_name):
     date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
 
     # For every date in range for this model run:
-    for date in tqdm(date_list, desc='Processing TROPOMI observations'):
+    for date in tqdm(date_list, desc='Processing TROPOMI observations for data-rich days'):
 
         total_days += 1
 
