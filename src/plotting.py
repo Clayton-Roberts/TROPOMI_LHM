@@ -426,7 +426,7 @@ def observations_scatterplot(date, run_name):
     np.random.seed(101)
 
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', header=0)
-    date_df    = dataset_df[dataset_df.Date == date]
+    date_df    = dataset_df[dataset_df.date == date]
 
     plt.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
                  ecolor="blue",
@@ -491,7 +491,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     np.random.seed(101)
 
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/dataset.csv', header=0)
-    date_df    = dataset_df[dataset_df.Date == date]
+    date_df    = dataset_df[dataset_df.date == date]
 
     # Needed to plot the regression lines
     x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
@@ -501,7 +501,7 @@ def regression_scatterplot(date, fitted_model, compare_to_ground_truth=False):
     # using the passed date. Use the summary.csv file and index by date
     summary_df   = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_model.run_name + '/summary.csv', header=0, index_col=0)
 
-    day_id = int(summary_df.loc[date].Day_ID)
+    day_id = int(summary_df.loc[date].day_id)
 
     draws = np.arange(len(fitted_model.full_trace['alpha.' + str(day_id)]))
     np.random.shuffle(draws)

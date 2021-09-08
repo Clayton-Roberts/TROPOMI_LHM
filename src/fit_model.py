@@ -3,6 +3,7 @@ import numpy as np
 import cmdstanpy
 import pandas as pd
 import os
+import glob
 import shutil
 import datetime as datetime
 from   tqdm import tqdm
@@ -70,11 +71,12 @@ def fit_data_poor_days(run_name):
     data_poor_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', header=0, index_col=0)
 
     # Create the csv to track diagnostic metrics
-    metrics_df = pd.DataFrame(columns=['date', 'day_id', 'max_treedepth', 'divergences', 'e_bfmi', 'effective_sample_size', 'split_rhat'])
+    metrics_df = pd.DataFrame(columns=['date', 'day_id', 'N', 'max_treedepth', 'post_warmup_divergences', 'e_bfmi', 'effective_sample_size', 'split_rhat'])
 
-    for date in tqdm(['2019-01-05'], desc='Fitting model to data-poor days'): # TODO replace this with an actual loop over days
+    for date in tqdm(data_poor_summary_df.index, desc='Fitting model to data-poor days'): # TODO replace this with an actual loop over days
 
-        day_id = 1#day_id = data_poor_summary_df.index[date].day_id TODO change this
+        day_id = int(data_poor_summary_df.loc[date].day_id)
+        N      = int(data_poor_summary_df.loc[date].N)
 
         # Make the dummy directory in the outputs directory
         try:
@@ -102,26 +104,66 @@ def fit_data_poor_days(run_name):
         # Check the diagnostics.
         diagnostic_string = fit.diagnose()
         max_treedepth         = 'Treedepth satisfactory for all transitions.' in diagnostic_string
-        divergences           = 'No divergent transitions found.' in diagnostic_string
+        if 'No divergent transitions found.' in diagnostic_string:
+            post_warmup_divergences = 0
+            check_for_divergences   = False
+        else:
+            # Calculate the number of post-warmup divergences for this model run.
+            check_for_divergences = True
         e_bfmi                = 'E-BFMI satisfactory.' in diagnostic_string
         effective_sample_size = 'Effective sample size satisfactory.' in diagnostic_string
         split_rhat            = 'Split R-hat values satisfactory all parameters.' in diagnostic_string
 
+        # Create the file prefix of the outputs of the model fitting
+        file_prefix = glob.glob(ct.FILE_PREFIX + '/outputs/' + run_name + '/dummy/*[0-9]-[4].csv')[0].split('4.csv')[0]
+
+        # Open the four csv files of the outputs of the day's model fitting.
+        chain_1 = pd.read_csv(file_prefix + '1.csv', comment='#')
+        chain_2 = pd.read_csv(file_prefix + '2.csv', comment='#')
+        chain_3 = pd.read_csv(file_prefix + '3.csv', comment='#')
+        chain_4 = pd.read_csv(file_prefix + '4.csv', comment='#')
+
+        if check_for_divergences:
+            chain_1_divergences_array       = np.array(chain_1.divergent__.tail(1000))
+            chain_1_post_warmup_divergences = len(chain_1_divergences_array[chain_1_divergences_array != 0])
+            chain_2_divergences_array       = np.array(chain_2.divergent__.tail(1000))
+            chain_2_post_warmup_divergences = len(chain_2_divergences_array[chain_2_divergences_array != 0])
+            chain_3_divergences_array       = np.array(chain_3.divergent__.tail(1000))
+            chain_3_post_warmup_divergences = len(chain_3_divergences_array[chain_3_divergences_array != 0])
+            chain_4_divergences_array       = np.array(chain_4.divergent__.tail(1000))
+            chain_4_post_warmup_divergences = len(chain_4_divergences_array[chain_4_divergences_array != 0])
+
+            post_warmup_divergences = sum([chain_1_post_warmup_divergences,
+                                           chain_2_post_warmup_divergences,
+                                           chain_3_post_warmup_divergences,
+                                           chain_4_post_warmup_divergences])
+
+        # Add param.day_id to each of the "master" csv files
+        for param in ['alpha', 'beta', 'gamma']:
+            master_csv_1[param + '.' + str(day_id)] = chain_1[param].tolist()
+            master_csv_2[param + '.' + str(day_id)] = chain_2[param].tolist()
+            master_csv_3[param + '.' + str(day_id)] = chain_3[param].tolist()
+            master_csv_4[param + '.' + str(day_id)] = chain_4[param].tolist()
+
+        # Add mu_alpha.day_id and mu_beta.day_id to each of the "master" csv files to compare to the "prior" mu we feed in.
+        master_csv_1['mu_alpha.' + str(day_id)] = chain_1['mu.1'].tolist()
+        master_csv_2['mu_alpha.' + str(day_id)] = chain_2['mu.1'].tolist()
+        master_csv_3['mu_alpha.' + str(day_id)] = chain_3['mu.1'].tolist()
+        master_csv_4['mu_alpha.' + str(day_id)] = chain_4['mu.1'].tolist()
+        master_csv_1['mu_beta.' + str(day_id)] = chain_1['mu.2'].tolist()
+        master_csv_2['mu_beta.' + str(day_id)] = chain_2['mu.2'].tolist()
+        master_csv_3['mu_beta.' + str(day_id)] = chain_3['mu.2'].tolist()
+        master_csv_4['mu_beta.' + str(day_id)] = chain_4['mu.2'].tolist()
+
         metrics_df = metrics_df.append({'date': date,
+                                        'N': N,
                                         'day_id': day_id,
                                         'max_treedepth': max_treedepth,
-                                        'divergences': divergences,
+                                        'post_warmup_divergences': post_warmup_divergences,
                                         'e_bfmi': e_bfmi,
                                         'effective_sample_size': effective_sample_size,
                                         'split_rhat': split_rhat},
                                        ignore_index=True)
-
-        
-
-    master_csv_1['test'] = np.random.normal(5, 1, 1500)
-    master_csv_2['test'] = 2
-    master_csv_3['test'] = 3
-    master_csv_4['test'] = 4
 
     del master_csv_1['dummy_data']
     del master_csv_2['dummy_data']

@@ -46,10 +46,10 @@ def prepare_data_poor_dataset_for_cmdstanpy(run_name, date):
 
     data = {}
 
-    obs_no2     = list(days_df.obs_NO2)
-    obs_ch4     = list(days_df.obs_CH4)
-    avg_sigma_N = round(np.mean(days_df.sigma_N), 2)
-    avg_sigma_C = round(np.mean(days_df.sigma_C), 2)
+    obs_no2     = days_df.obs_NO2.tolist()
+    obs_ch4     = days_df.obs_CH4.tolist()
+    avg_sigma_N = np.mean(days_df.sigma_N)
+    avg_sigma_C = np.mean(days_df.sigma_C)
     N           = len(obs_no2)
 
     data['N']         = N
@@ -118,8 +118,8 @@ def prepare_data_rich_dataset_for_cmdstanpy(run_name):
 
     for i in range(D):
         day = i+1
-        mean_sigma_N = round(np.mean(df[df.day_id == day].sigma_N),2)
-        mean_sigma_C = round(np.mean(df[df.day_id == day].sigma_C),2)
+        mean_sigma_N = np.mean(df[df.day_id == day].sigma_N)
+        mean_sigma_C = np.mean(df[df.day_id == day].sigma_C)
 
         avg_sigma_N.append(mean_sigma_N)
         avg_sigma_C.append(mean_sigma_C)
@@ -311,7 +311,7 @@ def get_colocated_measurements(filename):
     # Only need to iterate over the reduced data, which is one-dimensional.
     for j in range(len(no2_pixel_values)):
         # TODO Sphinx autodoc does not like the below line for some reason
-        if (no2_pixel_values[j] < 1e30) and (interpolated_ch4_pixel_values[j] < 1e30):
+        if (no2_pixel_values[j] < 1e20) and (interpolated_ch4_pixel_values[j] < 1e20):
             # Append the CH4 and NO2 pixel values to the relevant lists.
             obs_NO2.append(no2_pixel_values[j] * 1e3)  # Convert to milli mol / m^2
             obs_CH4.append(interpolated_ch4_pixel_values[j])
@@ -539,7 +539,7 @@ def create_dataset_data_rich_days(run_name):
     f.write("Total number of observations in range: " + str(total_observations) + '\n')
     f.close()
 
-def augment_data_rich_days(fitted_results):
+def add_predictions(fitted_results):
     '''This function is for creating augmented .nc TROPOMI files that were part of the hierarchical model run
     using "data rich" days.
 
@@ -547,129 +547,146 @@ def augment_data_rich_days(fitted_results):
     :type fitted_results: FittedResults
     '''
 
+    start_date, end_date, model_type = fitted_results.run_name.split('-')
+
     # Make the directory for the run name
     try:
-        os.makedirs(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name + '/data_rich_days')
+        os.makedirs(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name)
     except FileExistsError:
-        shutil.rmtree(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name + '/data_rich_days')
-        os.makedirs(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name + '/data_rich_days')
+        shutil.rmtree(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name)
+        os.makedirs(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name)
 
     # Read the summary.csv file for this model run to get the dates of the days that were used in the hierarchical fit.
     # Index by day
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', index_col=0)
 
-    for date in tqdm(summary_df.index, desc='Calculating predictions for data-rich days'):
+    # Read the metrics for the data poor days if we're checking doing predictions on data-poor days, index by date
+    if model_type == 'data_poor':
+        diagnostics_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/diagnostics.csv', index_col=0)
 
-        day_id = int(summary_df.loc[date].Day_ID)
+    for date in tqdm(summary_df.index, desc='Calculating predictions for ' + '-'.join(model_type.split('_')) + ' days'):
 
-        # Create string from the date datetime
-        date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
+        if model_type == 'data_rich':
+            do_predictions = True
+        elif model_type == 'data_poor':
+            days_diagnostics = diagnostics_df.loc[date]
+            if days_diagnostics.max_treedepth and \
+                days_diagnostics.e_bfmi and \
+                days_diagnostics.effective_sample_size and days_diagnostics.split_rhat:
+                if days_diagnostics.post_warmup_divergences <= 5:
+                    do_predictions = True
 
-        # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
-        # that are a couple hours apart. Usually one overpass captures the whole study region.
-        tropomi_overpasses = [file.split('/')[-1] for file in
-                              glob.glob(
-                                  ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+        if do_predictions:
+            day_id = int(summary_df.loc[date].day_id)
 
-        for filename in tropomi_overpasses:
+            # Create string from the date datetime
+            date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
 
-            # Unpack some of the data into arrays
-            no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes, no2_qa_values \
-                = unpack_no2(filename)
+            # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+            # that are a couple hours apart. Usually one overpass captures the whole study region.
+            tropomi_overpasses = [file.split('/')[-1] for file in
+                                  glob.glob(
+                                      ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
 
-            ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes, ch4_qa_values \
-                = unpack_ch4(filename)
+            for filename in tropomi_overpasses:
 
-            # Open the original CH4 file again to access some dimensions
-            ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
+                # Unpack some of the data into arrays
+                no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes, no2_qa_values \
+                    = unpack_no2(filename)
 
-            # Created the augmented netCDF4 dataset
-            augmented_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name +
-                                         '/data_rich_days/' + filename,
-                                         'w',
-                                         format='NETCDF4')
+                ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes, ch4_qa_values \
+                    = unpack_ch4(filename)
 
-            # The augmented file structure will emulate the original files for simplicity's sake.
-            product_group      = augmented_file.createGroup('PRODUCT')
-            support_data_group = product_group.createGroup('SUPPORT_DATA')
-            geolocations_group = support_data_group.createGroup('GEOLOCATIONS')
+                # Open the original CH4 file again to access some dimensions
+                ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
 
-            # Create the dimensions you need for the PRODUCT group, copy them from the CH4 observation file. We only
-            # need a few from the original files.
-            product_group.createDimension('time', ch4_file.groups['PRODUCT'].dimensions['time'].size)
-            product_group.createDimension('scanline', ch4_file.groups['PRODUCT'].dimensions['scanline'].size)
-            product_group.createDimension('ground_pixel', ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size)
-            product_group.createDimension('corner', ch4_file.groups['PRODUCT'].dimensions['corner'].size)
+                # Created the augmented netCDF4 dataset
+                augmented_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name +
+                                             '/' + filename,
+                                             'w',
+                                             format='NETCDF4')
 
-            # Create the variables for the methane mixing ratio and the methane mixing ratio precision
-            methane_mixing_ratio = product_group.createVariable('methane_mixing_ratio',
-                                                                np.float32,
-                                                                ('time', 'scanline', 'ground_pixel'))
+                # The augmented file structure will emulate the original files for simplicity's sake.
+                product_group      = augmented_file.createGroup('PRODUCT')
+                support_data_group = product_group.createGroup('SUPPORT_DATA')
+                geolocations_group = support_data_group.createGroup('GEOLOCATIONS')
 
-            methane_mixing_ratio_precision = product_group.createVariable('methane_mixing_ratio_precision',
-                                                                          np.float32,
-                                                                          ('time', 'scanline', 'ground_pixel'))
+                # Create the dimensions you need for the PRODUCT group, copy them from the CH4 observation file. We only
+                # need a few from the original files.
+                product_group.createDimension('time', ch4_file.groups['PRODUCT'].dimensions['time'].size)
+                product_group.createDimension('scanline', ch4_file.groups['PRODUCT'].dimensions['scanline'].size)
+                product_group.createDimension('ground_pixel', ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size)
+                product_group.createDimension('corner', ch4_file.groups['PRODUCT'].dimensions['corner'].size)
 
-            predictor_pixel_qa_value  = product_group.createVariable('prediction_pixel_qa_value',
-                                                                     np.float32,
-                                                                     ('time', 'scanline', 'ground_pixel'))
+                # Create the variables for the methane mixing ratio and the methane mixing ratio precision
+                methane_mixing_ratio = product_group.createVariable('methane_mixing_ratio',
+                                                                    np.float32,
+                                                                    ('time', 'scanline', 'ground_pixel'))
 
-            predictor_pixel_outside_of_zero = product_group.createVariable('prediction_pixel_outside_of_zero',
-                                                                           np.float32,
-                                                                           ('time', 'scanline', 'ground_pixel'))
+                methane_mixing_ratio_precision = product_group.createVariable('methane_mixing_ratio_precision',
+                                                                              np.float32,
+                                                                              ('time', 'scanline', 'ground_pixel'))
 
-            geolocations_group.createVariable('latitude_bounds',
-                                              np.float32,
-                                              ('time', 'scanline', 'ground_pixel', 'corner'))
+                predictor_pixel_qa_value  = product_group.createVariable('prediction_pixel_qa_value',
+                                                                         np.float32,
+                                                                         ('time', 'scanline', 'ground_pixel'))
 
-            geolocations_group.createVariable('longitude_bounds',
-                                              np.float32,
-                                              ('time', 'scanline', 'ground_pixel', 'corner'))
+                predictor_pixel_outside_of_zero = product_group.createVariable('prediction_pixel_outside_of_zero',
+                                                                               np.float32,
+                                                                               ('time', 'scanline', 'ground_pixel'))
 
-            # Interpolate the NO2 data at the locations of the CH4 pixels
-            interpolated_no2_pixel_values = griddata((no2_pixel_centre_longitudes.flatten(), no2_pixel_centre_latitudes.flatten()),
-                                                     no2_pixel_values.flatten(),
-                                                     (ch4_pixel_centre_longitudes, ch4_pixel_centre_latitudes),
-                                                     method='linear')
+                geolocations_group.createVariable('latitude_bounds',
+                                                  np.float32,
+                                                  ('time', 'scanline', 'ground_pixel', 'corner'))
 
-            interpolated_no2_pixel_value_precisions = griddata((no2_pixel_centre_longitudes.flatten(), no2_pixel_centre_latitudes.flatten()),
-                                                               no2_pixel_precisions.flatten(),
-                                                               (ch4_pixel_centre_longitudes, ch4_pixel_centre_latitudes),
-                                                               method='linear')
+                geolocations_group.createVariable('longitude_bounds',
+                                                  np.float32,
+                                                  ('time', 'scanline', 'ground_pixel', 'corner'))
 
-            interpolated_no2_qa_values = griddata((no2_pixel_centre_longitudes.flatten(), no2_pixel_centre_latitudes.flatten()),
-                                                  no2_qa_values.flatten(),
-                                                  (ch4_pixel_centre_longitudes, ch4_pixel_centre_latitudes),
-                                                  method='linear')
+                # Interpolate the NO2 data at the locations of the CH4 pixels
+                interpolated_no2_pixel_values = griddata((no2_pixel_centre_longitudes.flatten(), no2_pixel_centre_latitudes.flatten()),
+                                                         no2_pixel_values.flatten(),
+                                                         (ch4_pixel_centre_longitudes, ch4_pixel_centre_latitudes),
+                                                         method='linear')
 
-            # Initialise the augmented CH4 data and precision array entirely with the mask value.
-            augmented_methane_mixing_ratio                    = np.full(ch4_pixel_values.shape, 1e32)
-            augmented_methane_mixing_ratio_precision          = np.full(ch4_pixel_precisions.shape, 1e32)
-            augmented_methane_predictor_pixel_qa_value        = np.full(ch4_pixel_values.shape, 1e32)
-            augmented_methane_predictor_pixel_outside_of_zero =  np.full(ch4_pixel_values.shape, 1e32)
+                interpolated_no2_pixel_value_precisions = griddata((no2_pixel_centre_longitudes.flatten(), no2_pixel_centre_latitudes.flatten()),
+                                                                   no2_pixel_precisions.flatten(),
+                                                                   (ch4_pixel_centre_longitudes, ch4_pixel_centre_latitudes),
+                                                                   method='linear')
 
-            # Iterate over the raw CH4 data, and calculate predictions and overwrite as necessary.
-            for i in range(ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
-                for j in range(ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
-                    if (ct.EXTENT['Permian_Basin'][2] < ch4_pixel_centre_latitudes[i, j] < ct.EXTENT['Permian_Basin'][3]) and \
-                            (ct.EXTENT['Permian_Basin'][0] < ch4_pixel_centre_longitudes[i, j] < ct.EXTENT['Permian_Basin'][1]):
-                        # Perform a prediction whenever there is an available NO2 pixel, record qa value
-                        if interpolated_no2_pixel_values[i, j] < 1e30:
-                            obs_no2 = interpolated_no2_pixel_values[i, j] * 1e3  # Convert to mmol / m^2
-                            sigma_N = interpolated_no2_pixel_value_precisions[i, j] * 1e3  # Convert to mmol / m^2
-                            prediction, precision = fitted_results.predict_ch4(obs_no2, sigma_N, day_id)
-                            augmented_methane_mixing_ratio[i, j] = prediction
-                            augmented_methane_mixing_ratio_precision[i, j] = precision
-                            augmented_methane_predictor_pixel_qa_value[i, j] = interpolated_no2_qa_values[i, j]
-                            # Record whether or not the NO2 prediction value is at least 2 sigma away from 0.
-                            if obs_no2 / sigma_N >= 2.:
-                                augmented_methane_predictor_pixel_outside_of_zero[i, j] = 1
+                interpolated_no2_qa_values = griddata((no2_pixel_centre_longitudes.flatten(), no2_pixel_centre_latitudes.flatten()),
+                                                      no2_qa_values.flatten(),
+                                                      (ch4_pixel_centre_longitudes, ch4_pixel_centre_latitudes),
+                                                      method='linear')
 
-            methane_mixing_ratio[0,:,:]            = augmented_methane_mixing_ratio
-            methane_mixing_ratio_precision[0,:,:]  = augmented_methane_mixing_ratio_precision
-            predictor_pixel_qa_value[0,:,:]        = augmented_methane_predictor_pixel_qa_value
-            predictor_pixel_outside_of_zero[0,:,:] = augmented_methane_predictor_pixel_outside_of_zero
-            augmented_file.close()
+                # Initialise the augmented CH4 data and precision array entirely with the mask value.
+                augmented_methane_mixing_ratio                    = np.full(ch4_pixel_values.shape, 1e32)
+                augmented_methane_mixing_ratio_precision          = np.full(ch4_pixel_precisions.shape, 1e32)
+                augmented_methane_predictor_pixel_qa_value        = np.full(ch4_pixel_values.shape, 1e32)
+                augmented_methane_predictor_pixel_outside_of_zero =  np.full(ch4_pixel_values.shape, 1e32)
+
+                # Iterate over the raw CH4 data, and calculate predictions and overwrite as necessary.
+                for i in range(ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
+                    for j in range(ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
+                        if (ct.EXTENT['Permian_Basin'][2] < ch4_pixel_centre_latitudes[i, j] < ct.EXTENT['Permian_Basin'][3]) and \
+                                (ct.EXTENT['Permian_Basin'][0] < ch4_pixel_centre_longitudes[i, j] < ct.EXTENT['Permian_Basin'][1]):
+                            # Perform a prediction whenever there is an available NO2 pixel, record qa value
+                            if interpolated_no2_pixel_values[i, j] < 1e28:
+                                obs_no2 = interpolated_no2_pixel_values[i, j] * 1e3  # Convert to mmol / m^2
+                                sigma_N = interpolated_no2_pixel_value_precisions[i, j] * 1e3  # Convert to mmol / m^2
+                                prediction, precision = fitted_results.predict_ch4(obs_no2, sigma_N, day_id)
+                                augmented_methane_mixing_ratio[i, j] = prediction
+                                augmented_methane_mixing_ratio_precision[i, j] = precision
+                                augmented_methane_predictor_pixel_qa_value[i, j] = interpolated_no2_qa_values[i, j]
+                                # Record whether or not the NO2 prediction value is at least 2 sigma away from 0.
+                                if obs_no2 / sigma_N >= 2.:
+                                    augmented_methane_predictor_pixel_outside_of_zero[i, j] = 1
+
+                methane_mixing_ratio[0,:,:]            = augmented_methane_mixing_ratio
+                methane_mixing_ratio_precision[0,:,:]  = augmented_methane_mixing_ratio_precision
+                predictor_pixel_qa_value[0,:,:]        = augmented_methane_predictor_pixel_qa_value
+                predictor_pixel_outside_of_zero[0,:,:] = augmented_methane_predictor_pixel_outside_of_zero
+                augmented_file.close()
 
 def add_dry_air_column_densities(fitted_results):
     '''This function is for adding ERA5-calculated column densities of dry air at the location of the methane pixels.
@@ -677,6 +694,8 @@ def add_dry_air_column_densities(fitted_results):
     :param fitted_results: The model run that we'd like to calculate the dry air column densities for.
     :type fitted_results: FittedResults
     '''
+
+    start_date, end_date, model_type = fitted_results.run_name.split('-')
 
     # Open the ERA5 file. Contains surface pressure and total column water vapour for all of 2019.
     era5_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/ERA5/Permian_Basin_2019.nc', 'r')
@@ -692,7 +711,7 @@ def add_dry_air_column_densities(fitted_results):
     # Open the summary csv file for this model run
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv')
 
-    for date in tqdm(summary_df.Date, desc='Adding dry air column density at methane pixel locations'):
+    for date in tqdm(summary_df.date, desc='Adding dry air column density at methane pixel locations on ' + '-'.join(model_type.split('_')) + ' days'):
 
         # Create string from the date datetime
         date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
@@ -709,7 +728,7 @@ def add_dry_air_column_densities(fitted_results):
             original_ch4_file  = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
             # Open the augmented CH4 file containing all the predictions.
             augmented_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/'
-                                             + fitted_results.run_name + '/data_rich_days/' + filename, 'a', format='NETCDF4')
+                                             + fitted_results.run_name + '/' + filename, 'a', format='NETCDF4')
             # Access the reference observation time of the CH4 observations (seconds since 2010-01-01 00:00:00)
             ch4_base_time = np.array(original_ch4_file.groups['PRODUCT'].variables['time'])[0]
             # Access the timedelta of each scanline from the reference time (milliseconds since the reference time)
@@ -900,6 +919,8 @@ def write_plotable_quantities_csv_file(fitted_results):
     :type fitted_results: FittedResults
     '''
 
+    start_date, end_date, model_type = fitted_results.run_name
+    
     # Open the data summary csv file for this model run, index by date
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', index_col=0)
 

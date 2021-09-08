@@ -11,7 +11,8 @@ from src import plotting as p
 #-----------------------------------
 PROCESS_TROPOMI_FILES  = False
 PROCESS_DATA_POOR_DAYS = False
-FIT_POOR_DAYS          = True
+FIT_POOR_DAYS          = False
+AUGMENT_DATA_POOR_DAYS = False
 PROCESS_VIIRS_FILES    = False
 PERFORM_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
@@ -41,16 +42,11 @@ SHOW_AUGMENTED_CH4   = True
 ##=======================================================
 
 if PROCESS_DATA_POOR_DAYS:
-    #tp.make_directories(RUN_NAME)
-    #tp.create_dataset_data_poor_days(RUN_NAME)
-    tp.prepare_data_rich_dataset_for_cmdstanpy(RUN_NAME)
+    tp.make_directories(RUN_NAME)
+    tp.create_dataset_data_poor_days(RUN_NAME)
 
 if FIT_POOR_DAYS:
-
     fm.fit_data_poor_days(RUN_NAME)
-    # fm.nuts('data/' + RUN_NAME + '/data.json',
-    #         'models/' + MODEL + '.stan',
-    #         RUN_NAME)
 
 if PROCESS_TROPOMI_FILES:
     print('Preparing data for analysis:')
@@ -90,27 +86,32 @@ if COMPARE_MODELS:
 
 if AUGMENT_DATA_RICH_DAYS:
     results = sr.FittedResults(RUN_NAME)
-    tp.augment_data_rich_days(results)
+    tp.add_predictions(results)
     tp.add_dry_air_column_densities(results)
     tp.calculate_dry_air_column_density_residuals(results)
+
+if AUGMENT_DATA_POOR_DAYS:
+    results = sr.FittedResults(RUN_NAME)
+    tp.add_predictions(results)
+    tp.add_dry_air_column_densities(results)
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
     tp.write_plotable_quantities_csv_file(results)
-    tp.calculate_prediction_vs_poor_pixel_value(results)
+    #tp.calculate_prediction_vs_poor_pixel_value(results)
     # Need the RUN_NAME to include 'dropout' to run the below function.
     #tp.calculate_prediction_vs_heldout_pixel_value(results)
 
 if MAKE_PLOTS:
     results = sr.FittedResults(RUN_NAME)
     #results.calculate_fractional_metric()
-    p.trace(results,
-            PARAM,
-            date=DATE,
-            compare_to_ground_truth=SHOW_GROUND_TRUTH,
-            show_warmup_draws=SHOW_WARMUP_DRAWS)
-    # p.observations_scatterplot(DATE, RUN_NAME)
-    # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.trace(results,
+    #         PARAM,
+    #         date=DATE,
+    #         compare_to_ground_truth=SHOW_GROUND_TRUTH,
+    #         show_warmup_draws=SHOW_WARMUP_DRAWS)
+    p.observations_scatterplot(DATE, RUN_NAME)
+    p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.dropout_scatterplot(DATE, RUN_NAME)
     # p.reduced_chi_squared(RUN_NAME)
