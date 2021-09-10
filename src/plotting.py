@@ -1935,7 +1935,7 @@ def figure_4(date):
     # Show the plot on-screen.
     plt.show()
 
-def figure_6(fitted_results):
+def figure_6(date_range):
     '''This function is for creating and saving Figure 6 of the paper. Figure 6 will be a page-wide, 3-panel figure.
     Each panel is a page-wide row. Each panel shows a time series of a quantity calculated three times, once with just
     TROPOMI CH4 observations that pass the QA threshold, again with all TROPOMI CH4 observations, and then again including
@@ -1945,13 +1945,24 @@ def figure_6(fitted_results):
     :type fitted_results: FittedResults
     '''
 
-    # Open the plotables csv file.
-    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+    # Open the plotables csv files.
+    data_rich_plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/plotable_quantities.csv',
                                header=0,
                                index_col=0)
 
+    data_poor_plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/plotable_quantities.csv',
+                                         header=0,
+                                         index_col=0)
+
+    all_plotables_df = pd.concat([data_rich_plotables_df, data_poor_plotables_df])
+    all_plotables_df = all_plotables_df.sort_values(by='date')
     # Create the datetime objects for all the dates we have calculated quantities for.
-    datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in plotables_df.index]
+    all_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in all_plotables_df.index]
+
+    #TODO eventually get rid of this line.
+    data_rich_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in data_rich_plotables_df.index]
+    data_poor_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in data_poor_plotables_df.index]
+
 
     # Create figure, use gridspec to divide it up into subplots. 3-row subplot.
     plt.figure(figsize=(10.0, 12.0))
@@ -1964,16 +1975,37 @@ def figure_6(fitted_results):
     ax_1 = plt.subplot(G[0, :])
 
     # Plot the three quantities, all same color, but different markers and line styles.
-    ax_1.plot(datetimes,
-              plotables_df.original_pixel_coverage,
+    ax_1.plot(all_datetimes,
+              all_plotables_df.original_pixel_coverage * 100,
               color='darkorange',
-              marker='o',
-              linestyle='solid')
-    ax_1.plot(datetimes,
-              plotables_df.augmented_pixel_coverage,
+              linestyle='solid',
+              zorder=0)
+    ax_1.scatter(data_poor_datetimes,
+                 data_poor_plotables_df.original_pixel_coverage * 100,
+                 color='darkorange',
+                 facecolor='white',
+                 s=20,
+                 zorder=1)
+    ax_1.scatter(data_rich_datetimes,
+                 data_rich_plotables_df.original_pixel_coverage * 100,
+                 color='darkorange',
+                 zorder=2)
+
+    ax_1.plot(all_datetimes,
+              all_plotables_df.augmented_pixel_coverage * 100,
               color='green',
-              marker='o',
-              linestyle='dotted')
+              linestyle='dotted',
+              zorder=0)
+    ax_1.scatter(data_poor_datetimes,
+                 data_poor_plotables_df.augmented_pixel_coverage * 100,
+                 color='green',
+                 facecolor='white',
+                 s=20,
+                 zorder=1)
+    ax_1.scatter(data_rich_datetimes,
+                 data_rich_plotables_df.augmented_pixel_coverage * 100,
+                 color='green',
+                 zorder=2)
 
     # Plot the text of panel A
     ax_1.text(0.02, 0.94,
@@ -2001,18 +2033,44 @@ def figure_6(fitted_results):
     ax_2 = plt.subplot(G[1, :], sharex=ax_1)
 
     # Plot the three quantities, all same color, but different markers and line styles.
-    ax_2.plot(datetimes,
-              plotables_df.original_pixel_value_50,
+    ax_2.plot(all_datetimes,
+              all_plotables_df.original_pixel_value_50,
               color='darkorange',
-              marker='o',
               linestyle='solid',
-              label='Original')
-    ax_2.plot(datetimes,
-              plotables_df.augmented_pixel_value_50,
+              zorder=0)
+    ax_2.scatter(data_poor_datetimes,
+                 data_poor_plotables_df.original_pixel_value_50,
+                 color='darkorange',
+                 marker='o',
+                 facecolor='white',
+                 label='Original, data-poor',
+                 s=20,
+                 zorder=1)
+    ax_2.scatter(data_rich_datetimes,
+                 data_rich_plotables_df.original_pixel_value_50,
+                 color='darkorange',
+                 marker='o',
+                 label='Original, data-rich',
+                 zorder=2)
+
+
+    ax_2.plot(all_datetimes,
+              all_plotables_df.augmented_pixel_value_50,
               color='green',
-              marker='o',
               linestyle='dotted',
-              label='Including predictions')
+              zorder=0)
+    ax_2.scatter(data_poor_datetimes,
+                 data_poor_plotables_df.augmented_pixel_value_50,
+                 color='green',
+                 facecolor='white',
+                 label='With predictions, data-poor',
+                 s=20,
+                 zorder=1)
+    ax_2.scatter(data_rich_datetimes,
+                 data_rich_plotables_df.augmented_pixel_value_50,
+                 color='green',
+                 label='With predictions, data-rich',
+                 zorder=2)
 
     # Set the ylabel
     ax_2.set_ylabel(r'Median CH$_4$ concentration [ppbv]')
@@ -2042,21 +2100,41 @@ def figure_6(fitted_results):
     ax_3 = plt.subplot(G[2, :], sharex=ax_1)
 
     # We have methane load saved in the .csv file in mols of CH4, we will plot in kilotonnes
-    ax_3.plot(datetimes,
-              plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
+    ax_3.plot(all_datetimes,
+              all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
               color='darkorange',
               linestyle="solid",
-              marker='o')
+              zorder=0)
+    ax_3.scatter(data_poor_datetimes,
+                 data_poor_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
+                 color='darkorange',
+                 facecolor='white',
+                 s=20,
+                 zorder=1)
+    ax_3.scatter(data_rich_datetimes,
+                 data_rich_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
+                 color='darkorange',
+                 zorder=2)
 
-    ax_3.plot(datetimes,
-              plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
+    ax_3.plot(all_datetimes,
+              all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
               color='green',
-              marker='o',
-              linestyle='dotted')
+              linestyle='dotted',
+              zorder=0)
+    ax_3.scatter(data_poor_datetimes,
+                 data_poor_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
+                 color='green',
+                 facecolor='white',
+                 s=20,
+                 zorder=1)
+    ax_3.scatter(data_rich_datetimes,
+                 data_rich_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
+                 color='green',
+                 zorder=2)
 
     # ------------------------------------------------------------------------------------------------------
     ax_4 = ax_3.inset_axes([0.8, 0.0, 0.2, 1.0], sharey=ax_3)
-    sns.kdeplot(plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
+    sns.kdeplot(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
                 vertical=True,
                 ax=ax_4,
                 color='green',
@@ -2072,7 +2150,7 @@ def figure_6(fitted_results):
 
     # ------------------------------------------------------------------------------------------------------
     ax_5 = ax_3.inset_axes([0.8, 0.0, 0.2, 1.0], sharey=ax_3)
-    sns.kdeplot(plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
+    sns.kdeplot(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
                 vertical=True,
                 ax=ax_5,
                 color='darkorange',

@@ -919,8 +919,8 @@ def write_plotable_quantities_csv_file(fitted_results):
     :type fitted_results: FittedResults
     '''
 
-    start_date, end_date, model_type = fitted_results.run_name
-    
+    start_date, end_date, model_type = fitted_results.run_name.split('-')
+
     # Open the data summary csv file for this model run, index by date
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', index_col=0)
 
@@ -970,14 +970,14 @@ def write_plotable_quantities_csv_file(fitted_results):
     end_of_year                = datetime.datetime(year=2020, month=1, day=1)
     year_length                = end_of_year - start_of_year
 
-    for date in tqdm(summary_df.index, desc='Calculating results'):
+    day_type = '-'.join(model_type.split('_'))
+
+    for date in tqdm(summary_df.index, desc='Calculating results for ' + day_type + ' days'):
 
         # Set day_id, day_type, N and R
-        day_id   = summary_df.Day_ID.loc[date]
-        N        = summary_df.M.loc[date]
+        day_id   = summary_df.day_id.loc[date]
+        N        = summary_df.N.loc[date]
         R        = summary_df.R.loc[date]
-        #TODO change away from this hard-coding
-        day_type = 'data-rich'
 
         # Create string from the date datetime
         date_string = datetime.datetime.strptime(date, '%Y-%m-%d').strftime("%Y%m%d")
@@ -1055,8 +1055,7 @@ def write_plotable_quantities_csv_file(fitted_results):
             original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
 
             # Open the file of CH4 predictions.
-            prediction_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name +
-                                              '/data_rich_days/' + filename, 'r')
+            prediction_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name + '/' + filename, 'r')
 
             # Open the original NO2 file.
             original_no2_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/NO2/' + filename, 'r')

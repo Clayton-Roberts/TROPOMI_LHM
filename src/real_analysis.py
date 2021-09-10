@@ -19,7 +19,7 @@ PERFORM_FULL_FIT       = False
 COMPARE_MODELS         = False
 AUGMENT_DATA_RICH_DAYS = False
 MAKE_TIME_SERIES       = False
-MAKE_PLOTS             = False
+MAKE_PLOTS             = True
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
@@ -110,8 +110,8 @@ if MAKE_PLOTS:
     #         date=DATE,
     #         compare_to_ground_truth=SHOW_GROUND_TRUTH,
     #         show_warmup_draws=SHOW_WARMUP_DRAWS)
-    p.observations_scatterplot(DATE, RUN_NAME)
-    p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
+    # p.observations_scatterplot(DATE, RUN_NAME)
+    # p.regression_scatterplot(DATE, results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.alpha_beta_scatterplot(results, compare_to_ground_truth=SHOW_GROUND_TRUTH)
     # p.dropout_scatterplot(DATE, RUN_NAME)
     # p.reduced_chi_squared(RUN_NAME)
@@ -134,4 +134,4 @@ if MAKE_PLOTS:
     # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
-    # p.figure_6(results)
+    p.figure_6(START_DATE + '-' + END_DATE)
