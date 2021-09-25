@@ -1,7 +1,7 @@
-from src import constants as ct
-import os
+import constants as ct
 import pandas as pd
 import numpy as np
+import glob
 from tabulate import tabulate
 import random
 from scipy.stats import norm, mode
@@ -30,7 +30,7 @@ class FittedResults:
         S = 1000
 
         for i in tqdm(range(M), desc='Iterating over all observations'):
-            day_id     = dataset_df.Day_ID[i]
+            day_id     = dataset_df.day_id[i]
 
             obs_no2    = dataset_df.obs_NO2[i]
             obs_ch4    = dataset_df.obs_CH4[i]
@@ -115,13 +115,21 @@ class FittedResults:
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
+        # Open the dropout summary csv file, index by day_id
+        summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/summary.csv', index_col=1)
+
         # Empty list to hold daily frames for later concatenation
         daily_dfs = []
 
-        for day_id in tqdm(set(dropout_df.Day_ID), desc='Writing residuals'):
-            dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+        for day_id in tqdm(set(dropout_df.day_id), desc='Writing residuals'):
 
-            date = dropout_day_df.Date.iloc[0]
+            # This will always be true for data-rich days
+            if summary_df.loc[day_id].N < 80:
+                continue
+
+            dropout_day_df = dropout_df[dropout_df.day_id == day_id]
+
+            date = dropout_day_df.date.iloc[0]
 
             obs_CH4 = list(dropout_day_df.obs_CH4)
             obs_NO2 = list(dropout_day_df.obs_NO2)
@@ -140,7 +148,7 @@ class FittedResults:
                                            predictions,
                                            obs_CH4,
                                            residuals)),
-                                  columns=('Day_ID', 'Date', 'Predicted_value', 'Actual_value', 'Residuals'))
+                                  columns=('day_id', 'date', 'predicted_value', 'actual_value', 'residual'))
 
             daily_dfs.append(day_df)
 
@@ -156,14 +164,23 @@ class FittedResults:
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
+        # Open the summary file, index by day_id
+        original_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name.split('/')[0] + '/summary.csv', index_col=1)
+
+
         # Create dataframe for reduced chi-squared calculations
-        reduced_chi_squared_df = pd.DataFrame(columns=('Date', 'Day_ID', 'Reduced_chi_squared', 'N_observations'))
+        reduced_chi_squared_df = pd.DataFrame(columns=('date', 'day_id', 'reduced_chi_squared', 'N_holdout_observations'))
 
-        for day_id in tqdm(set(dropout_df.Day_ID), desc='Writing reduced chi-squared results'):
+        for day_id in tqdm(set(dropout_df.day_id), desc='Writing reduced chi-squared results'):
 
-            dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+            # This condition is always true for data-rich days, and we only want to calculate reduced
+            # chi squared for data poor days with N >= 100
+            if original_summary_df.loc[day_id].N < 100:
+                continue
 
-            date = dropout_day_df.Date.iloc[0]
+            dropout_day_df = dropout_df[dropout_df.day_id == day_id]
+
+            date = dropout_day_df.date.iloc[0]
 
             obs_CH4 = list(dropout_day_df.obs_CH4)
             sigma_C = list(dropout_day_df.sigma_C)
@@ -171,7 +188,7 @@ class FittedResults:
             sigma_N = list(dropout_day_df.sigma_N)
 
             n_Observations  = len(obs_CH4)
-            degrees_freedom = int(n_Observations - 3)
+            degrees_freedom = int(n_Observations - 8)
 
             pred_CH4       = []
             sigma_pred_CH4 = []
@@ -187,13 +204,13 @@ class FittedResults:
 
             reduced_chi_squared = chi_squared / degrees_freedom
 
-            reduced_chi_squared_df = reduced_chi_squared_df.append({'Date': date,
-                                                                    'Day_ID': day_id,
-                                                                    'Reduced_chi_squared': round(reduced_chi_squared, 2),
-                                                                    'N_observations': n_Observations},
+            reduced_chi_squared_df = reduced_chi_squared_df.append({'date': date,
+                                                                    'day_id': day_id,
+                                                                    'reduced_chi_squared': round(reduced_chi_squared, 2),
+                                                                    'N_holdout_observations': n_Observations},
                                                                    ignore_index=True)
 
-            reduced_chi_squared_df = reduced_chi_squared_df.sort_values(by='Date')
+            reduced_chi_squared_df = reduced_chi_squared_df.sort_values(by='date')
             reduced_chi_squared_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv',
                                           index=False)
 
@@ -259,10 +276,9 @@ class FittedResults:
 
         # First need to get the 'identifiers' of the files in the indicated outputs folder.
 
-        output_file_list = os.listdir(ct.FILE_PREFIX + '/outputs/' + run_name)
-        for file in output_file_list:
-            if 'stderr' or 'stdout' or 'diagnostic' or 'summary' or 'chi' in file:
-                output_file_list.remove(file)
+        output_file_list = [file.split('/')[-1] for file in
+                                  glob.glob(
+                                      ct.FILE_PREFIX + '/outputs/' + run_name + '/*[0-9]-[0-9].csv')]
 
         date_time = output_file_list[0].split('-')[1]
         model     = output_file_list[0].split('-')[0]
@@ -335,7 +351,6 @@ class FittedResults:
         self.median_values        = median_values
         self.draws              = draws
         self.run_name           = run_name
-
 
 
 

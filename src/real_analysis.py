@@ -10,26 +10,31 @@ from src import plotting as p
 #   --- Flags for real analysis ---
 #-----------------------------------
 PROCESS_TROPOMI_FILES  = False
+PROCESS_DATA_POOR_DAYS = False
+FIT_POOR_DAYS          = False
+AUGMENT_DATA_POOR_DAYS = False
 PROCESS_VIIRS_FILES    = False
-PERFORM_DROPOUT_FIT    = False
+PERFORM_DATA_RICH_DROPOUT_FIT    = False
+PERFORM_DATA_POOR_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
-COMPARE_MODELS         = False
+COMPARE_MODELS         = True
 AUGMENT_DATA_RICH_DAYS = False
 MAKE_TIME_SERIES       = False
-MAKE_PLOTS             = True
+MAKE_PLOTS             = False
+
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
 START_DATE = '20190101'
-END_DATE   = '20191231'
-MODEL      = 'non_centered'
+END_DATE   = '20190131'
+MODEL      = 'individual_error'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
 #-----------------------------------
 SHOW_GROUND_TRUTH    = False
-PARAM                = 'mu_alpha'
-DATE                 = '2019-01-31'
+PARAM                = 'alpha'
+DATE                 = '2019-01-05'
 QUANTITY             = 'CH4'
 SHOW_WARMUP_DRAWS    = False
 PLOT_STUDY_REGION    = False
@@ -38,17 +43,24 @@ SHOW_QAD_PIXELS_ONLY = True
 SHOW_AUGMENTED_CH4   = True
 ##=======================================================
 
+if PROCESS_DATA_POOR_DAYS:
+    tp.make_directories(RUN_NAME)
+    tp.create_dataset_data_poor_days(RUN_NAME)
+
+if FIT_POOR_DAYS:
+    fm.fit_data_poor_days(RUN_NAME)
+
 if PROCESS_TROPOMI_FILES:
     print('Preparing data for analysis:')
 
     tp.make_directories(RUN_NAME)
-    tp.create_dataset(RUN_NAME)
-    tp.prepare_dataset_for_cmdstanpy(RUN_NAME)
+    tp.create_dataset_data_rich_days(RUN_NAME)
+    tp.prepare_data_rich_dataset_for_cmdstanpy(RUN_NAME)
 
 if PROCESS_VIIRS_FILES:
     vp.generate_flare_time_series(RUN_NAME)
 
-if PERFORM_DROPOUT_FIT:
+if PERFORM_DATA_RICH_DROPOUT_FIT:
 
     dt.make_directories(RUN_NAME)
     dt.create_csvs(RUN_NAME)
@@ -62,6 +74,18 @@ if PERFORM_DROPOUT_FIT:
     results.write_reduced_chi_squared_csv()
     results.write_residuals_csv()
 
+if PERFORM_DATA_POOR_DROPOUT_FIT:
+
+    dt.make_directories(RUN_NAME)
+    dt.create_csvs(RUN_NAME)
+    dt.prepare_dataset_for_cmdstanpy(RUN_NAME)
+
+    fm.fit_data_poor_days(RUN_NAME + '/dropout')
+
+    results = sr.FittedResults(RUN_NAME + '/dropout')
+    results.write_reduced_chi_squared_csv()
+    results.write_residuals_csv()
+
 if PERFORM_FULL_FIT:
     print('Fitting with all observations:')
     fm.nuts('data/' + RUN_NAME + '/data.json',
@@ -70,20 +94,25 @@ if PERFORM_FULL_FIT:
 
 if COMPARE_MODELS:
     individual_error_fitted_model = sr.FittedResults(START_DATE + '-' + END_DATE + '-individual_error')
-    daily_mean_error_fitted_model = sr.FittedResults(START_DATE + '-' + END_DATE + '-daily_mean_error')
+    daily_mean_error_fitted_model = sr.FittedResults(START_DATE + '-' + END_DATE + '-data_rich')
 
     mc.compare_models(individual_error_fitted_model, daily_mean_error_fitted_model)
 
 if AUGMENT_DATA_RICH_DAYS:
     results = sr.FittedResults(RUN_NAME)
-    tp.augment_data_rich_days(results)
+    tp.add_predictions(results)
     tp.add_dry_air_column_densities(results)
     tp.calculate_dry_air_column_density_residuals(results)
+
+if AUGMENT_DATA_POOR_DAYS:
+    results = sr.FittedResults(RUN_NAME)
+    tp.add_predictions(results)
+    tp.add_dry_air_column_densities(results)
 
 if MAKE_TIME_SERIES:
     results = sr.FittedResults(RUN_NAME)
     tp.write_plotable_quantities_csv_file(results)
-    tp.calculate_prediction_vs_poor_pixel_value(results)
+    #tp.calculate_prediction_vs_poor_pixel_value(results)
     # Need the RUN_NAME to include 'dropout' to run the below function.
     #tp.calculate_prediction_vs_heldout_pixel_value(results)
 
@@ -119,4 +148,5 @@ if MAKE_PLOTS:
     # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
-    p.figure_6(results)
+    # p.figure_5(START_DATE + '-' + END_DATE)
+    # p.dropout_validation(START_DATE + '-' + END_DATE)

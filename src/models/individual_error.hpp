@@ -80,7 +80,7 @@ static constexpr std::array<const char*, 56> locations_array__ =
 class individual_error_model final : public model_base_crtp<individual_error_model> {
 
  private:
-  int M;
+  int N;
   int D;
   std::vector<int> group_sizes;
   std::vector<int> day_id;
@@ -121,14 +121,14 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
       
       pos__ = 1;
       current_statement__ = 37;
-      context__.validate_dims("data initialization","M","int",
+      context__.validate_dims("data initialization","N","int",
            std::vector<size_t>{});
-      M = std::numeric_limits<int>::min();
+      N = std::numeric_limits<int>::min();
       
       current_statement__ = 37;
-      M = context__.vals_i("M")[(1 - 1)];
+      N = context__.vals_i("N")[(1 - 1)];
       current_statement__ = 37;
-      check_greater_or_equal(function__, "M", M, 0);
+      check_greater_or_equal(function__, "N", N, 0);
       current_statement__ = 38;
       context__.validate_dims("data initialization","D","int",
            std::vector<size_t>{});
@@ -154,33 +154,33 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
                                group_sizes[(sym1__ - 1)], 1);
       }
       current_statement__ = 41;
-      validate_non_negative_index("day_id", "M", M);
+      validate_non_negative_index("day_id", "N", N);
       current_statement__ = 42;
       context__.validate_dims("data initialization","day_id","int",
-           std::vector<size_t>{static_cast<size_t>(M)});
-      day_id = std::vector<int>(M, std::numeric_limits<int>::min());
+           std::vector<size_t>{static_cast<size_t>(N)});
+      day_id = std::vector<int>(N, std::numeric_limits<int>::min());
       
       current_statement__ = 42;
       day_id = context__.vals_i("day_id");
       current_statement__ = 42;
-      for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+      for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
         current_statement__ = 42;
         check_greater_or_equal(function__, "day_id[sym1__]",
                                day_id[(sym1__ - 1)], 1);
       }
       current_statement__ = 42;
-      for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+      for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
         current_statement__ = 42;
         check_less_or_equal(function__, "day_id[sym1__]",
                             day_id[(sym1__ - 1)], D);
       }
       current_statement__ = 43;
-      validate_non_negative_index("NO2_obs", "M", M);
+      validate_non_negative_index("NO2_obs", "N", N);
       current_statement__ = 44;
       context__.validate_dims("data initialization","NO2_obs","double",
-           std::vector<size_t>{static_cast<size_t>(M)});
-      NO2_obs__ = Eigen::Matrix<double, -1, 1>(M);
-      new (&NO2_obs) Eigen::Map<Eigen::Matrix<double, -1, 1>>(NO2_obs__.data(), M);
+           std::vector<size_t>{static_cast<size_t>(N)});
+      NO2_obs__ = Eigen::Matrix<double, -1, 1>(N);
+      new (&NO2_obs) Eigen::Map<Eigen::Matrix<double, -1, 1>>(NO2_obs__.data(), N);
       
       
       {
@@ -190,7 +190,7 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         current_statement__ = 44;
         pos__ = 1;
         current_statement__ = 44;
-        for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+        for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
           current_statement__ = 44;
           assign(NO2_obs, NO2_obs_flat__[(pos__ - 1)],
             "assigning variable NO2_obs", index_uni(sym1__));
@@ -199,12 +199,12 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         }
       }
       current_statement__ = 45;
-      validate_non_negative_index("CH4_obs", "M", M);
+      validate_non_negative_index("CH4_obs", "N", N);
       current_statement__ = 46;
       context__.validate_dims("data initialization","CH4_obs","double",
-           std::vector<size_t>{static_cast<size_t>(M)});
-      CH4_obs__ = Eigen::Matrix<double, -1, 1>(M);
-      new (&CH4_obs) Eigen::Map<Eigen::Matrix<double, -1, 1>>(CH4_obs__.data(), M);
+           std::vector<size_t>{static_cast<size_t>(N)});
+      CH4_obs__ = Eigen::Matrix<double, -1, 1>(N);
+      new (&CH4_obs) Eigen::Map<Eigen::Matrix<double, -1, 1>>(CH4_obs__.data(), N);
       
       
       {
@@ -214,7 +214,7 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         current_statement__ = 46;
         pos__ = 1;
         current_statement__ = 46;
-        for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+        for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
           current_statement__ = 46;
           assign(CH4_obs, CH4_obs_flat__[(pos__ - 1)],
             "assigning variable CH4_obs", index_uni(sym1__));
@@ -223,12 +223,12 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         }
       }
       current_statement__ = 47;
-      validate_non_negative_index("sigma_N", "M", M);
+      validate_non_negative_index("sigma_N", "N", N);
       current_statement__ = 48;
       context__.validate_dims("data initialization","sigma_N","double",
-           std::vector<size_t>{static_cast<size_t>(M)});
-      sigma_N__ = Eigen::Matrix<double, -1, 1>(M);
-      new (&sigma_N) Eigen::Map<Eigen::Matrix<double, -1, 1>>(sigma_N__.data(), M);
+           std::vector<size_t>{static_cast<size_t>(N)});
+      sigma_N__ = Eigen::Matrix<double, -1, 1>(N);
+      new (&sigma_N) Eigen::Map<Eigen::Matrix<double, -1, 1>>(sigma_N__.data(), N);
       
       
       {
@@ -238,7 +238,7 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         current_statement__ = 48;
         pos__ = 1;
         current_statement__ = 48;
-        for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+        for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
           current_statement__ = 48;
           assign(sigma_N, sigma_N_flat__[(pos__ - 1)],
             "assigning variable sigma_N", index_uni(sym1__));
@@ -247,18 +247,18 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         }
       }
       current_statement__ = 48;
-      for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+      for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
         current_statement__ = 48;
         check_greater_or_equal(function__, "sigma_N[sym1__]",
                                sigma_N[(sym1__ - 1)], 0);
       }
       current_statement__ = 49;
-      validate_non_negative_index("sigma_C", "M", M);
+      validate_non_negative_index("sigma_C", "N", N);
       current_statement__ = 50;
       context__.validate_dims("data initialization","sigma_C","double",
-           std::vector<size_t>{static_cast<size_t>(M)});
-      sigma_C__ = Eigen::Matrix<double, -1, 1>(M);
-      new (&sigma_C) Eigen::Map<Eigen::Matrix<double, -1, 1>>(sigma_C__.data(), M);
+           std::vector<size_t>{static_cast<size_t>(N)});
+      sigma_C__ = Eigen::Matrix<double, -1, 1>(N);
+      new (&sigma_C) Eigen::Map<Eigen::Matrix<double, -1, 1>>(sigma_C__.data(), N);
       
       
       {
@@ -268,7 +268,7 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         current_statement__ = 50;
         pos__ = 1;
         current_statement__ = 50;
-        for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+        for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
           current_statement__ = 50;
           assign(sigma_C, sigma_C_flat__[(pos__ - 1)],
             "assigning variable sigma_C", index_uni(sym1__));
@@ -277,7 +277,7 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
         }
       }
       current_statement__ = 50;
-      for (int sym1__ = 1; sym1__ <= M; ++sym1__) {
+      for (int sym1__ = 1; sym1__ <= N; ++sym1__) {
         current_statement__ = 50;
         check_greater_or_equal(function__, "sigma_C[sym1__]",
                                sigma_C[(sym1__ - 1)], 0);
@@ -398,9 +398,9 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
               rvalue(epsilon, "epsilon", index_uni(d))));
         }
         current_statement__ = 32;
-        validate_non_negative_index("CH4_hat", "M", M);
+        validate_non_negative_index("CH4_hat", "N", N);
         Eigen::Matrix<local_scalar_t__, -1, 1> CH4_hat;
-        CH4_hat = Eigen::Matrix<local_scalar_t__, -1, 1>(M);
+        CH4_hat = Eigen::Matrix<local_scalar_t__, -1, 1>(N);
         stan::math::fill(CH4_hat, DUMMY_VAR__);
         
         current_statement__ = 33;
@@ -413,9 +413,9 @@ class individual_error_model final : public model_base_crtp<individual_error_mod
                 rvalue(kappa, "kappa", index_multi(day_id), index_uni(2))),
               NO2_obs)), "assigning variable CH4_hat");
         current_statement__ = 34;
-        validate_non_negative_index("sigma", "M", M);
+        validate_non_negative_index("sigma", "N", N);
         Eigen::Matrix<local_scalar_t__, -1, 1> sigma;
-        sigma = Eigen::Matrix<local_scalar_t__, -1, 1>(M);
+        sigma = Eigen::Matrix<local_scalar_t__, -1, 1>(N);
         stan::math::fill(sigma, DUMMY_VAR__);
         
         current_statement__ = 35;
