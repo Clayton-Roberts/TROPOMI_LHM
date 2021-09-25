@@ -1,4 +1,4 @@
-from src import constants as ct
+import constants as ct
 from tqdm import tqdm
 import os
 import shutil
@@ -38,19 +38,19 @@ def create_csvs(run_name):
 
     full_dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/'+ run_name + '/dataset.csv')
 
-    day_ids = set(full_dataset_df.Day_ID)
+    day_ids = set(full_dataset_df.day_id)
 
     dropout_dfs   = []
     remaining_dfs = []
 
     # A summary dataframe for overall metrics of this run's remaining data.
-    remaining_summary_df = pd.DataFrame(columns=(('Date', 'Day_ID', 'M')))
+    remaining_summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N')))
 
     for day_id in tqdm(day_ids, desc='Splitting data-rich days into holdout sets'):
 
-        date = full_summary_df.loc[day_id].Date
+        date = full_summary_df.loc[day_id].date
 
-        day_df = full_dataset_df[full_dataset_df.Day_ID == day_id]
+        day_df = full_dataset_df[full_dataset_df.day_id == day_id]
 
         total_observations            = len(day_df.obs_NO2)
         number_dropout_observations   = int(total_observations*0.2)
@@ -68,7 +68,7 @@ def create_csvs(run_name):
         remaining_dfs.append(remaining_df)
 
         # Append summary of this day to the summary dataframe.
-        remaining_summary_df = remaining_summary_df.append({'Date': date, 'Day_ID': day_id, 'M': number_remaining_observations},
+        remaining_summary_df = remaining_summary_df.append({'date': date, 'day_id': day_id, 'N': number_remaining_observations},
                                                            ignore_index=True)
     # Sort the summary dataframe by date.
     remaining_summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/summary.csv', index=False)
@@ -93,14 +93,14 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     obs_no2 = list(df.obs_NO2)
     obs_ch4 = list(df.obs_CH4)
-    day_id = list(df.Day_ID)
+    day_id = list(df.day_id)
     D = int(np.max(day_id))
     M = len(obs_no2)
 
     group_sizes = []
     for i in range(D):
         day = i + 1
-        size = len(df[df.Day_ID == day])
+        size = len(df[df.day_id == day])
         group_sizes.append(size)
 
     avg_sigma_N = []
@@ -108,28 +108,28 @@ def prepare_dataset_for_cmdstanpy(run_name):
 
     for i in range(D):
         day = i + 1
-        mean_sigma_N = round(np.mean(df[df.Day_ID == day].sigma_N), 2)
-        mean_sigma_C = round(np.mean(df[df.Day_ID == day].sigma_C), 2)
+        mean_sigma_N = np.mean(df[df.day_id == day].sigma_N)
+        mean_sigma_C = np.mean(df[df.day_id == day].sigma_C)
 
         avg_sigma_N.append(mean_sigma_N)
         avg_sigma_C.append(mean_sigma_C)
 
-    sigma_N = list(df.sigma_N)
-    sigma_C = list(df.sigma_C)
+    # sigma_N = list(df.sigma_N)
+    # sigma_C = list(df.sigma_C)
 
     data = {}
-    data['M'] = M
+    data['N'] = M
     data['D'] = D
     data['day_id'] = day_id
     data['group_sizes'] = group_sizes
     data['NO2_obs'] = obs_no2
     data['CH4_obs'] = obs_ch4
-    if ('daily_mean_error' in run_name) or ('non_centered' in run_name):
-        data['sigma_N'] = avg_sigma_N
-        data['sigma_C'] = avg_sigma_C
-    else:
-        data['sigma_N'] = sigma_N
-        data['sigma_C'] = sigma_C
+    #if ('daily_mean_error' in run_name) or ('non_centered' in run_name):
+    data['sigma_N'] = avg_sigma_N
+    data['sigma_C'] = avg_sigma_C
+    # else:
+    #     data['sigma_N'] = sigma_N
+    #     data['sigma_C'] = sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/data.json', 'w') as outfile:
         json.dump(data, outfile)

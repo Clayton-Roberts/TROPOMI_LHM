@@ -14,18 +14,20 @@ PROCESS_DATA_POOR_DAYS = False
 FIT_POOR_DAYS          = False
 AUGMENT_DATA_POOR_DAYS = False
 PROCESS_VIIRS_FILES    = False
-PERFORM_DROPOUT_FIT    = False
+PERFORM_DATA_RICH_DROPOUT_FIT    = False
+PERFORM_DATA_POOR_DROPOUT_FIT    = False
 PERFORM_FULL_FIT       = False
-COMPARE_MODELS         = False
+COMPARE_MODELS         = True
 AUGMENT_DATA_RICH_DAYS = False
 MAKE_TIME_SERIES       = False
-MAKE_PLOTS             = True
+MAKE_PLOTS             = False
+
 #-----------------------------------
 #   --- Flags for real runs ---
 #-----------------------------------
 START_DATE = '20190101'
-END_DATE   = '20191231'
-MODEL      = 'data_poor'
+END_DATE   = '20190131'
+MODEL      = 'individual_error'
 RUN_NAME   = START_DATE + '-' + END_DATE + '-' + MODEL
 #-----------------------------------
 #    --- Flags for plotting ---
@@ -58,7 +60,7 @@ if PROCESS_TROPOMI_FILES:
 if PROCESS_VIIRS_FILES:
     vp.generate_flare_time_series(RUN_NAME)
 
-if PERFORM_DROPOUT_FIT:
+if PERFORM_DATA_RICH_DROPOUT_FIT:
 
     dt.make_directories(RUN_NAME)
     dt.create_csvs(RUN_NAME)
@@ -72,6 +74,18 @@ if PERFORM_DROPOUT_FIT:
     results.write_reduced_chi_squared_csv()
     results.write_residuals_csv()
 
+if PERFORM_DATA_POOR_DROPOUT_FIT:
+
+    dt.make_directories(RUN_NAME)
+    dt.create_csvs(RUN_NAME)
+    dt.prepare_dataset_for_cmdstanpy(RUN_NAME)
+
+    fm.fit_data_poor_days(RUN_NAME + '/dropout')
+
+    results = sr.FittedResults(RUN_NAME + '/dropout')
+    results.write_reduced_chi_squared_csv()
+    results.write_residuals_csv()
+
 if PERFORM_FULL_FIT:
     print('Fitting with all observations:')
     fm.nuts('data/' + RUN_NAME + '/data.json',
@@ -80,7 +94,7 @@ if PERFORM_FULL_FIT:
 
 if COMPARE_MODELS:
     individual_error_fitted_model = sr.FittedResults(START_DATE + '-' + END_DATE + '-individual_error')
-    daily_mean_error_fitted_model = sr.FittedResults(START_DATE + '-' + END_DATE + '-daily_mean_error')
+    daily_mean_error_fitted_model = sr.FittedResults(START_DATE + '-' + END_DATE + '-data_rich')
 
     mc.compare_models(individual_error_fitted_model, daily_mean_error_fitted_model)
 
@@ -134,4 +148,5 @@ if MAKE_PLOTS:
     # p.figure_2(results, DATE)
     # p.figure_3(results)
     # p.figure_4(DATE)
-    p.figure_6(START_DATE + '-' + END_DATE)
+    # p.figure_5(START_DATE + '-' + END_DATE)
+    # p.dropout_validation(START_DATE + '-' + END_DATE)

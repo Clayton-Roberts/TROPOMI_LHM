@@ -8,8 +8,8 @@ import shutil
 import datetime as datetime
 from   tqdm import tqdm
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
-from   src import constants as ct
-from   src import tropomi_processing as tp
+import constants as ct
+import tropomi_processing as tp
 
 def install_cmdstan():
     '''After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
@@ -46,7 +46,8 @@ def set_data_rich_initial_values(run_name):
     # By inspection we know that these are sensible values to initialise at.
     inits = {'mu': [1860, 600.0],
              'Sigma': [[180, -750.0], [-750.0, 50.0]],
-             'gamma': np.random.normal(12, 2, num_days).tolist()}
+             'gamma': np.random.normal(12, 2, num_days).tolist(),
+             'epsilon': np.random.normal(0, 1, (num_days, 2)).tolist()}
 
     return inits
 
@@ -54,7 +55,12 @@ def fit_data_poor_days(run_name):
     '''This function is for fitting the non-hierarchical model to all the data poor days.'''
     #TODO docstring.
 
-    start_date, end_date, model_name = run_name.split('-')
+    if 'dropout' in run_name:
+        dropout_run = True
+        start_date, end_date, model_name = run_name.split('/')[0].split('-')
+    else:
+        dropout_run = False
+        start_date, end_date, model_name = run_name.split('-')
 
     # First need to make four empty, dummy csvs in the data poor directory.
     todays_datetime = datetime.datetime.now()
@@ -73,10 +79,16 @@ def fit_data_poor_days(run_name):
     # Create the csv to track diagnostic metrics
     metrics_df = pd.DataFrame(columns=['date', 'day_id', 'N', 'max_treedepth', 'post_warmup_divergences', 'e_bfmi', 'effective_sample_size', 'split_rhat'])
 
-    for date in tqdm(data_poor_summary_df.index, desc='Fitting model to data-poor days'): # TODO replace this with an actual loop over days
+    for date in tqdm(data_poor_summary_df.index, desc='Fitting model to data-poor days'):
 
         day_id = int(data_poor_summary_df.loc[date].day_id)
         N      = int(data_poor_summary_df.loc[date].N)
+
+        if dropout_run:
+            if N < 80: # Implies there are at least 20 observations in the holdout set.
+                # Skip doing the dropout analysis for this run as there are not enough data points to
+                # do an accurate reduced chi squared fit.
+                continue
 
         # Make the dummy directory in the outputs directory
         try:
@@ -209,7 +221,7 @@ def nuts(data_path, model_path, output_directory):
 
     run_name       = data_path.split('/data.json')[0].split('data/')[-1]
 
-    if 'data_rich' in run_name:
+    if ('data_rich' in run_name) or ('individual_error' in run_name):
         initial_values = set_data_rich_initial_values(run_name)
     elif 'data_poor' in run_name:
         initial_values = set_data_poor_initial_values(run_name)

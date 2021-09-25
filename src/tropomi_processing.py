@@ -1,5 +1,5 @@
-from src import constants as ct
-from src import results as sr
+import constants as ct
+import results as sr
 import netCDF4 as nc4
 import numpy as np
 from pyproj import Geod
@@ -39,8 +39,13 @@ def make_directories(run_name):
 def prepare_data_poor_dataset_for_cmdstanpy(run_name, date):
     #TODO make docstring
 
-    df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', delimiter=',',
-                     header=0, index_col=1)  # Indexing by Date instead of Day_ID
+    if 'dropout' not in run_name:
+        df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', delimiter=',',
+                        header=0, index_col=1)  # Indexing by Date instead of Day_ID
+    else:
+        df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/remaining_dataset.csv', delimiter=',',
+                         header=0, index_col=1)  # Indexing by Date instead of Day_ID
+
 
     days_df = df[df.index == date]
 
@@ -131,8 +136,12 @@ def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs']     = obs_no2
     data['CH4_obs']     = obs_ch4
-    data['sigma_N']     = avg_sigma_N
-    data['sigma_C']     = avg_sigma_C
+    if 'data_rich' in run_name:
+        data['sigma_N']     = avg_sigma_N
+        data['sigma_C']     = avg_sigma_C
+    elif 'individual_error' in run_name:
+        data['sigma_N'] = df.sigma_N.tolist()
+        data['sigma_C'] = df.sigma_C.tolist()
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
@@ -453,7 +462,7 @@ def create_dataset_data_rich_days(run_name):
     daily_dfs = []
 
     # A summary dataframe for overall metrics of for this run's data.
-    summary_df = pd.DataFrame(columns=(('Date', 'Day_ID', 'M', 'R')))
+    summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
 
     # Create the list of dates to iterate over.
     num_days  = (end_datetime - start_datetime).days + 1
@@ -504,7 +513,7 @@ def create_dataset_data_rich_days(run_name):
                 total_observations += len(total_obs_NO2)
 
                 # Append summary of this day to the summary dataframe.
-                summary_df = summary_df.append({'Date': date, 'Day_ID': day_id, 'M': len(total_obs_NO2),
+                summary_df = summary_df.append({'date': date, 'day_id': day_id, 'N': len(total_obs_NO2),
                                                 'R': round(r, 2)},
                                                ignore_index=True)
 
@@ -517,7 +526,7 @@ def create_dataset_data_rich_days(run_name):
                                                total_sigma_C,
                                                total_latitude,
                                                total_longitude)),
-                                      columns=('Day_ID', 'Date', 'obs_NO2', 'obs_CH4',
+                                      columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
                                                'sigma_N', 'sigma_C', 'latitude', 'longitude'))
 
                 # Append the dataframe to this day to the list of dataframes to later concatenate together.
