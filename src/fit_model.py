@@ -85,7 +85,7 @@ def fit_data_poor_days(run_name):
         N      = int(data_poor_summary_df.loc[date].N)
 
         if dropout_run:
-            if N < 80: # Implies there are at least 20 observations in the holdout set.
+            if N < 80: # Implies there are less than 20 observations in the holdout set.
                 # Skip doing the dropout analysis for this run as there are not enough data points to
                 # do an accurate reduced chi squared fit.
                 continue
@@ -221,16 +221,13 @@ def nuts(data_path, model_path, output_directory):
 
     run_name       = data_path.split('/data.json')[0].split('data/')[-1]
 
-    if ('data_rich' in run_name) or ('individual_error' in run_name):
-        initial_values = set_data_rich_initial_values(run_name)
-    elif 'data_poor' in run_name:
-        initial_values = set_data_poor_initial_values(run_name)
+    initial_values = set_data_rich_initial_values(run_name)
 
     # Fit the model.
     fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
                        save_warmup=True,
-                       iter_sampling=1000, seed=101, show_progress=True,
+                       iter_sampling=1000, seed=101, show_progress=False,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,

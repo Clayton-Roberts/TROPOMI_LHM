@@ -65,6 +65,10 @@ def create_csvs(run_name):
     :type run_name: string
     '''
 
+    start_date, end_date, model = run_name.split('-')
+
+    day_type = '-'.join(model.split('_'))
+
     full_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/'+ run_name + '/summary.csv', index_col=1)
 
     full_dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/'+ run_name + '/dataset.csv')
@@ -77,7 +81,7 @@ def create_csvs(run_name):
     # A summary dataframe for overall metrics of this run's remaining data.
     remaining_summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N')))
 
-    for day_id in tqdm(day_ids, desc='Splitting data-rich days into holdout sets'):
+    for day_id in tqdm(day_ids, desc='Splitting ' + day_type + ' days into holdout sets'):
 
         date = full_summary_df.loc[day_id].date
 
@@ -147,9 +151,6 @@ def prepare_dataset_for_cmdstanpy(run_name):
         avg_sigma_N.append(mean_sigma_N)
         avg_sigma_C.append(mean_sigma_C)
 
-    # sigma_N = list(df.sigma_N)
-    # sigma_C = list(df.sigma_C)
-
     data = {}
     data['N'] = M
     data['D'] = D
@@ -157,12 +158,8 @@ def prepare_dataset_for_cmdstanpy(run_name):
     data['group_sizes'] = group_sizes
     data['NO2_obs'] = obs_no2
     data['CH4_obs'] = obs_ch4
-    #if ('daily_mean_error' in run_name) or ('non_centered' in run_name):
     data['sigma_N'] = avg_sigma_N
     data['sigma_C'] = avg_sigma_C
-    # else:
-    #     data['sigma_N'] = sigma_N
-    #     data['sigma_C'] = sigma_C
 
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/data.json', 'w') as outfile:
         json.dump(data, outfile)
