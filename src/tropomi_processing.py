@@ -333,6 +333,48 @@ def get_colocated_measurements(filename):
 
     return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
 
+#TODO working on a new function here for final script, this is good for refactoring.
+def convert_TROPOMI_observations_to_csvs(date_range):
+    '''This function will iterate over a date range, determine if the TROPOMI observation on this day is either
+    "data-rich" or "data-poor", and then write the observations into the appropriate .csv file.
+
+    :param date_range: The date range of the analysis. Must be a string formatted as "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    '''
+
+#TODO rename this function after it's been fully made and is successfully working
+def make_all_directories(date_range):
+    '''This function is for creating all the necessary directories needed to store processed TROPOMI observations as
+    data and the directories needed to store the outputs.
+
+    :param date_range: The date range of the analysis. Must be a string formatted as "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    '''
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich')
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor')
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich')
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
+
 def create_dataset_data_poor_days(run_name):
     # TODO Make docstring
 

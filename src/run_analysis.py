@@ -29,7 +29,7 @@ print('Analysis date range: ' +
 print('=========================================================')
 
 # Process TROPOMI observations, prepare data for the model if the day is data-rich.
-run_name = start_datetime.strftime('%Y%m%d') + '-' + end_datetime.strftime('%Y%m%d') + '-data_rich'
-tropomi_processing.make_directories(run_name)
-tropomi_processing.create_dataset_data_rich_days(run_name)
-tropomi_processing.prepare_data_rich_dataset_for_cmdstanpy(run_name)
+date_range = start_datetime.strftime('%Y%m%d') + '-' + end_datetime.strftime('%Y%m%d')
+tropomi_processing.make_all_directories(date_range)
+#tropomi_processing.create_dataset_data_rich_days(run_name)
+#tropomi_processing.prepare_data_rich_dataset_for_cmdstanpy(run_name)
