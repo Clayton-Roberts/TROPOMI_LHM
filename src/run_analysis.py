@@ -20,16 +20,28 @@ import tropomi_processing
 
 start_datetime = datetime.strptime(str(sys.argv[1]), '%Y-%m-%d')
 end_datetime   = datetime.strptime(str(sys.argv[2]), '%Y-%m-%d')
-
-print('=========================================================')
+print('=========================================================\n')
 print('Analysis date range: ' +
       start_datetime.strftime('%B %-d, %Y') +
       ' - ' +
       end_datetime.strftime('%B %-d, %Y') )
-print('=========================================================')
-
-# Process TROPOMI observations, prepare data for the model if the day is data-rich.
+print('\n=========================================================\n')
 date_range = start_datetime.strftime('%Y%m%d') + '-' + end_datetime.strftime('%Y%m%d')
 tropomi_processing.make_all_directories(date_range)
-#tropomi_processing.create_dataset_data_rich_days(run_name)
+print('Created the following directories:')
+print('    [1] data/' + date_range + '-data_rich')
+print('    [2] data/' + date_range + '-data_poor')
+print('    [3] outputs/' + date_range + '-data_rich')
+print('    [4] outputs/' + date_range + '-data_poor')
+print('\n=========================================================\n')
+tropomi_processing.convert_TROPOMI_observations_to_csvs(date_range)
+print('\n=========================================================\n')
+dropout_tests.make_all_directories(date_range)
+print('Created the following directories:')
+print('    [1] data/' + date_range + '-data_rich/dropout')
+print('    [2] data/' + date_range + '-data_poor/dropout')
+print('    [3] outputs/' + date_range + '-data_rich/dropout')
+print('    [4] outputs/' + date_range + '-data_poor/dropout')
+print('\n=========================================================\n')
+
 #tropomi_processing.prepare_data_rich_dataset_for_cmdstanpy(run_name)

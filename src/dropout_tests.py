@@ -6,6 +6,37 @@ import pandas as pd
 import numpy as np
 import json
 
+def make_all_directories(date_range):
+    '''This function is for creating all the necessary directories needed to split the TROPOMI observations into holdout
+    sets of data for both data-rich and data-poor days.
+
+    :param date_range: The date range of the analysis. Must be a string formatted as "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    '''
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich/dropout')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich/dropout')
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich/dropout')
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dropout')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dropout')
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dropout')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout')
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout')
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout')
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout')
+
+
 def make_directories(run_name):
     '''This function checks that the relevant directory is made in data/run_name for the subdivided dropout datasets.
 
@@ -68,7 +99,9 @@ def create_csvs(run_name):
         remaining_dfs.append(remaining_df)
 
         # Append summary of this day to the summary dataframe.
-        remaining_summary_df = remaining_summary_df.append({'date': date, 'day_id': day_id, 'N': number_remaining_observations},
+        remaining_summary_df = remaining_summary_df.append({'date': date,
+                                                            'day_id': day_id,
+                                                            'N': number_remaining_observations},
                                                            ignore_index=True)
     # Sort the summary dataframe by date.
     remaining_summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/summary.csv', index=False)
