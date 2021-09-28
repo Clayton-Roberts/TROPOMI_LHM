@@ -21,9 +21,7 @@
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dropout_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/dropout_tests.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/results.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/run_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/run_analysis.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,19 +53,19 @@
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/src/outputs/20190101-20191231-data_poor" />
-      <recent name="$PROJECT_DIR$/src/data/20190101-20191231-non_centered/dropout" />
-      <recent name="$PROJECT_DIR$/src/data/20190201-20190228-individual_error/dropout" />
-      <recent name="$PROJECT_DIR$/src/data/20190201-20190228-individual_error" />
-      <recent name="$PROJECT_DIR$/src/data/20190101-20190131-individual_error/dropout" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/augmented_observations/20190101-20191231-data_rich" />
       <recent name="$PROJECT_DIR$/src/outputs/20190101-20191231-data_poor" />
       <recent name="$PROJECT_DIR$/src/outputs/20190101-20191231-data_rich" />
       <recent name="$PROJECT_DIR$/src/data/20190101-20191231-data_rich" />
       <recent name="$PROJECT_DIR$/src/outputs/20190101-20191231" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/outputs/20190101-20191231-data_poor" />
+      <recent name="$PROJECT_DIR$/src/data/20190101-20191231-non_centered/dropout" />
+      <recent name="$PROJECT_DIR$/src/data/20190201-20190228-individual_error/dropout" />
+      <recent name="$PROJECT_DIR$/src/data/20190201-20190228-individual_error" />
+      <recent name="$PROJECT_DIR$/src/data/20190101-20190131-individual_error/dropout" />
     </key>
   </component>
   <component name="RunManager" selected="Python.real_analysis">
@@ -190,10 +188,10 @@
     <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="-1403" y="431" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1629838630242">
+    <state x="-1403" y="431" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1632757961090">
       <screen x="-1920" y="120" width="1920" height="1080" />
     </state>
-    <state x="-1403" y="431" key="#com.intellij.fileTypes.FileTypeChooser/-848.1200.1440.900/0.0.1920.1200/-1920.120.1920.1080@-1920.120.1920.1080" timestamp="1629838630242" />
+    <state x="-1403" y="431" key="#com.intellij.fileTypes.FileTypeChooser/-848.1200.1440.900/0.0.1920.1200/-1920.120.1920.1080@-1920.120.1920.1080" timestamp="1632757961090" />
     <state x="388" y="259" key="#com.intellij.fileTypes.FileTypeChooser/0.0.1440.900@0.0.1440.900" timestamp="1626344234971" />
     <state x="517" y="311" key="#com.intellij.fileTypes.FileTypeChooser/250.1080.1440.900/0.0.1920.1080@0.0.1920.1080" timestamp="1629204676231" />
     <state x="-1286" y="621" width="950" height="851" key="#xdebugger.evaluate" timestamp="1631718486054">
@@ -371,7 +369,7 @@
       <breakpoints>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/fit_model.py</url>
-          <line>12</line>
+          <line>14</line>
           <option name="timeStamp" value="55" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -416,12 +414,12 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/fit_model.py</url>
-          <line>46</line>
+          <line>65</line>
           <option name="timeStamp" value="193" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/fit_model.py</url>
-          <line>226</line>
+          <line>248</line>
           <option name="timeStamp" value="200" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -441,7 +439,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/fit_model.py</url>
-          <line>90</line>
+          <line>110</line>
           <option name="timeStamp" value="222" />
         </line-breakpoint>
       </breakpoints>

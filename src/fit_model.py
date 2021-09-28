@@ -3,9 +3,11 @@ import numpy as np
 import cmdstanpy
 import pandas as pd
 import os
+import sys
 import glob
 import shutil
 import datetime as datetime
+from   contextlib import contextmanager
 from   tqdm import tqdm
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
 import constants as ct
@@ -18,13 +20,30 @@ def install_cmdstan():
 
     cmdstanpy.install_cmdstan(ct.CMDSTAN_PATH)
 
-def set_data_poor_initial_values(run_name):
+def delete_console_printed_lines(check_for_divergences):
+    '''This function deletes the output printed to the console when fitting data-poor days. NOTE: This clears the
+    CmdStanPy automatic output of fitting a model, and we call this so that the console doesn't get messy when we fit the
+    data-poor days. This is slightly hardcoded and so if there are any automatically generated messages from Stan that
+    aren't either "good" messages or notifications about a few divergences, this the console will get messy. E.g., if you
+    have high split R-hat, then the script won't print pretty on the screen.
+
+    :param check_for_divergences: A parameter to determine whether to remove an extra few lines.
+    :type check_for_divergences: bool
+    '''
+
+    # Move up one line, clear current line and leave the cursor at its beginning, 32 times:
+    print(''.join(["\033[F\x1b[2K\r"]*32))
+
+    if check_for_divergences:
+        # Move up one line, clear current line and leave the cursor at its beginning, 3 times:
+        print(''.join(["\033[F\x1b[2K\r"]*4))
+
+def set_data_poor_initial_values():
     '''This function sets the initial values for the sampler to something sensible.
     :param run_name: The name of the run.
     :type run_name: string
     '''
 
-    # By inspection we know that these are sensible values to initialise at.
     inits = {
              'gamma': 12,
              'epsilon': np.random.normal(0, 1, 5).tolist()
@@ -79,6 +98,7 @@ def fit_data_poor_days(run_name):
     # Create the csv to track diagnostic metrics
     metrics_df = pd.DataFrame(columns=['date', 'day_id', 'N', 'max_treedepth', 'post_warmup_divergences', 'e_bfmi', 'effective_sample_size', 'split_rhat'])
 
+
     for date in tqdm(data_poor_summary_df.index, desc='Fitting model to data-poor days'):
 
         day_id = int(data_poor_summary_df.loc[date].day_id)
@@ -100,7 +120,7 @@ def fit_data_poor_days(run_name):
         # Create the json data for this particular day and put it in the dummy directory
         tp.prepare_data_poor_dataset_for_cmdstanpy(run_name, date)
 
-        initial_values = set_data_poor_initial_values(run_name)
+        initial_values = set_data_poor_initial_values()
 
         model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/models/data_poor.stan')
 
@@ -176,6 +196,8 @@ def fit_data_poor_days(run_name):
                                         'effective_sample_size': effective_sample_size,
                                         'split_rhat': split_rhat},
                                        ignore_index=True)
+
+        delete_console_printed_lines(check_for_divergences)
 
     del master_csv_1['dummy_data']
     del master_csv_2['dummy_data']
