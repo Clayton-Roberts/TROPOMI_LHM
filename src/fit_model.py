@@ -36,7 +36,7 @@ def delete_console_printed_lines(check_for_divergences):
 
     if check_for_divergences:
         # Move up one line, clear current line and leave the cursor at its beginning, 3 times:
-        print(''.join(["\033[F\x1b[2K\r"]*4))
+        print(''.join(["\033[F\x1b[2K\r"]*3))
 
 def set_data_poor_initial_values():
     '''This function sets the initial values for the sampler to something sensible.
