@@ -550,6 +550,38 @@ def make_all_directories(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
 
+def copy_data():
+    '''This function is for copying over data-rich observations for the month of January to two new directories
+    so that we can carry out some model comparison.'''
+
+    full_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/20190101-20191231-data_rich/summary.csv', index_col=0)
+
+    reduced_summary_df = pd.DataFrame(columns=['date','day_id','N','R'])
+
+    full_dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/20190101-20191231-data_rich/dataset.csv')
+
+    daily_observations = []
+
+    for date in full_summary_df.index:
+        if datetime.datetime.strptime(date, '%Y-%m-%d') < datetime.datetime(year=2019, month=2, day=1):
+            series = full_summary_df.loc[date]
+            reduced_summary_df = reduced_summary_df.append({'date': date,
+                                                            'day_id': int(series.day_id),
+                                                            'N': int(series.N),
+                                                            'R': series.R},
+                                                           ignore_index=True)
+
+            observation_df = full_dataset_df[full_dataset_df.date == date]
+
+            daily_observations.append(observation_df)
+
+    reduced_summary_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-data_rich/summary.csv', index=False)
+    reduced_summary_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-individual_error/summary.csv', index=False)
+
+    reduced_observations_df = pd.concat(daily_observations, ignore_index=True)
+    reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-data_rich/dataset.csv', index=False)
+    reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-individual_error/dataset.csv', index=False)
+
 def create_dataset_data_poor_days(run_name):
     # TODO Make docstring
 

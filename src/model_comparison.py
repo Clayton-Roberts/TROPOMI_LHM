@@ -1,4 +1,4 @@
-from src import constants as ct
+import constants as ct
 import numpy as np
 import time
 
