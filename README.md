@@ -7,6 +7,8 @@ This repository contains the code used to conduct the analysis and generate the 
 2. [Conda environment setup](#conda_environment_setup)
 3. [Installing CmdStanPy and CmdStan](#cmdstanpy_install)
 4. [Retrieving observations](#retrieving_observations)
+    * Example 1
+    * Exmaple 2
 
 ## Cloning the repository <a name="cloning_the_repository"></a>
 
@@ -50,12 +52,22 @@ The Sentinal-5P Data Offer at the [Copernicus Open Access Hub](https://scihub.co
   ```bash
   <local_folder_name>/src/observations/NO2/
   ```
+  
+Each filename should be automatically downloaded with a filename of the format %Y%m%dT%H%M%S.nc e.g., 20190101T201359.nc. WARNING: These files will require nearly 200 gigabytes of storage space!
 
 ### Copernicus Climate Change Service
-Talk about ERA5
+ERA5 reanalysis data is available at the [Copernicus Climate Change Service](https://cds.climate.copernicus.eu/cdsapp#!/dataset/reanalysis-era5-single-levels?tab=overview) for download (see the "Download data" tab at the link). This work made use of their single-level hourly spatial grids of "Surface pressure" and "Total column water vapour", for the hours 1800-2200, the spatial extent -106 through -99 degrees longitude and 29 through 35 degrees latitude, for each day in 2019. Use their GUI and download this data to a single file at the following location: 
+
+```bash
+<local_folder_name>/src/observations/ERA5/Permain_Basin_2019.nc
+```
 
 ### Earth Observation Group, Colorado School of Mines
-Talk about VIIRS Nightfire here. 
+Our work also made use of VIIRS Nightfire observations of lit flare stacks in the Permian Basin for the year 2019 (we use V3.0). These observations are hosted by the [Earth Observation Group](https://eogdata.mines.edu/products/vnf/) at the Colorado School of Mines. I unfortunately found no other way to download these observations for each day in 2019 except for by hand and unzipping the .zip files for each day. You will need to submit an application to EOG for access (see the link and "Download" section). After downloaded the zip files for the relevant days, unzip their contents (should be csv files with names of format VNF_npp_dXXXXXXXX_noaa_v30-ez.csv) to the following location: 
+
+```bash
+<local_folder_name>/src/observations/VIIRS/
+```
 
 ### Global Monitoring Laboratory, NOAA
 Talk about methane background data
