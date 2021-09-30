@@ -822,7 +822,7 @@ def add_predictions(fitted_results):
     if model_type == 'data_poor':
         diagnostics_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/diagnostics.csv', index_col=0)
 
-    for date in tqdm(summary_df.index, desc='Calculating predictions for ' + '-'.join(model_type.split('_')) + ' days'):
+    for date in tqdm(summary_df.index, desc='Adding predictions on ' + '-'.join(model_type.split('_')) + ' days'):
 
         if model_type == 'data_rich':
             do_predictions = True
@@ -1084,13 +1084,16 @@ def calculate_dry_air_column_density_residuals(fitted_results):
     :type fitted_results: FittedResults
     '''
 
+    start_date, end_date, model = fitted_results.run_name.split('-')
+
     # Read in the summary.csv file, index by date
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
                              index_col=0)
 
     dry_air_column_dfs = []
 
-    for date in tqdm(summary_df.index, desc='Calulating difference between ERA5 and TROPOMI dry air column densities'):
+    for date in tqdm(summary_df.index, desc='Calulating difference between ERA5 and TROPOMI dry air column densities on '
+                                            + '-'.join(model.split('_')) + ' days'):
 
         era5_columns    = []
         tropomi_columns = []
