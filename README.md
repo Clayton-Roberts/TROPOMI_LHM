@@ -99,7 +99,8 @@ CMDSTAN_PATH = '/absolute/path/to/your/local/install/of/CmdStan'
 After downloading the necessary observations/data and configuring CmdStanPy, you should be able to replicate the entire analysis by running 
 
 ```bash
-yourmachine <local_folder_name> % python src/run_analysis.py
+conda activate TROPOMI_LHM
+(TROPOMI_LHM) yourmachine <local_folder_name> % python src/run_analysis.py
 ```
 
 It will take several hours to complete the entire analysis, progress bars will be printed to demonstrate that the code is running. 
