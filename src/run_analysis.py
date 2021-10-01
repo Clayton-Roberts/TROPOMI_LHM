@@ -1,20 +1,10 @@
-# This file is going to be the script that is run from the command line to replicate the work of the paper.
-# It will import other modules of code, make directories and will write various outputs.
-# It will take in a date range as two command line arguments to indicate the date range you want to run the
-# analysis for.
 from datetime import datetime
-import sys
 import dropout_tests
 import fit_model
 import results
 import tropomi_processing
 import model_comparison
-
-# Fourth, fit the individual error model for month of January.
-# Fifth, check if the data-rich model has been run for month of January, run it if it doesn't exist yet.
-# Sixth, do the comparison between the two models.
-# 7th, print all outputs to screen and write a single massive output file, that goes through all metrics, and quantities that went into the paper.
-# 8th, make the figures and save them to a folder in the figures folder.
+import plotting
 
 start_datetime = datetime.strptime('2019-01-01', '%Y-%m-%d')
 end_datetime   = datetime.strptime('2019-11-30', '%Y-%m-%d')
@@ -137,17 +127,54 @@ print('\nCreated the following files:\n')
 print('     [1] outputs/20190101-20190131-data_rich/model_comparison.txt')
 print('     [2] outputs/20190101-20190131-individual_error/model_comparison.txt')
 print('\n=========================================================\n')
-print('Adding predictions from the model for all days and locations possible.')
+print('Adding predictions from the model for data-rich days.')
 print('This will take some time, please be patient.\n')
-results = results.FittedResults(date_range + '-data_rich')
-tropomi_processing.add_predictions(results)
-tropomi_processing.add_dry_air_column_densities(results)
-tropomi_processing.calculate_dry_air_column_density_residuals(results)
-print('\n')
-results = results.FittedResults(date_range + '-data_poor')
-tropomi_processing.add_predictions(results)
-tropomi_processing.add_dry_air_column_densities(results)
-tropomi_processing.calculate_dry_air_column_density_residuals(results)
-
-
+#fitted_results = results.FittedResults(date_range + '-data_rich')
+#tropomi_processing.add_predictions(fited_results)
+#tropomi_processing.add_dry_air_column_densities(fitted_results)
+#tropomi_processing.calculate_dry_air_column_density_residuals(fitted_results)
+print('\nCreated the following files and directories:\n')
+print('    [1] augmented_observations/' + date_range + '-data_rich/*.nc')
+print('    [2] outputs/' + date_range + '-data_rich/dry_air_column_density_residuals.csv')
+print('\n=========================================================\n')
+print('Adding predictions from the model for data-poor days.')
+print('This will take some time, please be patient.\n')
+# fitted_results = results.FittedResults(date_range + '-data_poor')
+# tropomi_processing.add_predictions(fitted_results)
+# tropomi_processing.add_dry_air_column_densities(fitted_results)
+# tropomi_processing.calculate_dry_air_column_density_residuals(fitted_results)
+print('\nCreated the following files and directories:\n')
+print('    [1] augmented_observations/' + date_range + '-data_poor/*.nc')
+print('    [2] outputs/' + date_range + '-data_poor/dry_air_column_density_residuals.csv')
+print('\n=========================================================\n')
+print('Calculating final results on data-rich days.')
+print('This may take some time, please be patient.')
+#fitted_results = results.FittedResults(date_range + '-data_rich')
+#tropomi_processing.calculate_final_results(fitted_results)
+print('\nCreated the following files:')
+print('    [1] outputs/' + date_range + '-data_rich/outputs/final_results.csv')
+print('\n=========================================================\n')
+print('Calculating final results on data-poor days.')
+print('This may take some time, please be patient.')
+#fitted_results = results.FittedResults(date_range + '-data_poor')
+#tropomi_processing.calculate_final_results(fitted_results)
+print('\nCreated the following files:')
+print('    [1] outputs/' + date_range + '-data_poor/outputs/final_results.csv')
+print('\n=========================================================\n')
+print('\n Creating and saving the figures that were used in the paper.\n')
+fitted_results = results.FittedResults(date_range + '-data_rich')
+plotting.make_directory(date_range)
+plotting.figure_1(date_range, '2019-01-31')
+plotting.figure_2(date_range)
+plotting.figure_3(fitted_results, '2019-01-31')
+plotting.figure_4(fitted_results)
+plotting.figure_5(date_range, '2019-01-31')
+plotting.figure_6(date_range)
+print('\nCreated the following files:\n')
+print('    [1] figures/' + date_range + '/figure_1.png')
+print('    [2] figures/' + date_range + '/figure_2.pdf')
+print('    [3] figures/' + date_range + '/figure_3.pdf')
+print('    [4] figures/' + date_range + '/figure_4.pdf')
+print('    [5] figures/' + date_range + '/figure_5.png')
+print('    [6] figures/' + date_range + '/figure_6.pdf')
 

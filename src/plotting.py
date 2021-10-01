@@ -17,10 +17,9 @@ import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import cartopy.feature as cfeature
 from scipy import stats
-from src import constants as ct
-
-# Some global parameters for all plots.
-#mpl.rcParams['font.family']    = 'Avenir'
+import os
+import shutil
+import constants as ct
 
 class PlotHelper:
     #TODO make the docstring
@@ -114,7 +113,7 @@ class PlotHelper:
             if include_predictions:
                 #TODO change this hardcoded model run name
                 g = nc4.Dataset(ct.FILE_PREFIX +
-                                '/augmented_observations/20190101-20191231-data_poor/data_rich_days/' +
+                                '/augmented_observations/20190101-20191130-data_rich/' +
                                 filename,
                                 'r')
 
@@ -166,6 +165,18 @@ class PlotHelper:
 
         self.latitudes = latitude_corners
         self.longitudes = longitude_corners
+
+def make_directory(date_range):
+    '''This function makes a sub-directory in the figures directory that will hold the figures of this run.
+
+    :param date_range: The date range of this analysis. Must be of the format "%Y%m%d-%Y%m%d"
+    :type date_range: str
+    '''
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/figures/' + date_range)
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/figures/' + date_range)
+        os.makedirs(ct.FILE_PREFIX + '/figures/' + date_range)
 
 def tropomi_plot(date, molecule,
                  plot_study_region=False,
@@ -1242,12 +1253,15 @@ def no2_ch4_flarestack_crossplot(fitted_results, molecule, show_augmented_load=F
 # The functions below are used to create the functions that went into the paper.
 # ---------------------------------------------------------------------------------
 
-def figure_1(date):
+def figure_1(date_range, date):
     '''This function is for creating and saving Figure 1 of the paper. Figure 1 will be a page-wide, two-panel figure
     of TROPOMI and VIIRS observations that establish the physical context of the paper.
 
+    :param date_range: The date range of the analysis that this plot is being created for. Must be of the format
+      "%Y%m%d-%Y%m%d".
+    :type date_range: str
     :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
-    :type date: string
+    :type date: str
     '''
 
     # Get the relevant .nc4 files of the TROPOMI observations using the date.
@@ -1415,15 +1429,116 @@ def figure_1(date):
               verticalalignment='center', )
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_1.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_1.png',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-    # Show the plot on-screen.
-    plt.show()
+def figure_2(date_range):
+    '''This figure is for creating a two-panel figure, left panel is a histogram of reduced chi-squared values,
+    the right panel is a scatterplot of predictions vs observations. Will include both data-poor and data-rich days.
 
-def figure_2(fitted_results, date):
+    :param date_range: The date range we want to plot this for.'''
+
+    # Read the csv files we need.
+    data_rich_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/reduced_chi_squared.csv')
+    data_poor_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout/reduced_chi_squared.csv')
+    data_rich_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
+    data_poor_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
+
+    # Set up the figure. Page-wide, two-panel figure.
+    plt.figure(figsize=(7.2, 3.45))
+    G = gridspec.GridSpec(1, 2, wspace=0.05)
+
+    # -------------------------------------------------------------------------------------------
+    ax_1 = plt.subplot(G[0, 0])
+
+    combined_residuals_df = pd.concat([data_poor_residuals_df, data_rich_residuals_df])
+
+    ax_1.scatter(combined_residuals_df.actual_value,
+                 combined_residuals_df.predicted_value,
+                 alpha=0.2,
+                 s=8,
+                 zorder=1)
+
+    x_values = np.arange(np.min(combined_residuals_df.actual_value), np.max(combined_residuals_df.actual_value))
+    y_values = x_values
+
+    ax_1.plot(x_values,
+              y_values,
+              color='red',
+              zorder=2)
+
+    ax_1.set_yticks([1840, 1880, 1920, 1960])
+    ax_1.set_yticklabels(['1840', '1880', '1920', '1960'],
+                         rotation=90,
+                         va='center')
+    ax_1.set_xlabel(r'$\mathrm{CH}_4^{\mathrm{obs}}$ [ppbv]')
+    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
+    ax_1.grid(color='grey',
+              linestyle='dashed',
+              zorder=0)
+
+    # Plot the text of panel A
+    ax_1.text(0.05, 0.94,
+              'A',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes,
+              fontsize=20)
+
+    # -------------------------------------------------------------------------------------------
+
+    ax_2 = plt.subplot(G[0, 1])
+
+    combined_chi_squared_df = pd.concat([data_rich_chi_squared_df, data_poor_chi_squared_df])
+
+    sns.distplot(combined_chi_squared_df.reduced_chi_squared,
+                kde=True,
+                 ax=ax_2)
+
+
+    ax_2.set_yticks([0.5, 1, 1.5, 2])
+    ax_2.set_yticklabels(['0.5', '1.0', '1.5', '2.0'],
+                         rotation=270,
+                         va='center')
+    ax_2.yaxis.tick_right()
+    ax_2.set_ylabel('Density',
+                    rotation=270,
+                    labelpad=15)
+    ax_2.yaxis.set_label_position("right")
+    ax_2.set_xlabel(r'$\chi^{2}_{\nu}$')
+
+    # Plot the text of panel A
+    ax_2.text(0.05, 0.94,
+              'B',
+              color='red',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes,
+              fontsize=20)
+
+    # -------------------------------------------------------------------------------------------
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_2.pdf',
+                bbox_inches='tight',
+                pad_inches=0.01)
+
+    #TODO remove this stuff, needs to go into the 'final function'
+    # Print some numbers to the screen that we want:
+    # r, p_value = stats.pearsonr(combined_residuals_df.actual_value, combined_residuals_df.predicted_value)
+    # print('Predictions are correlated to observations with R={:.2f}'.format(r))
+    # print('Rough probability of an uncorrelated system producing a \n '
+    #       'Pearson correlation R at least as extreme as the one we obtain: {:.2f}'.format(p_value))
+    #
+    # abs_all_residuals = combined_residuals_df.residual
+    # mean_residual     = np.mean(abs_all_residuals)
+    # stddev_residual   = np.std(abs_all_residuals)
+    #
+    # print('Mean residual is {:.2f} ppbv '.format(mean_residual) + 'with standard deviation {:.2f}'.format(stddev_residual))
+
+def figure_3(fitted_results, date):
     '''This function is for creating and saving Figure 2 of the paper. Figure 2 will be a page-wide, two-panel figure.
     Left hand panel is a scatterplot of observations with errorbars and a subset of regression lines. Right hand panel
     is an alpha-beta cross plot with errorbars in both dimensions, with a 95% CI ellipse plotted underneath using the
@@ -1434,6 +1549,8 @@ def figure_2(fitted_results, date):
     :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
     :type date: string
     '''
+
+    start_date, end_date, model = fitted_results.run_name.split('-')
 
     # Set up the figure. Page-wide, two-panel figure.
     plt.figure(figsize=(7.2, 4.45))
@@ -1446,7 +1563,7 @@ def figure_2(fitted_results, date):
     np.random.seed(101)
 
     # Open the plotables csv file.
-    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
                                header=0,
                                index_col=0)
 
@@ -1463,7 +1580,7 @@ def figure_2(fitted_results, date):
 
     # Read in the observations the date in question.
     dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/dataset.csv', header=0)
-    date_df    = dataset_df[dataset_df.Date == date]
+    date_df    = dataset_df[dataset_df.date == date]
 
     # Needed to plot the regression lines.
     x_min, x_max = np.min(date_df.obs_NO2), np.max(date_df.obs_NO2)
@@ -1601,13 +1718,12 @@ def figure_2(fitted_results, date):
               verticalalignment='center', )
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_2.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_3.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
-    plt.show()
 
-def figure_3(fitted_results):
-    '''This function is for plotting Figure 3 of the paper. Figure 3 is a page-wide figure of two time series together
+def figure_4(fitted_results):
+    '''This function is for plotting Figure 4 of the paper. Figure 3 is a page-wide figure of two time series together
     of :math:`\\beta` values and flare stack counts for the specified run. There is also an extra panel on the right
     showing a cross plot of :math:`\\beta` and flare stack counts.
 
@@ -1616,7 +1732,7 @@ def figure_3(fitted_results):
     '''
 
     # Open the plotables csv file.
-    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+    plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
                                header=0,
                                index_col=0)
 
@@ -1764,22 +1880,20 @@ def figure_3(fitted_results):
               color='grey')
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_3.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_4.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-    # Show the plot on-screen.
-    plt.show()
-
-def figure_4(date):
+def figure_5(date_range, date):
     '''This function is for creating and saving Figure 4 of the paper. Figure 4 will be a page-wide, four-panel figure.
     Each panel will be for one of QA'd TROPOMI methane observations, "all" observations, and then the addition to each
     of the augmented observations based off of the corresponding nitrogen dioxide observation.
 
-    :param fitted_results: The results of this model run.
-    :type fitted_results: FittedResults
+    :param date_range: The date range of the analysis that this plot is a part of. Must be of the format
+      "%Y%m%d-%Y%m%d".
+    :type date_range: str
     :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
-    :type date: string
+    :type date: str
     '''
 
     # Get the relevant .nc4 files of the TROPOMI  CH4 observation using the date.
@@ -1930,15 +2044,12 @@ def figure_4(date):
               fontsize=20)
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_4.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_5.png',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-    # Show the plot on-screen.
-    plt.show()
-
-def figure_5(date_range):
+def figure_6(date_range):
     '''This function is for creating and saving Figure 6 of the paper. Figure 6 will be a page-wide, 3-panel figure.
     Each panel is a page-wide row. Each panel shows a time series of a quantity calculated three times, once with just
     TROPOMI CH4 observations that pass the QA threshold, again with all TROPOMI CH4 observations, and then again including
@@ -1949,11 +2060,11 @@ def figure_5(date_range):
     '''
 
     # Open the plotables csv files.
-    data_rich_plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/plotable_quantities.csv',
+    data_rich_plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/final_results.csv',
                                header=0,
                                index_col=0)
 
-    data_poor_plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/plotable_quantities.csv',
+    data_poor_plotables_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/final_results.csv',
                                          header=0,
                                          index_col=0)
 
@@ -2204,159 +2315,47 @@ def figure_5(date_range):
               fontsize=20)
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/paper/figure_5.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-    # Show the plot on-screen.
-    plt.show()
-
+    #TODO remove this and put it in the 'final function'
+    #
     # Print some of the numbers we want for the paper.
-    mean_original_pixel_coverage               = np.mean(all_plotables_df.original_pixel_coverage * 100)
-    standard_deviation_original_pixel_coverage = np.std(all_plotables_df.original_pixel_coverage * 100)
-    mean_augmented_pixel_coverage              = np.mean(all_plotables_df.augmented_pixel_coverage * 100)
-    standard_deviation_augmented_pixel_coverage = np.std(all_plotables_df.augmented_pixel_coverage * 100)
-
-    # Print some numbers of the masses
-    mean_original_above_background_mass                = np.mean(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3) # in kilotonnes!
-    standard_deviation_original_above_background_mass  = np.std(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3)
-    mean_augmented_above_background_mass               = np.mean(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3)  # in kilotonnes!
-    standard_deviation_augmented_above_background_mass = np.std(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3)
-
-    print('The original mean daily pixel coverage over the study region was {:.2f}%, '.format(mean_original_pixel_coverage)
-          + 'with a standard deviation of {:.2f}%.'.format(standard_deviation_original_pixel_coverage))
-
-    print('After adding predictions, the mean daily pixel coverage over the study region was {:.2f}%, '.format(mean_augmented_pixel_coverage)
-          + 'with a standard deviation of {:.2f}%.'.format(standard_deviation_augmented_pixel_coverage))
-
-    print('The original mean daily above-background mass over the study region was {:.2f} kilotonnes, '.format(
-        mean_original_above_background_mass)
-          + 'with a standard deviation of {:.2f} kilotonnes.'.format(standard_deviation_original_above_background_mass))
-
-    print('After adding predictions, the mean above-background mass over the study region was {:.2f} kilotonnes, '.format(
-        mean_augmented_above_background_mass)
-          + 'with a standard deviation of {:.2f} kilotonnes.'.format(standard_deviation_augmented_above_background_mass))
-
-    era5_dry_air_column_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dry_air_column_densities.csv')
-    n = len(era5_dry_air_column_df.Residuals)
-    # Calculate Pearson R
-    r, p_value = stats.pearsonr(era5_dry_air_column_df.ERA5_dry_air_column, era5_dry_air_column_df.TROPOMI_dry_air_column)
-    # Calculate mean and standard deviation of residuals
-    era5_mean   = np.mean(era5_dry_air_column_df.Residuals)
-    era5_stddev = np.std(era5_dry_air_column_df.Residuals)
-    era5_rmsd   = np.sqrt(np.sum([residual**2 for residual in era5_dry_air_column_df.Residuals])/n)
-
-    print("ERA5 dry air column densities are correlated with TROPOMI values with Pearson R of {:.2f}.".format(r))
-    print("Residuals between the two have mean of {:.2f}, ".format(era5_mean) + 'with standard deviation {:.2f}.'.format(era5_stddev))
-    print('We use their RMSD of {:.2f} '.format(era5_rmsd) + 'for error propagation.')
-
-
-
-def dropout_validation(date_range):
-    '''This figure is for creating a two-panel figure, left panel is a histogram of reduced chi-squared values,
-    the right panel is a scatterplot of predictions vs observations. Will include both data-poor and data-rich days.
-
-    :param date_range: The date range we want to plot this for.'''
-
-    # Read the csv files we need.
-    data_rich_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/reduced_chi_squared.csv')
-    data_poor_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout/reduced_chi_squared.csv')
-    data_rich_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
-    data_poor_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
-
-    # Set up the figure. Page-wide, two-panel figure.
-    plt.figure(figsize=(7.2, 3.45))
-    G = gridspec.GridSpec(1, 2, wspace=0.05)
-
-    # -------------------------------------------------------------------------------------------
-    ax_1 = plt.subplot(G[0, 0])
-
-    combined_residuals_df = pd.concat([data_poor_residuals_df, data_rich_residuals_df])
-
-    ax_1.scatter(combined_residuals_df.actual_value,
-                 combined_residuals_df.predicted_value,
-                 alpha=0.2,
-                 s=8,
-                 zorder=1)
-
-    x_values = np.arange(np.min(combined_residuals_df.actual_value), np.max(combined_residuals_df.actual_value))
-    y_values = x_values
-
-    ax_1.plot(x_values,
-              y_values,
-              color='red',
-              zorder=2)
-
-    ax_1.set_yticks([1840, 1880, 1920, 1960])
-    ax_1.set_yticklabels(['1840', '1880', '1920', '1960'],
-                         rotation=90,
-                         va='center')
-    ax_1.set_xlabel(r'$\mathrm{CH}_4^{\mathrm{obs}}$ [ppbv]')
-    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
-    ax_1.grid(color='grey',
-              linestyle='dashed',
-              zorder=0)
-
-    # Plot the text of panel A
-    ax_1.text(0.05, 0.94,
-              'A',
-              color='red',
-              horizontalalignment='center',
-              verticalalignment='center',
-              transform=ax_1.transAxes,
-              fontsize=20)
-
-    # -------------------------------------------------------------------------------------------
-
-    ax_2 = plt.subplot(G[0, 1])
-
-    combined_chi_squared_df = pd.concat([data_rich_chi_squared_df, data_poor_chi_squared_df])
-
-    sns.distplot(combined_chi_squared_df.reduced_chi_squared,
-                kde=True,
-                 ax=ax_2)
-
-
-    ax_2.set_yticks([0.5, 1, 1.5, 2])
-    ax_2.set_yticklabels(['0.5', '1.0', '1.5', '2.0'],
-                         rotation=270,
-                         va='center')
-    ax_2.yaxis.tick_right()
-    ax_2.set_ylabel('Density',
-                    rotation=270,
-                    labelpad=15)
-    ax_2.yaxis.set_label_position("right")
-    ax_2.set_xlabel(r'$\chi^{2}_{\nu}$')
-
-    # Plot the text of panel A
-    ax_2.text(0.05, 0.94,
-              'B',
-              color='red',
-              horizontalalignment='center',
-              verticalalignment='center',
-              transform=ax_2.transAxes,
-              fontsize=20)
-
-    # -------------------------------------------------------------------------------------------
-    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/paper/dropout_validation.pdf',
-                bbox_inches='tight',
-                pad_inches=0.01)
-    plt.show()
-
-    # Print some numbers to the screen that we want:
-    r, p_value = stats.pearsonr(combined_residuals_df.actual_value, combined_residuals_df.predicted_value)
-    print('Predictions are correlated to observations with R={:.2f}'.format(r))
-    print('Rough probability of an uncorrelated system producing a \n '
-          'Pearson correlation R at least as extreme as the one we obtain: {:.2f}'.format(p_value))
-
-    abs_all_residuals = combined_residuals_df.residual
-    mean_residual     = np.mean(abs_all_residuals)
-    stddev_residual   = np.std(abs_all_residuals)
-
-    print('Mean residual is {:.2f} ppbv '.format(mean_residual) + 'with standard deviation {:.2f}'.format(stddev_residual))
-
-
-
-
-
+    # mean_original_pixel_coverage               = np.mean(all_plotables_df.original_pixel_coverage * 100)
+    # standard_deviation_original_pixel_coverage = np.std(all_plotables_df.original_pixel_coverage * 100)
+    # mean_augmented_pixel_coverage              = np.mean(all_plotables_df.augmented_pixel_coverage * 100)
+    # standard_deviation_augmented_pixel_coverage = np.std(all_plotables_df.augmented_pixel_coverage * 100)
+    #
+    # # Print some numbers of the masses
+    # mean_original_above_background_mass                = np.mean(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3) # in kilotonnes!
+    # standard_deviation_original_above_background_mass  = np.std(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3)
+    # mean_augmented_above_background_mass               = np.mean(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3)  # in kilotonnes!
+    # standard_deviation_augmented_above_background_mass = np.std(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3)
+    #
+    # print('The original mean daily pixel coverage over the study region was {:.2f}%, '.format(mean_original_pixel_coverage)
+    #       + 'with a standard deviation of {:.2f}%.'.format(standard_deviation_original_pixel_coverage))
+    #
+    # print('After adding predictions, the mean daily pixel coverage over the study region was {:.2f}%, '.format(mean_augmented_pixel_coverage)
+    #       + 'with a standard deviation of {:.2f}%.'.format(standard_deviation_augmented_pixel_coverage))
+    #
+    # print('The original mean daily above-background mass over the study region was {:.2f} kilotonnes, '.format(
+    #     mean_original_above_background_mass)
+    #       + 'with a standard deviation of {:.2f} kilotonnes.'.format(standard_deviation_original_above_background_mass))
+    #
+    # print('After adding predictions, the mean above-background mass over the study region was {:.2f} kilotonnes, '.format(
+    #     mean_augmented_above_background_mass)
+    #       + 'with a standard deviation of {:.2f} kilotonnes.'.format(standard_deviation_augmented_above_background_mass))
+    #
+    # era5_dry_air_column_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dry_air_column_densities.csv')
+    # n = len(era5_dry_air_column_df.Residuals)
+    # # Calculate Pearson R
+    # r, p_value = stats.pearsonr(era5_dry_air_column_df.ERA5_dry_air_column, era5_dry_air_column_df.TROPOMI_dry_air_column)
+    # # Calculate mean and standard deviation of residuals
+    # era5_mean   = np.mean(era5_dry_air_column_df.Residuals)
+    # era5_stddev = np.std(era5_dry_air_column_df.Residuals)
+    # era5_rmsd   = np.sqrt(np.sum([residual**2 for residual in era5_dry_air_column_df.Residuals])/n)
+    #
+    # print("ERA5 dry air column densities are correlated with TROPOMI values with Pearson R of {:.2f}.".format(r))
+    # print("Residuals between the two have mean of {:.2f}, ".format(era5_mean) + 'with standard deviation {:.2f}.'.format(era5_stddev))
+    # print('We use their RMSD of {:.2f} '.format(era5_rmsd) + 'for error propagation.')

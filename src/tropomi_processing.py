@@ -1113,7 +1113,7 @@ def calculate_dry_air_column_density_residuals(fitted_results):
             original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
             # Open the augmented CH4 file containing all the predictions.
             augmented_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/'
-                                             + fitted_results.run_name + '/data_rich_days/' + filename, 'r')
+                                             + fitted_results.run_name + '/' + filename, 'r')
 
             # Get the array of the ERA5-derived dry air column density.
             era5_column = np.array(augmented_ch4_file.groups['PRODUCT'].variables['dry_air_column_density'])[0]
@@ -1148,7 +1148,7 @@ def calculate_dry_air_column_density_residuals(fitted_results):
 
     full_df = pd.concat(dry_air_column_dfs, ignore_index=True)
 
-    full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_densities.csv', index=False)
+    full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_density_residuals.csv', index=False)
 
 def calculate_pixel_area(latitudes, longitudes):
     '''A function for calculating the area of a pixel in square meters.
@@ -1173,7 +1173,7 @@ def calculate_pixel_area(latitudes, longitudes):
 
     return area
 
-def write_plotable_quantities_csv_file(fitted_results):
+def calculate_final_results(fitted_results):
     '''This function is for writing a single large .csv file summarising all plotable quantities by date.
 
     :param fitted_results: The model run we want to summarise our plotable quantities for.
@@ -1218,12 +1218,12 @@ def write_plotable_quantities_csv_file(fitted_results):
     # Open the .csv containing the residuals of the dry air column densities, and calculate the RMS that we will use
     # to propogate the error from the dry air column density as we calculate the methane column density.
     dry_air_column_density_residual_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name +
-                                                     '/dry_air_column_densities.csv', header=0)
+                                                     '/dry_air_column_density_residuals.csv', header=0)
     residuals = np.array(dry_air_column_density_residual_df.Residuals)
     dry_air_column_density_error = np.std(residuals)
 
     # Open the .csv file containing the NOAA monthly CH4 background data
-    noaa_ch4_df = pd.read_csv(ct.FILE_PREFIX + '/data/noaa_ch4_background.csv',
+    noaa_ch4_df = pd.read_csv(ct.FILE_PREFIX + '/observations/NOAA/noaa_ch4_background.csv',
                               comment='#', delim_whitespace=True)
     # Create the interpolation function for determining the reference background level of methane.
     ch4_interpolation_function = interp1d(noaa_ch4_df.decimal, noaa_ch4_df.average, kind='linear')
@@ -1277,12 +1277,12 @@ def write_plotable_quantities_csv_file(fitted_results):
 
         # ------------------------------------------------------------------------------------------------
         # The following key is needed to understand some list names.
-        # Type 1 = a qauntity calculated purely from TROPOMI CH4 pixels with a qa value of 0.5 or greater
+        # Type 1 = a quantity calculated purely from TROPOMI CH4 pixels with a qa value of 0.5 or greater
         # Type 2 = a quantity calculated from TROPOMI CH4 pixels with a qa value of 0.5 or greater and predicted
         #          values of CH4 from NO2 pixel values that had a qa value of 0.75 or greater.
         # Type 3 = a quantity calculated from TROPOMI CH4 pixels with a qa value of 0.5 or greater and predicted
         #          values of CH4 from NO2 pixel values that had a qa value of 0.75 or greater, with the additional
-        #          requirement that the NO2 pixel value was at least two standard deivations away from zero.
+        #          requirement that the NO2 pixel value was at least two standard deviations away from zero.
         # ------------------------------------------------------------------------------------------------
 
         # The following two lists are used to hold pixel values contained within the study region
@@ -1465,7 +1465,7 @@ def write_plotable_quantities_csv_file(fitted_results):
                                                                 'original_no2_load_precision': no2_load_precision},
                                                                ignore_index=True)
 
-        plotable_quantities_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+        plotable_quantities_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
                                       index=False)
 
 def calculate_prediction_vs_heldout_pixel_value(fitted_results):
