@@ -16,7 +16,6 @@ import glob
 import cartopy.crs as ccrs
 import cartopy.io.shapereader as shpreader
 import cartopy.feature as cfeature
-from scipy import stats
 import os
 import shutil
 import constants as ct
@@ -1525,19 +1524,6 @@ def figure_2(date_range):
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-    #TODO remove this stuff, needs to go into the 'final function'
-    # Print some numbers to the screen that we want:
-    # r, p_value = stats.pearsonr(combined_residuals_df.actual_value, combined_residuals_df.predicted_value)
-    # print('Predictions are correlated to observations with R={:.2f}'.format(r))
-    # print('Rough probability of an uncorrelated system producing a \n '
-    #       'Pearson correlation R at least as extreme as the one we obtain: {:.2f}'.format(p_value))
-    #
-    # abs_all_residuals = combined_residuals_df.residual
-    # mean_residual     = np.mean(abs_all_residuals)
-    # stddev_residual   = np.std(abs_all_residuals)
-    #
-    # print('Mean residual is {:.2f} ppbv '.format(mean_residual) + 'with standard deviation {:.2f}'.format(stddev_residual))
-
 def figure_3(fitted_results, date):
     '''This function is for creating and saving Figure 2 of the paper. Figure 2 will be a page-wide, two-panel figure.
     Left hand panel is a scatterplot of observations with errorbars and a subset of regression lines. Right hand panel
@@ -2319,34 +2305,6 @@ def figure_6(date_range):
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-    #TODO remove this and put it in the 'final function'
-    #
-    # Print some of the numbers we want for the paper.
-    # mean_original_pixel_coverage               = np.mean(all_plotables_df.original_pixel_coverage * 100)
-    # standard_deviation_original_pixel_coverage = np.std(all_plotables_df.original_pixel_coverage * 100)
-    # mean_augmented_pixel_coverage              = np.mean(all_plotables_df.augmented_pixel_coverage * 100)
-    # standard_deviation_augmented_pixel_coverage = np.std(all_plotables_df.augmented_pixel_coverage * 100)
-    #
-    # # Print some numbers of the masses
-    # mean_original_above_background_mass                = np.mean(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3) # in kilotonnes!
-    # standard_deviation_original_above_background_mass  = np.std(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3)
-    # mean_augmented_above_background_mass               = np.mean(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3)  # in kilotonnes!
-    # standard_deviation_augmented_above_background_mass = np.std(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3)
-    #
-    # print('The original mean daily pixel coverage over the study region was {:.2f}%, '.format(mean_original_pixel_coverage)
-    #       + 'with a standard deviation of {:.2f}%.'.format(standard_deviation_original_pixel_coverage))
-    #
-    # print('After adding predictions, the mean daily pixel coverage over the study region was {:.2f}%, '.format(mean_augmented_pixel_coverage)
-    #       + 'with a standard deviation of {:.2f}%.'.format(standard_deviation_augmented_pixel_coverage))
-    #
-    # print('The original mean daily above-background mass over the study region was {:.2f} kilotonnes, '.format(
-    #     mean_original_above_background_mass)
-    #       + 'with a standard deviation of {:.2f} kilotonnes.'.format(standard_deviation_original_above_background_mass))
-    #
-    # print('After adding predictions, the mean above-background mass over the study region was {:.2f} kilotonnes, '.format(
-    #     mean_augmented_above_background_mass)
-    #       + 'with a standard deviation of {:.2f} kilotonnes.'.format(standard_deviation_augmented_above_background_mass))
-    #
     # era5_dry_air_column_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dry_air_column_densities.csv')
     # n = len(era5_dry_air_column_df.Residuals)
     # # Calculate Pearson R
