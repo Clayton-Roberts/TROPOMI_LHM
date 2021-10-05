@@ -333,6 +333,255 @@ def get_colocated_measurements(filename):
 
     return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
 
+#TODO working on a new function here for final script, this is good for refactoring.
+def convert_TROPOMI_observations_to_csvs(date_range):
+    '''This function will iterate over a date range, determine if the TROPOMI observation on this day is either
+    "data-rich" or "data-poor", and then write the observations into the appropriate .csv file.
+
+    :param date_range: The date range of the analysis. Must be a string formatted as "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    '''
+
+    start_date, end_date = date_range.split('-')
+
+    start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+    end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
+
+    num_total_days             = 0
+    num_data_rich_days         = 0
+    num_data_poor_days         = 0
+    num_data_rich_observations = 0
+    num_data_poor_observations = 0
+
+    data_rich_day_id = 1  # Stan starts counting from 1!
+    data_poor_day_id = 1
+
+    # Empty list to hold dataframes for each day's observations when checks are passed.
+    data_rich_daily_dfs = []
+    data_poor_daily_dfs = []
+
+    # A summary dataframe for overall metrics of for this run's data.
+    data_rich_summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
+    data_poor_summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
+
+    # Create the list of dates to iterate over.
+    num_days = (end_datetime - start_datetime).days + 1
+    date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
+
+    # For every date in range for this model run:
+    for date in tqdm(date_list, desc='Converting TROPOMI observations into csv files'):
+
+        num_total_days += 1
+
+        # Create string from the date datetime
+        date_string = date.strftime("%Y%m%d")
+
+        # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+        # that are a couple hours apart. Usually one overpass captures the whole study region.
+        tropomi_overpasses = [file.split('/')[-1] for file in
+                              glob.glob(
+                                  ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+
+        total_obs_CH4   = []
+        total_sigma_C   = []
+        total_obs_NO2   = []
+        total_sigma_N   = []
+        total_latitude  = []
+        total_longitude = []
+
+        for overpass in tropomi_overpasses:
+            obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
+
+            total_obs_CH4.extend(obs_CH4)
+            total_sigma_C.extend(sigma_C)
+            total_obs_NO2.extend(obs_NO2)
+            total_sigma_N.extend(sigma_N)
+            total_latitude.extend(latitude)
+            total_longitude.extend(longitude)
+
+        # If there are more than 100 co-located measurements on this day ...
+        if len(total_obs_NO2) >= 100:
+
+            r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
+
+            # if R >= 0.4 ...
+            if r >= 0.4:
+                # Checks are passed, so write to the various datasets.
+
+                num_data_rich_days += 1
+                num_data_rich_observations += len(total_obs_NO2)
+
+                # Append summary of this day to the summary dataframe.
+                data_rich_summary_df = data_rich_summary_df.append({'date': date, 'day_id': data_rich_day_id, 'N': len(total_obs_NO2),
+                                                                    'R': round(r, 2)},
+                                                                    ignore_index=True)
+
+                # Create a dataframe containing the observations for this day.
+                day_df = pd.DataFrame(list(zip([data_rich_day_id] * len(total_obs_NO2),
+                                               [date] * len(total_obs_NO2),
+                                               total_obs_NO2,
+                                               total_obs_CH4,
+                                               total_sigma_N,
+                                               total_sigma_C,
+                                               total_latitude,
+                                               total_longitude)),
+                                      columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
+                                               'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+                # Append the dataframe to this day to the list of dataframes to later concatenate together.
+                data_rich_daily_dfs.append(day_df)
+
+                # Increment day_id
+                data_rich_day_id += 1
+
+            else:
+                num_data_poor_days += 1
+                num_data_poor_observations += len(total_obs_NO2)
+
+                # Append summary of this day to the summary dataframe.
+                data_poor_summary_df = data_poor_summary_df.append({'date': date,
+                                                                    'day_id': data_poor_day_id,
+                                                                    'N': len(total_obs_NO2),
+                                                                    'R': round(r, 2)},
+                                                                   ignore_index=True)
+
+                # Create a dataframe containing the observations for this day.
+                day_df = pd.DataFrame(list(zip([data_poor_day_id] * len(total_obs_NO2),
+                                               [date] * len(total_obs_NO2),
+                                               total_obs_NO2,
+                                               total_obs_CH4,
+                                               total_sigma_N,
+                                               total_sigma_C,
+                                               total_latitude,
+                                               total_longitude)),
+                                      columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
+                                               'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+                # Append the dataframe to this day to the list of dataframes to later concatenate together.
+                data_poor_daily_dfs.append(day_df)
+
+                # Increment day_id
+                data_poor_day_id += 1
+
+        elif len(total_obs_NO2) >= 2:
+
+            r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
+
+            num_data_poor_days += 1
+            num_data_poor_observations += len(total_obs_NO2)
+
+            # Append summary of this day to the summary dataframe.
+            data_poor_summary_df = data_poor_summary_df.append({'date': date,
+                                                                'day_id': data_poor_day_id,
+                                                                'N': len(total_obs_NO2),
+                                                                'R': round(r, 2)},
+                                                                ignore_index=True)
+
+            # Create a dataframe containing the observations for this day.
+            day_df = pd.DataFrame(list(zip([data_poor_day_id] * len(total_obs_NO2),
+                                           [date] * len(total_obs_NO2),
+                                           total_obs_NO2,
+                                           total_obs_CH4,
+                                           total_sigma_N,
+                                           total_sigma_C,
+                                           total_latitude,
+                                           total_longitude)),
+                                  columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
+                                           'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+
+            # Append the dataframe to this day to the list of dataframes to later concatenate together.
+            data_poor_daily_dfs.append(day_df)
+
+            # Increment day_id
+            data_poor_day_id += 1
+
+    # Sort the summary dataframe by date.
+    data_rich_summary_df.to_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich/summary.csv', index=False)
+    data_poor_summary_df.to_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/summary.csv', index=False)
+
+    # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
+    data_rich_dataset_df = pd.concat(data_rich_daily_dfs)
+    data_poor_dataset_df = pd.concat(data_poor_daily_dfs)
+    data_rich_dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich/dataset.csv', index=False)
+    data_poor_dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dataset.csv', index=False)
+
+    f = open(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich/summary.txt', 'a')
+    f.write("Total number of days in range: " + str(num_total_days) + '\n')
+    f.write("Total number of data-rich days in range: " + str(num_data_rich_days) + '\n')
+    f.write("Total number of observations in range: " + str(num_data_rich_observations) + '\n')
+    f.close()
+
+    g = open(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/summary.txt', 'a')
+    g.write("Total number of days in range: " + str(num_total_days) + '\n')
+    g.write("Total number of data-poor days in range: " + str(num_data_poor_days) + '\n')
+    g.write("Total number of observations in range: " + str(num_data_poor_observations) + '\n')
+    g.close()
+
+#TODO rename this function after it's been fully made and is successfully working
+def make_all_directories(date_range):
+    '''This function is for creating all the necessary directories needed to store processed TROPOMI observations as
+    data and the directories needed to store the outputs.
+
+    :param date_range: The date range of the analysis. Must be a string formatted as "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    '''
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich')
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_rich')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor')
+        os.makedirs(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich')
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich')
+
+    try:
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
+    except FileExistsError:
+        shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
+        os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
+
+def copy_data():
+    '''This function is for copying over data-rich observations for the month of January to two new directories
+    so that we can carry out some model comparison.'''
+
+    full_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/20190101-20191231-data_rich/summary.csv', index_col=0)
+
+    reduced_summary_df = pd.DataFrame(columns=['date','day_id','N','R'])
+
+    full_dataset_df = pd.read_csv(ct.FILE_PREFIX + '/data/20190101-20191231-data_rich/dataset.csv')
+
+    daily_observations = []
+
+    for date in full_summary_df.index:
+        if datetime.datetime.strptime(date, '%Y-%m-%d') < datetime.datetime(year=2019, month=2, day=1):
+            series = full_summary_df.loc[date]
+            reduced_summary_df = reduced_summary_df.append({'date': date,
+                                                            'day_id': int(series.day_id),
+                                                            'N': int(series.N),
+                                                            'R': series.R},
+                                                           ignore_index=True)
+
+            observation_df = full_dataset_df[full_dataset_df.date == date]
+
+            daily_observations.append(observation_df)
+
+    reduced_summary_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-data_rich/summary.csv', index=False)
+    reduced_summary_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-individual_error/summary.csv', index=False)
+
+    reduced_observations_df = pd.concat(daily_observations, ignore_index=True)
+    reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-data_rich/dataset.csv', index=False)
+    reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-individual_error/dataset.csv', index=False)
+
 def create_dataset_data_poor_days(run_name):
     # TODO Make docstring
 
@@ -573,7 +822,7 @@ def add_predictions(fitted_results):
     if model_type == 'data_poor':
         diagnostics_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/diagnostics.csv', index_col=0)
 
-    for date in tqdm(summary_df.index, desc='Calculating predictions for ' + '-'.join(model_type.split('_')) + ' days'):
+    for date in tqdm(summary_df.index, desc='Adding predictions on ' + '-'.join(model_type.split('_')) + ' days'):
 
         if model_type == 'data_rich':
             do_predictions = True
@@ -835,13 +1084,16 @@ def calculate_dry_air_column_density_residuals(fitted_results):
     :type fitted_results: FittedResults
     '''
 
+    start_date, end_date, model = fitted_results.run_name.split('-')
+
     # Read in the summary.csv file, index by date
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
                              index_col=0)
 
     dry_air_column_dfs = []
 
-    for date in tqdm(summary_df.index, desc='Calulating difference between ERA5 and TROPOMI dry air column densities'):
+    for date in tqdm(summary_df.index, desc='Calulating difference between ERA5 and TROPOMI dry air column densities on '
+                                            + '-'.join(model.split('_')) + ' days'):
 
         era5_columns    = []
         tropomi_columns = []
@@ -861,7 +1113,7 @@ def calculate_dry_air_column_density_residuals(fitted_results):
             original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
             # Open the augmented CH4 file containing all the predictions.
             augmented_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/'
-                                             + fitted_results.run_name + '/data_rich_days/' + filename, 'r')
+                                             + fitted_results.run_name + '/' + filename, 'r')
 
             # Get the array of the ERA5-derived dry air column density.
             era5_column = np.array(augmented_ch4_file.groups['PRODUCT'].variables['dry_air_column_density'])[0]
@@ -896,7 +1148,7 @@ def calculate_dry_air_column_density_residuals(fitted_results):
 
     full_df = pd.concat(dry_air_column_dfs, ignore_index=True)
 
-    full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_densities.csv', index=False)
+    full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_density_residuals.csv', index=False)
 
 def calculate_pixel_area(latitudes, longitudes):
     '''A function for calculating the area of a pixel in square meters.
@@ -921,7 +1173,7 @@ def calculate_pixel_area(latitudes, longitudes):
 
     return area
 
-def write_plotable_quantities_csv_file(fitted_results):
+def calculate_final_results(fitted_results):
     '''This function is for writing a single large .csv file summarising all plotable quantities by date.
 
     :param fitted_results: The model run we want to summarise our plotable quantities for.
@@ -966,12 +1218,12 @@ def write_plotable_quantities_csv_file(fitted_results):
     # Open the .csv containing the residuals of the dry air column densities, and calculate the RMS that we will use
     # to propogate the error from the dry air column density as we calculate the methane column density.
     dry_air_column_density_residual_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name +
-                                                     '/dry_air_column_densities.csv', header=0)
+                                                     '/dry_air_column_density_residuals.csv', header=0)
     residuals = np.array(dry_air_column_density_residual_df.Residuals)
     dry_air_column_density_error = np.std(residuals)
 
     # Open the .csv file containing the NOAA monthly CH4 background data
-    noaa_ch4_df = pd.read_csv(ct.FILE_PREFIX + '/data/noaa_ch4_background.csv',
+    noaa_ch4_df = pd.read_csv(ct.FILE_PREFIX + '/observations/NOAA/noaa_ch4_background.csv',
                               comment='#', delim_whitespace=True)
     # Create the interpolation function for determining the reference background level of methane.
     ch4_interpolation_function = interp1d(noaa_ch4_df.decimal, noaa_ch4_df.average, kind='linear')
@@ -1025,12 +1277,12 @@ def write_plotable_quantities_csv_file(fitted_results):
 
         # ------------------------------------------------------------------------------------------------
         # The following key is needed to understand some list names.
-        # Type 1 = a qauntity calculated purely from TROPOMI CH4 pixels with a qa value of 0.5 or greater
+        # Type 1 = a quantity calculated purely from TROPOMI CH4 pixels with a qa value of 0.5 or greater
         # Type 2 = a quantity calculated from TROPOMI CH4 pixels with a qa value of 0.5 or greater and predicted
         #          values of CH4 from NO2 pixel values that had a qa value of 0.75 or greater.
         # Type 3 = a quantity calculated from TROPOMI CH4 pixels with a qa value of 0.5 or greater and predicted
         #          values of CH4 from NO2 pixel values that had a qa value of 0.75 or greater, with the additional
-        #          requirement that the NO2 pixel value was at least two standard deivations away from zero.
+        #          requirement that the NO2 pixel value was at least two standard deviations away from zero.
         # ------------------------------------------------------------------------------------------------
 
         # The following two lists are used to hold pixel values contained within the study region
@@ -1213,7 +1465,7 @@ def write_plotable_quantities_csv_file(fitted_results):
                                                                 'original_no2_load_precision': no2_load_precision},
                                                                ignore_index=True)
 
-        plotable_quantities_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/plotable_quantities.csv',
+        plotable_quantities_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
                                       index=False)
 
 def calculate_prediction_vs_heldout_pixel_value(fitted_results):

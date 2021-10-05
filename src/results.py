@@ -112,6 +112,10 @@ class FittedResults:
         predicts and what the "actual" methane pixel value is. This is performed only as part of the dropout testing.
         '''
 
+        start_date, end_date, model = self.run_name.split('/')[0].split('-')
+
+        day_type = '-'.join(model.split('_'))
+
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
@@ -121,7 +125,7 @@ class FittedResults:
         # Empty list to hold daily frames for later concatenation
         daily_dfs = []
 
-        for day_id in tqdm(set(dropout_df.day_id), desc='Writing residuals'):
+        for day_id in tqdm(set(dropout_df.day_id), desc='Writing ' + day_type + ' residuals'):
 
             # This will always be true for data-rich days
             if summary_df.loc[day_id].N < 80:
@@ -161,6 +165,10 @@ class FittedResults:
         and then writes it to a .csv file. This is performed only as part of the dropout testing.
         '''
 
+        start_date, end_date, model = self.run_name.split('/')[0].split('-')
+
+        day_type = '-'.join(model.split('_'))
+
         # Open the dropout_dataset.csv file
         dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout_dataset.csv')
 
@@ -171,7 +179,7 @@ class FittedResults:
         # Create dataframe for reduced chi-squared calculations
         reduced_chi_squared_df = pd.DataFrame(columns=('date', 'day_id', 'reduced_chi_squared', 'N_holdout_observations'))
 
-        for day_id in tqdm(set(dropout_df.day_id), desc='Writing reduced chi-squared results'):
+        for day_id in tqdm(set(dropout_df.day_id), desc='Writing ' + day_type + ' reduced chi-squared results'):
 
             # This condition is always true for data-rich days, and we only want to calculate reduced
             # chi squared for data poor days with N >= 100

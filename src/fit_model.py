@@ -3,9 +3,11 @@ import numpy as np
 import cmdstanpy
 import pandas as pd
 import os
+import sys
 import glob
 import shutil
 import datetime as datetime
+from   contextlib import contextmanager
 from   tqdm import tqdm
 from   cmdstanpy import CmdStanModel, set_cmdstan_path
 import constants as ct
@@ -18,13 +20,26 @@ def install_cmdstan():
 
     cmdstanpy.install_cmdstan(ct.CMDSTAN_PATH)
 
-def set_data_poor_initial_values(run_name):
+def delete_console_printed_lines(num_lines):
+    '''This function deletes the output printed to the console when fitting data-poor days. NOTE: This clears the
+    CmdStanPy automatic output of fitting a model, and we call this so that the console doesn't get messy when we fit the
+    data-poor days. This is slightly hardcoded and so if there are any automatically generated messages from Stan that
+    aren't either "good" messages or notifications about a few divergences, this the console will get messy. E.g., if you
+    have high split R-hat, then the script won't print pretty on the screen.
+
+    :param check_for_divergences: A parameter to determine whether to remove an extra few lines.
+    :type check_for_divergences: bool
+    '''
+
+    # Move up one line, clear current line and leave the cursor at its beginning, 32 times:
+    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 12)))
+
+def set_data_poor_initial_values():
     '''This function sets the initial values for the sampler to something sensible.
     :param run_name: The name of the run.
     :type run_name: string
     '''
 
-    # By inspection we know that these are sensible values to initialise at.
     inits = {
              'gamma': 12,
              'epsilon': np.random.normal(0, 1, 5).tolist()
@@ -51,9 +66,72 @@ def set_data_rich_initial_values(run_name):
 
     return inits
 
+def write_and_print_data_poor_summary(date_range, elapsed_time, dropout=False):
+    '''This function is for writing a summary of how fitting the model to data-poor days went (and printing it to the
+    screen), and can be used for either dropout or full fits.
+
+    :param date_range: The date range of the analysis. Must be of format "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    :param elapsed_time: The number of seconds it took to fit the model to all data-poor days.
+    :type elapsed_time: float
+    :param dropout: A Boolean to indicate whether this is for a dropout fit or not.
+    :type dropout: bool
+    '''
+
+    if not dropout:
+        directory = '/outputs/' + date_range + '-data_poor/'
+    else:
+        directory = '/outputs/' + date_range + '-data_poor/dropout/'
+
+    # Open the diagnostics file for the run.
+    diagnostics_df = pd.read_csv(ct.FILE_PREFIX + directory + 'diagnostics.csv')
+    series_length  = len(diagnostics_df.max_treedepth.tolist())
+    f = open(ct.FILE_PREFIX + directory + "summary.txt", "a")
+    f.write("Elapsed time to fit model and save output: " + time.strftime("%H:%M:%S", time.gmtime(elapsed_time)) + '\n')
+    f.write('---------------------------------------------------' + '\n\n')
+    f.write('Checking sampler transitions treedepth.\n')
+    print('\nChecking sampler transitions treedepth.')
+    if diagnostics_df.max_treedepth.tolist() == [True]*series_length:
+        f.write('Treedepth satisfactory for all transitions.\n\n')
+        print('Treedepth satisfactory for all transitions.\n')
+    else:
+        f.write('Treedepth not satisfactory for all transitions, inspect diagnostics.csv file.\n\n')
+    f.write('Checking sampler transitions for divergences.\n')
+    print('Checking sampler transitions for divergences.')
+    if diagnostics_df.post_warmup_divergences.tolist() == [0]*series_length:
+        f.write('No divergent transitions found.\n\n')
+        print('No divergent transitions found.\n')
+    else:
+        f.write('There were some post-warmup divergent transitions on some days, inspect diagnostics.csv file.\n\n')
+        print('There were some post-warmup divergent transitions on some days, inspect diagnostics.csv file.\n')
+    f.write('Checking E-BFMI - sampler transitions HMC potential energy.\n')
+    print('Checking E-BFMI - sampler transitions HMC potential energy.')
+    if diagnostics_df.e_bfmi.tolist() == [True]*series_length:
+        f.write('E-BFMI satisfactory.\n\n')
+        print('E-BFMI satisfactory.\n')
+    else:
+        f.write('E-BFMI not satisfactory for all days, inspect diagnostics.csv file.\n\n')
+        print('E-BFMI not satisfactory for all days, inspect diagnostics.csv file.\n')
+    if diagnostics_df.effective_sample_size.tolist() == [True]*series_length:
+        f.write('Effective sample size satisfactory for all parameters on all days.\n\n')
+        print('Effective sample size satisfactory for all parameters on all days.\n')
+    else:
+        f.write('Effective sample size not satisfactory for some/all parameters on some days, inspect diagnostics.csv file.\n\n')
+        print('Effective sample size not satisfactory for some parameters on some days, inspect diagnostics.csv file.\n')
+    if diagnostics_df.split_rhat.tolist() == [True]*series_length:
+        f.write('Split R-hat values satisfactory for all parameters on all days.\n\n')
+        print('Split R-hat values satisfactory for all parameters on all days.\n')
+    else:
+        f.write('Split R-hat values not satisfactory for some/all parameters on some days, inspect diagnostics.csv file.\n\n')
+        print('Split R-hat values not satisfactory for some/all parameters on some days, inspect diagnostics.csv file.\n')
+    f.close()
+
 def fit_data_poor_days(run_name):
     '''This function is for fitting the non-hierarchical model to all the data poor days.'''
     #TODO docstring.
+
+    # Record the start time in order to write elapsed time for fitting to the output file.
+    start_time = time.time()
 
     if 'dropout' in run_name:
         dropout_run = True
@@ -79,13 +157,14 @@ def fit_data_poor_days(run_name):
     # Create the csv to track diagnostic metrics
     metrics_df = pd.DataFrame(columns=['date', 'day_id', 'N', 'max_treedepth', 'post_warmup_divergences', 'e_bfmi', 'effective_sample_size', 'split_rhat'])
 
+
     for date in tqdm(data_poor_summary_df.index, desc='Fitting model to data-poor days'):
 
         day_id = int(data_poor_summary_df.loc[date].day_id)
         N      = int(data_poor_summary_df.loc[date].N)
 
         if dropout_run:
-            if N < 80: # Implies there are at least 20 observations in the holdout set.
+            if N < 80: # Implies there are less than 20 observations in the holdout set.
                 # Skip doing the dropout analysis for this run as there are not enough data points to
                 # do an accurate reduced chi squared fit.
                 continue
@@ -100,7 +179,7 @@ def fit_data_poor_days(run_name):
         # Create the json data for this particular day and put it in the dummy directory
         tp.prepare_data_poor_dataset_for_cmdstanpy(run_name, date)
 
-        initial_values = set_data_poor_initial_values(run_name)
+        initial_values = set_data_poor_initial_values()
 
         model = CmdStanModel(stan_file=ct.FILE_PREFIX + '/models/data_poor.stan')
 
@@ -177,6 +256,8 @@ def fit_data_poor_days(run_name):
                                         'split_rhat': split_rhat},
                                        ignore_index=True)
 
+        delete_console_printed_lines(len(diagnostic_string.split('\n')))
+
     del master_csv_1['dummy_data']
     del master_csv_2['dummy_data']
     del master_csv_3['dummy_data']
@@ -194,6 +275,11 @@ def fit_data_poor_days(run_name):
                         index=False)
 
     shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name + '/dummy')
+
+    # Record the elapsed time.
+    elapsed_time = time.time() - start_time
+
+    write_and_print_data_poor_summary(start_date + '-' + end_date, elapsed_time, dropout=dropout_run)
 
 def nuts(data_path, model_path, output_directory):
     '''This function will fit a probability model to a set of data and then save outputs that summarise probability
@@ -221,16 +307,13 @@ def nuts(data_path, model_path, output_directory):
 
     run_name       = data_path.split('/data.json')[0].split('data/')[-1]
 
-    if ('data_rich' in run_name) or ('individual_error' in run_name):
-        initial_values = set_data_rich_initial_values(run_name)
-    elif 'data_poor' in run_name:
-        initial_values = set_data_poor_initial_values(run_name)
+    initial_values = set_data_rich_initial_values(run_name)
 
     # Fit the model.
     fit = model.sample(chains=4, parallel_chains=4,
                        data=ct.FILE_PREFIX + '/' + data_path, iter_warmup=500,
                        save_warmup=True,
-                       iter_sampling=1000, seed=101, show_progress=True,
+                       iter_sampling=1000, seed=101, show_progress=False,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + output_directory,
                        save_diagnostics=True,
                        max_treedepth=12,
