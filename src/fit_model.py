@@ -319,6 +319,15 @@ def nuts(data_path, model_path, output_directory):
                        max_treedepth=12,
                        inits=initial_values)
 
+    full_summary_df = fit.summary()
+    num_params      = len(full_summary_df)
+
+    index_list = [i for i in range(num_params)
+                  if any(term in full_summary_df.index[i] for term in ['alpha', 'beta', 'gamma', 'Sigma', 'rho'])]
+
+    reduced_df = full_summary_df.iloc[index_list]
+    reduced_df.to_csv(ct.FILE_PREFIX + '/outputs/' + output_directory + 'summary.csv')
+
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
 
