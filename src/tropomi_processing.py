@@ -1226,7 +1226,8 @@ def calculate_final_results(fitted_results):
     noaa_ch4_df = pd.read_csv(ct.FILE_PREFIX + '/observations/NOAA/noaa_ch4_background.csv',
                               comment='#', delim_whitespace=True)
     # Create the interpolation function for determining the reference background level of methane.
-    ch4_interpolation_function = interp1d(noaa_ch4_df.decimal, noaa_ch4_df.average, kind='linear')
+    ch4_interpolation_function       = interp1d(noaa_ch4_df.decimal, noaa_ch4_df.average, kind='linear')
+    ch4_error_interpolation_function = interp1d(noaa_ch4_df.decimal, noaa_ch4_df.average_unc, kind='linear')
     start_of_year              = datetime.datetime(year=2019, month=1, day=1)
     end_of_year                = datetime.datetime(year=2020, month=1, day=1)
     year_length                = end_of_year - start_of_year
@@ -1265,6 +1266,7 @@ def calculate_final_results(fitted_results):
         fraction        = elapsed_time / year_length
         decimal_year    = 2019 + fraction
         noaa_background = float(ch4_interpolation_function(decimal_year))
+        noaa_background_error = float(ch4_error_interpolation_function(decimal_year))
 
         # Determine the centile levels of alpha, beta and gamma
         alpha_50 = fitted_results.median_values['alpha.' + str(day_id)]
@@ -1373,7 +1375,7 @@ def calculate_final_results(fitted_results):
                                                               list(ch4_pixel_corner_longitudes[i, j, :]))
                             pixel_value            = original_ch4_pixel_values[i, j]
                             delta_pixel_value      = pixel_value - noaa_background
-                            pixel_value_error      = original_ch4_pixel_precisions[i, j]
+                            pixel_value_error      = np.sqrt(original_ch4_pixel_precisions[i, j]**2 + noaa_background_error**2)
                             dry_air_column_density = dry_air_column_densities[i, j]  # [mol m^-2]
                             methane_mols           = delta_pixel_value * 1e-9 * dry_air_column_density * pixel_area  # [mol], need the 1e-9 to convert out from ppbv
                             methane_mols_precision = methane_mols * np.sqrt((pixel_value_error / delta_pixel_value) ** 2
