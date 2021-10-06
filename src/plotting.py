@@ -2130,6 +2130,38 @@ def figure_6(date_range):
               alpha=0.5)
 
     # ------------------------------------------------------------------------------------------------------
+    ax_6 = ax_1.inset_axes([0.8, 0.0, 0.2, 1.0], sharey=ax_1)
+    sns.kdeplot(all_plotables_df.augmented_pixel_coverage * 100,
+                vertical=True,
+                ax=ax_6,
+                color='green',
+                fill=True)
+    ax_6.invert_xaxis()
+    ax_6.patch.set_alpha(0.0)
+    ax_6.set(xticklabels=[])
+    ax_6.set(xticks=[])
+    ax_6.set_xlabel('')
+    ax_6.yaxis.tick_right()
+    ax_6.spines['left'].set_visible(False)
+    ax_6.set_ylabel('')
+
+    # ------------------------------------------------------------------------------------------------------
+    ax_7 = ax_1.inset_axes([0.8, 0.0, 0.2, 1.0], sharey=ax_1)
+    sns.kdeplot(all_plotables_df.original_pixel_coverage * 100,
+                vertical=True,
+                ax=ax_7,
+                color='darkorange',
+                fill=True)
+    ax_7.invert_xaxis()
+    ax_7.patch.set_alpha(0.0)
+    ax_7.set(xticklabels=[])
+    ax_7.set(xticks=[])
+    ax_7.set_xlabel('')
+    ax_7.yaxis.tick_right()
+    ax_7.spines['left'].set_visible(False)
+    ax_7.set_ylabel('')
+
+    # ------------------------------------------------------------------------------------------------------
     ax_2 = plt.subplot(G[1, :], sharex=ax_1)
 
     # Plot the three quantities, all same color, but different markers and line styles.
@@ -2304,16 +2336,3 @@ def figure_6(date_range):
     plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
-
-    # era5_dry_air_column_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dry_air_column_densities.csv')
-    # n = len(era5_dry_air_column_df.Residuals)
-    # # Calculate Pearson R
-    # r, p_value = stats.pearsonr(era5_dry_air_column_df.ERA5_dry_air_column, era5_dry_air_column_df.TROPOMI_dry_air_column)
-    # # Calculate mean and standard deviation of residuals
-    # era5_mean   = np.mean(era5_dry_air_column_df.Residuals)
-    # era5_stddev = np.std(era5_dry_air_column_df.Residuals)
-    # era5_rmsd   = np.sqrt(np.sum([residual**2 for residual in era5_dry_air_column_df.Residuals])/n)
-    #
-    # print("ERA5 dry air column densities are correlated with TROPOMI values with Pearson R of {:.2f}.".format(r))
-    # print("Residuals between the two have mean of {:.2f}, ".format(era5_mean) + 'with standard deviation {:.2f}.'.format(era5_stddev))
-    # print('We use their RMSD of {:.2f} '.format(era5_rmsd) + 'for error propagation.')
