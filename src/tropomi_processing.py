@@ -36,16 +36,15 @@ def make_directories(run_name):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name)
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
 
-def prepare_data_poor_dataset_for_cmdstanpy(run_name, date):
+def prepare_data_poor_dataset_for_cmdstanpy(date_range, date, dropout):
     #TODO make docstring
 
-    if 'dropout' not in run_name:
-        df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', delimiter=',',
+    if not dropout:
+        df = pd.read_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dataset.csv', delimiter=',',
                         header=0, index_col=1)  # Indexing by Date instead of Day_ID
-    else:
-        df = pd.read_csv(ct.FILE_PREFIX + '/data/' + run_name + '/remaining_dataset.csv', delimiter=',',
+    elif dropout:
+        df = pd.read_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dropout/remaining_dataset.csv', delimiter=',',
                          header=0, index_col=1)  # Indexing by Date instead of Day_ID
-
 
     days_df = df[df.index == date]
 
@@ -64,9 +63,9 @@ def prepare_data_poor_dataset_for_cmdstanpy(run_name, date):
     data['sigma_C']   = avg_sigma_C
 
     # Load up the results from the data-rich run to get the information learned on mu and Sigma
-    start_date, end_date, model = run_name.split('-')
-    data_rich_run_name          = start_date + '-' + end_date + '-data_rich'
-    data_rich_results           = sr.FittedResults(data_rich_run_name)
+    start_date, end_date = date_range.split('-')
+    data_rich_run_name   = start_date + '-' + end_date + '-data_rich'
+    data_rich_results    = sr.FittedResults(data_rich_run_name)
 
     mu_1      = data_rich_results.full_trace['mu.1']
     mu_2      = data_rich_results.full_trace['mu.2']
@@ -91,7 +90,11 @@ def prepare_data_poor_dataset_for_cmdstanpy(run_name, date):
     data['theta']   = theta
     data['Upsilon'] = Upsilon.tolist()
 
-    with open(ct.FILE_PREFIX + '/outputs/' + run_name + '/dummy/data.json', 'w') as outfile:
+    directory = date_range + '-data_poor'
+    if dropout:
+        directory += '/dropout'
+
+    with open(ct.FILE_PREFIX + '/outputs/' + directory + '/dummy/data.json', 'w') as outfile:
         json.dump(data, outfile)
 
 def prepare_data_rich_dataset_for_cmdstanpy(run_name):
