@@ -12,7 +12,7 @@ import model_comparison
 import plotting
 
 start_datetime = datetime.strptime('2019-01-01', '%Y-%m-%d')
-end_datetime   = datetime.strptime('2019-01-31', '%Y-%m-%d')
+end_datetime   = datetime.strptime('2019-11-30', '%Y-%m-%d')
 
 print('=========================================================\n')
 print('Analysis date range: ' +
@@ -65,11 +65,12 @@ print('    [1] data/' + date_range + '-data_rich/data.json')
 print('\n=========================================================\n')
 print('Fitting model to 100% of observations on data-rich days.')
 print('This may take some time, please be patient.\n')
-fit_model.nuts('data/' + date_range + '-data_rich/data.json',
-              'models/data_rich.stan',
-              date_range + '-data_rich')
+# fit_model.nuts('data/' + date_range + '-data_rich/data.json',
+#               'models/data_rich.stan',
+#               date_range + '-data_rich')
 print('\nCreated the following files:\n')
 print('    [1] outputs/' + date_range + '-data_rich/summary.txt')
+print('    [2] outputs/' + date_range + '-data_rich/summary.csv')
 print('\n=========================================================\n')
 print('Fitting model to 80% of observations on data-poor days.')
 print('This may take some time, please be patient.\n')
@@ -86,9 +87,10 @@ print('    [2] outputs/' + date_range + '-data_poor/dropout/residuals.csv')
 print('\n=========================================================\n')
 print('Fitting model to 100% of observations on data-poor days.')
 print('This may take some time, please be patient.\n')
-#fit_model.fit_data_poor_days(date_range + '-data_poor')
+fit_model.fit_data_poor_days(date_range + '-data_poor')
 print('Created the following files:\n')
 print('    [1] outputs/' + date_range + '-data_poor/summary.txt')
+print('    [2] outputs/' + date_range + '-data_poor/summary.csv')
 print('\n=========================================================\n')
 #tropomi_processing.make_directories('20190101-20190131-data_rich')
 #tropomi_processing.make_directories('20190101-20190131-individual_error')
@@ -111,11 +113,12 @@ print('    [6] data/20190101-20190131-individual_error/data.json')
 print('\n=========================================================\n')
 print('Fitting data-rich model to 100% of observations on data-rich days in January 2019.')
 print('This may take some time, please be patient.\n')
-#fit_model.nuts('data/20190101-20190131-data_rich/data.json',
+# fit_model.nuts('data/20190101-20190131-data_rich/data.json',
 #               'models/data_rich.stan',
 #               '20190101-20190131-data_rich')
 print('Created the following files:\n')
 print('    [1] outputs/20190101-20190131-data_rich/summary.txt')
+print('    [2] outputs/20190101-20190131-data_rich/summary.csv')
 print('\n=========================================================\n')
 print('Fitting individual-error model to 100% of observations on data-rich days in January 2019.')
 print('This may take some time, please be patient.\n')
@@ -124,6 +127,7 @@ print('This may take some time, please be patient.\n')
 #                '20190101-20190131-individual_error')
 print('Created the following files:\n')
 print('    [1] outputs/20190101-20190131-individual_error/summary.txt')
+print('    [2] outputs/20190101-20190131-individual_error/summary.csv')
 print('\n=========================================================\n')
 #individual_error_fitted_model = results.FittedResults('20190101-20190131-individual_error')
 #daily_mean_error_fitted_model = results.FittedResults('20190101-20190131-data_rich')

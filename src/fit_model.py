@@ -32,7 +32,7 @@ def delete_console_printed_lines(num_lines):
     '''
 
     # Move up one line, clear current line and leave the cursor at its beginning, 32 times:
-    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 12)))
+    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 13)))
 
 def set_data_poor_initial_values():
     '''This function sets the initial values for the sampler to something sensible.
@@ -157,6 +157,7 @@ def fit_data_poor_days(run_name):
     # Create the csv to track diagnostic metrics
     metrics_df = pd.DataFrame(columns=['date', 'day_id', 'N', 'max_treedepth', 'post_warmup_divergences', 'e_bfmi', 'effective_sample_size', 'split_rhat'])
 
+    summary_df_list = []
 
     for date in tqdm(data_poor_summary_df.index, desc='Fitting model to data-poor days'):
 
@@ -191,6 +192,13 @@ def fit_data_poor_days(run_name):
                            save_diagnostics=True,
                            max_treedepth=12,
                            inits=initial_values)
+
+        day_summary_df = fit.summary()
+        num_params     = len(day_summary_df)
+        index_list     = [i for i in range(num_params) if any(term in day_summary_df.index[i] for term in ['alpha', 'beta', 'gamma'])]
+        reduced_df     = day_summary_df.iloc[index_list]
+        reduced_df_renamed_indices = reduced_df.rename(index=lambda s: s + '[' + str(day_id) + ']')
+        summary_df_list.append(reduced_df_renamed_indices)
 
         # Check the diagnostics.
         diagnostic_string = fit.diagnose()
@@ -263,6 +271,9 @@ def fit_data_poor_days(run_name):
     del master_csv_3['dummy_data']
     del master_csv_4['dummy_data']
 
+    summary_df = pd.concat(summary_df_list)
+    summary_df.to_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/summary.csv')
+
     metrics_df.to_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/diagnostics.csv', index=False)
 
     master_csv_1.to_csv(ct.FILE_PREFIX + '/outputs/' + run_name + '/' + model_name + '-' + todays_string + '-1.csv',
@@ -326,7 +337,8 @@ def nuts(data_path, model_path, output_directory):
                   if any(term in full_summary_df.index[i] for term in ['alpha', 'beta', 'gamma', 'Sigma', 'rho'])]
 
     reduced_df = full_summary_df.iloc[index_list]
-    reduced_df.to_csv(ct.FILE_PREFIX + '/outputs/' + output_directory + 'summary.csv')
+    reduced_df.to_csv(ct.FILE_PREFIX + '/outputs/' + output_directory + '/summary.csv',
+                      )
 
     # Record the elapsed time.
     elapsed_time = time.time() - start_time
