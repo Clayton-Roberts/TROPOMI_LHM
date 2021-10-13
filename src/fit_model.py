@@ -41,7 +41,7 @@ def set_data_poor_initial_values():
     '''
 
     inits = {
-             'gamma': 12,
+             'gamma': np.random.normal(12, 2),
              'epsilon': np.random.normal(0, 1, 5).tolist()
             }
     return inits
@@ -293,14 +293,17 @@ def data_poor(date_range, dropout=False):
 def data_rich(date_range, error_type, dropout=False):
     #TODO make docstring
 
-    directory  = date_range + '-data_rich'
-    if dropout:
-        directory += '/dropout'
+    directory  = date_range
 
     if error_type == 'averaged':
         model_name = 'data_rich'
+        directory += '-data_rich'
     elif error_type == 'individual':
         model_name = 'individual_error'
+        directory += '-individual_error'
+
+    if dropout:
+        directory += '/dropout'
 
     # Record the start time in order to write elapsed time for fitting to the output file.
     start_time = time.time()
@@ -321,7 +324,7 @@ def data_rich(date_range, error_type, dropout=False):
                        iter_sampling=1000, seed=101, show_progress=False,
                        output_dir=ct.FILE_PREFIX + '/outputs/' + directory,
                        save_diagnostics=True,
-                       max_treedepth=12,
+                       max_treedepth=15,
                        inits=initial_values)
 
     full_summary_df = fit.summary()

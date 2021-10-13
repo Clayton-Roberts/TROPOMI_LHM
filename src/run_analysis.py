@@ -171,7 +171,7 @@ plotting.figure_1(date_range, '2019-01-31')
 plotting.figure_2(date_range)
 plotting.figure_3(fitted_results, '2019-01-31')
 plotting.figure_4(fitted_results)
-plotting.figure_5(date_range, '2019-01-31')
+plotting.figure_5(date_range + '-data_rich', '2019-01-31')
 plotting.figure_6(date_range)
 print('\nCreated the following files:\n')
 print('    [1] figures/' + date_range + '/figure_1.png')
@@ -190,7 +190,7 @@ median_sigma_alpha = fitted_results.median_values['sigma_alpha']
 cci_sigma_alpha    = fitted_results.credible_intervals['sigma_alpha']
 table              = [['rho', round(median_rho,2), [round(cci_rho[0],2), round(cci_rho[1],2)]],
                       ['mu_alpha [ppbv]', median_mu_alpha, cci_mu_alpha],
-                      ['sigma_alpha [ppbv]', round(median_sigma_alpha, 2), [round(cci_sigma_alpha[0],2), round(cci_sigma_alpha[0],2)]]]
+                      ['sigma_alpha [ppbv]', round(median_sigma_alpha, 2), [round(cci_sigma_alpha[0],2), round(cci_sigma_alpha[1],2)]]]
 headers            = ["Parameter", "Median", "68% central credible interval"]
 print('Selected results from fitting the data-rich model to 100% of observations:\n')
 print(tabulate(table, headers, tablefmt="fancy_grid", numalign="left"))
