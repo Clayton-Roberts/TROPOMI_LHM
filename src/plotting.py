@@ -19,6 +19,7 @@ import cartopy.feature as cfeature
 import os
 import shutil
 import constants as ct
+import results
 
 class PlotHelper:
     #TODO make the docstring
@@ -26,7 +27,8 @@ class PlotHelper:
                  qa_only=False,
                  include_predictions=False,
                  good_predictions_only=False,
-                 show_precisions=False):
+                 show_precisions=False,
+                 augmented_directory=None):
 
         self.figsize = (10.0, 6.0)
         self.extent  = (-106, -99, 29, 35)
@@ -112,7 +114,7 @@ class PlotHelper:
             if include_predictions:
                 #TODO change this hardcoded model run name
                 g = nc4.Dataset(ct.FILE_PREFIX +
-                                '/augmented_observations/20190101-20191130-data_rich/' +
+                                '/augmented_observations/' + augmented_directory + '/' +
                                 filename,
                                 'r')
 
@@ -165,6 +167,7 @@ class PlotHelper:
         self.latitudes = latitude_corners
         self.longitudes = longitude_corners
 
+# TODO this is used
 def make_directory(date_range):
     '''This function makes a sub-directory in the figures directory that will hold the figures of this run.
 
@@ -177,13 +180,16 @@ def make_directory(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/figures/' + date_range)
         os.makedirs(ct.FILE_PREFIX + '/figures/' + date_range)
 
-def tropomi_plot(date, molecule,
+# TODO this is used
+def tropomi_plot(date,
+                 molecule,
                  plot_study_region=False,
                  qa_only=False,
                  show_flares=False,
                  include_predictions=False,
                  good_predictions_only=False,
-                 show_precisions=False):
+                 show_precisions=False,
+                 augmented_directory=None):
     '''This is a function for plotting TROPOMI observations of either :math:`\\mathrm{NO}_2` or :math:`\\mathrm{CH}_4`.
 
     :param date: Date you want to plot observations for, format as %Y-%m-%d
@@ -214,7 +220,8 @@ def tropomi_plot(date, molecule,
         file = potential_tropomi_files[0]
 
     # Set necessary details with the plot helper
-    plot_helper = PlotHelper(file, molecule, qa_only, include_predictions, good_predictions_only, show_precisions)
+    plot_helper = PlotHelper(file, molecule, qa_only, include_predictions, good_predictions_only, show_precisions,
+                             augmented_directory=augmented_directory)
 
     # Get the outlines of counties
     reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
@@ -293,10 +300,15 @@ def tropomi_plot(date, molecule,
     ax.add_feature(cfeature.COASTLINE.with_scale('10m'), edgecolor="lightgray")
     plt.title(plot_helper.title)
     plt.tight_layout()
-    plt.savefig('figures/autosaved/tropomi_ch4_good_pixels_plus_augmented_pixels.png', dpi=300, bbox_inches='tight')
     plt.show()
 
-def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, show_warmup_draws=False):
+# TODO this is used
+# TODO get rid of reference to ground truth in this function.
+def trace(fitted_model,
+          parameter,
+          date=None,
+          compare_to_ground_truth=False,
+          show_warmup_draws=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
 
     :param fitted_model: The object contained the results from a fitted model.
@@ -356,13 +368,13 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
 
     # Units
     parameter_units = {
-        'beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
+        'beta': r"[ppbv / (mmol m$^{-2}$)]",
         'alpha': "[ppbv]",
         'gamma': "[ppbv]",
         'mu_alpha': "[ppbv]",
-        'mu_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
+        'mu_beta': r"[ppbv / (mmol m$^{-2}$)]",
         'sigma_alpha': "[ppbv]",
-        'sigma_beta': r"[ppbv / $\mathregular{\mu}$mol m$^{-2}$]",
+        'sigma_beta': r"[ppbv / (mmol m$^{-2}$)]",
         'rho': '',
         'lp__': ''
     }
@@ -410,15 +422,14 @@ def trace(fitted_model, parameter, date=None, compare_to_ground_truth=False, sho
     sns.kdeplot(fitted_model.full_trace[model_key], shade=True)
     plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
-    plt.axvline(fitted_model.median_values[model_key], color='black', lw=2, linestyle='--', label='Mode value')
+    plt.axvline(fitted_model.median_values[model_key], color='black', lw=2, linestyle='--', label='Median value')
     if compare_to_ground_truth:
         plt.axvline(ground_truth, color='red', lw=2, linestyle='--', label='True value')
-    plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'95% CI')
+    plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'68% CI')
     plt.axvline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
 
     plt.legend()
     plt.tight_layout()
-    plt.savefig('figures/autosaved/trace.png', dpi=300, bbox_inches='tight')
     plt.show()
 
 def observations_scatterplot(date, run_name):
@@ -1870,17 +1881,8 @@ def figure_4(fitted_results):
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-def figure_5(date_range, date):
-    '''This function is for creating and saving Figure 4 of the paper. Figure 4 will be a page-wide, four-panel figure.
-    Each panel will be for one of QA'd TROPOMI methane observations, "all" observations, and then the addition to each
-    of the augmented observations based off of the corresponding nitrogen dioxide observation.
-
-    :param date_range: The date range of the analysis that this plot is a part of. Must be of the format
-      "%Y%m%d-%Y%m%d".
-    :type date_range: str
-    :param date: The date of the observations to plot. Format must be "%Y-%m-%d"
-    :type date: str
-    '''
+def figure_5(directory, date):
+    #TODO make docstring
 
     # Get the relevant .nc4 files of the TROPOMI  CH4 observation using the date.
     file_date_prefix = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
@@ -1899,7 +1901,11 @@ def figure_5(date_range, date):
 
     # Get necessary details with the plot helper.
     good_pixels = PlotHelper(file, 'CH4', qa_only=True)
-    good_pixels_and_good_predictions = PlotHelper(file, 'CH4', qa_only=True, include_predictions=True)
+    good_pixels_and_good_predictions = PlotHelper(file,
+                                                  'CH4',
+                                                  qa_only=True,
+                                                  include_predictions=True,
+                                                  augmented_directory=directory)
 
     # Get the outlines of counties, these will be used in both plots.
     reader   = shpreader.Reader(ct.FILE_PREFIX + '/misc/countyl010g_shp_nt00964/countyl010g.shp')
@@ -2029,8 +2035,10 @@ def figure_5(date_range, date):
               transform=ax_2.transAxes,
               fontsize=20)
 
+    start_date, end_date, model = directory.split('-')
+
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_5.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_5.png',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
@@ -2336,3 +2344,12 @@ def figure_6(date_range):
     plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
+
+# ---------------------------------------------------------------------------------
+# Testing these functions.
+# ---------------------------------------------------------------------------------
+
+fitted_results = results.FittedResults('20190101-20191231-data_rich')
+
+trace(fitted_results,
+      'mu_alpha')
