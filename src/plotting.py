@@ -180,7 +180,7 @@ def make_directory(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/figures/' + date_range)
         os.makedirs(ct.FILE_PREFIX + '/figures/' + date_range)
 
-# TODO this is used
+# TODO this is to be saved
 def tropomi_plot(date,
                  molecule,
                  plot_study_region=False,
@@ -302,12 +302,10 @@ def tropomi_plot(date,
     plt.tight_layout()
     plt.show()
 
-# TODO this is used
-# TODO get rid of reference to ground truth in this function.
+# TODO this is to be saved
 def trace(fitted_model,
           parameter,
           date=None,
-          compare_to_ground_truth=False,
           show_warmup_draws=False):
     """Plot the trace and posterior distribution of a sampled scalar parameter.
 
@@ -325,19 +323,6 @@ def trace(fitted_model,
     :param show_warmup_draws: A boolean to show the warmup draws for each chain.
     :type show_warmup_draws: Boolean
     """
-
-    # Need to get the ground truth value for comparison if we're plotting a test dataset.
-    if compare_to_ground_truth:
-        daily_parameters_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
-                                          '/alphas_betas_gammas.csv', delimiter=",", header=0, index_col=0) # Index by date
-        hyperparameter_truths_df = pd.read_csv(ct.FILE_PREFIX + '/test_suite/ground_truths/' + fitted_model.run_name +
-                                               '/hyperparameter_truths.csv', delimiter=',', header=0)
-
-        if parameter == 'alpha' or parameter == 'beta' or parameter == 'gamma':
-            ground_truth = daily_parameters_df.loc[date, parameter]
-
-        else:
-            ground_truth = hyperparameter_truths_df[parameter][0]
 
     # Humans think in terms of dates, stan thinks in terms of day ids. Need to be able to access parameter.day_id
     # using the passed date. Use the summary.csv file and index by date
@@ -408,8 +393,6 @@ def trace(fitted_model,
     plt.axhline(fitted_model.median_values[model_key], color='black', lw=2, linestyle='--')
     if show_warmup_draws:
         plt.axvline(500, linestyle='--', color='grey', linewidth=0.5, label='Sampling begins')
-    if compare_to_ground_truth:
-        plt.axhline(ground_truth, color='red', lw=2, linestyle='--',)
     plt.axhline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2)
     plt.axhline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
     if show_warmup_draws:
@@ -423,8 +406,6 @@ def trace(fitted_model,
     plt.xlabel(parameter_symbol[parameter] + ' ' + parameter_units[parameter])
     plt.ylabel('Density')
     plt.axvline(fitted_model.median_values[model_key], color='black', lw=2, linestyle='--', label='Median value')
-    if compare_to_ground_truth:
-        plt.axvline(ground_truth, color='red', lw=2, linestyle='--', label='True value')
     plt.axvline(fitted_model.credible_intervals[model_key][0], linestyle=':', color='k', alpha=0.2, label=r'68% CI')
     plt.axvline(fitted_model.credible_intervals[model_key][1], linestyle=':', color='k', alpha=0.2)
 
@@ -2352,4 +2333,5 @@ def figure_6(date_range):
 fitted_results = results.FittedResults('20190101-20191231-data_rich')
 
 trace(fitted_results,
-      'mu_alpha')
+      'mu_alpha',
+      show_warmup_draws=True)
