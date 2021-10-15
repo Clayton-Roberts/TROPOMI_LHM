@@ -12,6 +12,7 @@ class FittedResults:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
     needs to be pointed towards the correct subdirectory in the /outputs folder.'''
 
+    #TODO this is used
     def elpd_i(self):
         '''This function calculates the expected log pointwise predictive density, per observation. Doing this as a
         function so that we don't have to wait for it to be done every single time a fitted model is loaded into this
@@ -73,40 +74,41 @@ class FittedResults:
 
         return elpd_i
 
-    def calculate_fractional_metric(self):
-        '''
-        This function goes through all the dropped-out pixels for this model run and calculates which fraction of those
-        are within two standard deviations of what the model predicts for those pixels.
-        '''
+    # def calculate_fractional_metric(self):
+    #     '''
+    #     This function goes through all the dropped-out pixels for this model run and calculates which fraction of those
+    #     are within two standard deviations of what the model predicts for those pixels.
+    #     '''
+    #
+    #     # Open the dropout_dataset.csv file
+    #     dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout/dropout_dataset.csv')
+    #
+    #     total_predictions     = 0
+    #     well_predicted_pixels = 0
+    #
+    #     for day_id in tqdm(set(dropout_df.Day_ID), desc='Calculating 95% CI for held-out predictions'):
+    #
+    #         dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
+    #
+    #         obs_CH4 = list(dropout_day_df.obs_CH4)
+    #         obs_NO2 = list(dropout_day_df.obs_NO2)
+    #         sigma_N = list(dropout_day_df.sigma_N)
+    #
+    #         for i in range(len(obs_NO2)):
+    #             prediction, std_deviation = self.predict_ch4(obs_NO2[i], sigma_N[i], day_id)
+    #
+    #             if np.abs(prediction - obs_CH4[i]) < 2.*std_deviation:
+    #                 well_predicted_pixels += 1
+    #
+    #             total_predictions += 1
+    #
+    #     percentage = (well_predicted_pixels / total_predictions) * 100
+    #
+    #     print("There were", total_predictions, "total predictions made.")
+    #     print("{:.2f}".format(percentage) + "% of pixel values are within the 95% credible"
+    #                                         " interval of their corresponding predicted value.")
 
-        # Open the dropout_dataset.csv file
-        dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + self.run_name + '/dropout/dropout_dataset.csv')
-
-        total_predictions     = 0
-        well_predicted_pixels = 0
-
-        for day_id in tqdm(set(dropout_df.Day_ID), desc='Calculating 95% CI for held-out predictions'):
-
-            dropout_day_df = dropout_df[dropout_df.Day_ID == day_id]
-
-            obs_CH4 = list(dropout_day_df.obs_CH4)
-            obs_NO2 = list(dropout_day_df.obs_NO2)
-            sigma_N = list(dropout_day_df.sigma_N)
-
-            for i in range(len(obs_NO2)):
-                prediction, std_deviation = self.predict_ch4(obs_NO2[i], sigma_N[i], day_id)
-
-                if np.abs(prediction - obs_CH4[i]) < 2.*std_deviation:
-                    well_predicted_pixels += 1
-
-                total_predictions += 1
-
-        percentage = (well_predicted_pixels / total_predictions) * 100
-
-        print("There were", total_predictions, "total predictions made.")
-        print("{:.2f}".format(percentage) + "% of pixel values are within the 95% credible"
-                                            " interval of their corresponding predicted value.")
-
+    #TODO this is used
     def write_residuals_csv(self):
         '''This function goes through all days fitted in the model and calculates the residual between what the model
         predicts and what the "actual" methane pixel value is. This is performed only as part of the dropout testing.
@@ -159,6 +161,7 @@ class FittedResults:
         residuals_df = pd.concat(daily_dfs)
         residuals_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/residuals.csv', index=False)
 
+    #TODO this is used
     def write_reduced_chi_squared_csv(self):
         '''
         This function goes through all days fitted in the model and calculates a reduced chi-squred statistic for that day,
@@ -222,6 +225,7 @@ class FittedResults:
             reduced_chi_squared_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv',
                                           index=False)
 
+    #TODO this is used
     def predict_ch4(self, obs_no2, sigma_N, day_id):
         '''
         This function is for predicting an observed value of CH4 with an associated standard deviation on the estimate.
@@ -261,24 +265,22 @@ class FittedResults:
 
         return mean_observation, standard_deviation
 
+    # def display_results(self):
+    #     '''This function displays a pretty table of estimated quantities for all model parameters.'''
+    #
+    #     print_list = []
+    #
+    #     for parameter in self.parameter_list:
+    #         print_list.append([parameter,
+    #                            "{:.2f}".format(self.mean_values[parameter]),
+    #                            "{:.2f}".format(self.standard_deviations[parameter]),
+    #                            "(" + "{:.2f}".format(self.credible_intervals[parameter][0]) + ", " +
+    #                            "{:.2f}".format(self.credible_intervals[parameter][1]) + ")"])
+    #
+    #     print(tabulate(print_list,
+    #                    headers=['Param', 'Mean', 'Std Dev', '95% CI'], tablefmt='orgtbl'))
 
-    def display_results(self):
-        '''This function displays a pretty table of estimated quantities for all model parameters.'''
-
-        print_list = []
-
-        for parameter in self.parameter_list:
-            print_list.append([parameter,
-                               "{:.2f}".format(self.mean_values[parameter]),
-                               "{:.2f}".format(self.standard_deviations[parameter]),
-                               "(" + "{:.2f}".format(self.credible_intervals[parameter][0]) + ", " +
-                               "{:.2f}".format(self.credible_intervals[parameter][1]) + ")"])
-
-        print(tabulate(print_list,
-                       headers=['Param', 'Mean', 'Std Dev', '95% CI'], tablefmt='orgtbl'))
-
-
-
+    #TODO this is used
     def __init__(self, run_name):
         '''Constructor method.'''
 

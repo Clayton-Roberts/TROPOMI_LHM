@@ -13,6 +13,7 @@ from   cmdstanpy import CmdStanModel, set_cmdstan_path
 import constants as ct
 import tropomi_processing as tp
 
+#TODO this is used
 def install_cmdstan():
     '''After the python package cmdstanpy is downloaded/imported, CmdStan also needs to be installed somewhere (C++ code).
     This only needs to be done once.
@@ -20,6 +21,7 @@ def install_cmdstan():
 
     cmdstanpy.install_cmdstan(ct.CMDSTAN_PATH)
 
+#TODO this is used
 def delete_console_printed_lines(num_lines):
     '''This function deletes the output printed to the console when fitting data-poor days. NOTE: This clears the
     CmdStanPy automatic output of fitting a model, and we call this so that the console doesn't get messy when we fit the
@@ -32,8 +34,9 @@ def delete_console_printed_lines(num_lines):
     '''
 
     # Move up one line, clear current line and leave the cursor at its beginning, 32 times:
-    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 13)))
+    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 12)))
 
+#TODO this is used
 def set_data_poor_initial_values():
     '''This function sets the initial values for the sampler to something sensible.
     :param run_name: The name of the run.
@@ -46,6 +49,7 @@ def set_data_poor_initial_values():
             }
     return inits
 
+#TODO this is used
 def set_data_rich_initial_values(directory):
     #TODO make docstring
 
@@ -63,6 +67,7 @@ def set_data_rich_initial_values(directory):
 
     return inits
 
+#TODO this is used
 def write_and_print_data_poor_summary(date_range, elapsed_time, dropout):
     '''This function is for writing a summary of how fitting the model to data-poor days went (and printing it to the
     screen), and can be used for either dropout or full fits.
@@ -123,6 +128,7 @@ def write_and_print_data_poor_summary(date_range, elapsed_time, dropout):
         print('Split R-hat values not satisfactory for some/all parameters on some days, inspect diagnostics.csv file.\n')
     f.close()
 
+#TODO this is used
 def data_poor(date_range, dropout=False):
     '''This function is for fitting the model to all the data poor days in the indicated date range.
 
@@ -290,6 +296,7 @@ def data_poor(date_range, dropout=False):
 
     write_and_print_data_poor_summary(date_range, elapsed_time, dropout)
 
+#TODO this is used
 def data_rich(date_range, error_type, dropout=False):
     #TODO make docstring
 

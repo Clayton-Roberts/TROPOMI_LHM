@@ -16,6 +16,7 @@ import glob
 import json
 import shutil
 
+#TODO this is used: has been checked internally.
 def make_directories(run_name):
     '''This function checks that all the relevant directories are made. If you re-use a run name, the directory and
     previous contents will be deleted, and the directory will be created again WITHOUT WARNING.
@@ -36,6 +37,7 @@ def make_directories(run_name):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name)
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
 
+#TODO this is used
 def prepare_data_poor_dataset_for_cmdstanpy(date_range, date, dropout):
     #TODO make docstring
 
@@ -97,6 +99,7 @@ def prepare_data_poor_dataset_for_cmdstanpy(date_range, date, dropout):
     with open(ct.FILE_PREFIX + '/outputs/' + directory + '/dummy/data.json', 'w') as outfile:
         json.dump(data, outfile)
 
+#TODO this is used: has been checked internally.
 def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     '''This function takes the "dataset.cvs" file located at "data/run_name" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
@@ -149,6 +152,7 @@ def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
 
+#TODO this is used: has been checked internally.
 def unpack_no2(filename):
     '''This function opens a "raw" TROPOMI observation file of :math:`\mathrm{NO}_2` and returns arrays of quantities
     of interest that we need for our analysis.
@@ -173,6 +177,7 @@ def unpack_no2(filename):
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes, qa_values
 
+#TODO this is used: has been checked internally.
 def unpack_ch4(filename):
     '''This function opens a "raw" TROPOMI observation file of :math:`\mathrm{CH}_4` and returns arrays of quantities
     of interest that we need for our analysis.
@@ -197,6 +202,7 @@ def unpack_ch4(filename):
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes, qa_values
 
+#TODO this is used.
 def reduce_no2(no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes,
                no2_qa_values):
     '''This function takes in arrays of data that have been unpacked from a TROPOMI observation file, and reduces
@@ -237,6 +243,7 @@ def reduce_no2(no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitude
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes
 
+#TODO this is used.
 def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes,
                ch4_qa_values):
     '''This function takes in arrays of data that have been unpacked from a TROPOMI observation file, and reduces
@@ -277,6 +284,7 @@ def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitude
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes
 
+#TODO this is used:
 def get_colocated_measurements(filename):
     #TODO Make docstring, and eventually have arguments that control the date range to make the dataset for.
     #   For now no arguments as I build the function.
@@ -336,7 +344,7 @@ def get_colocated_measurements(filename):
 
     return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
 
-#TODO working on a new function here for final script, this is good for refactoring.
+#TODO this is used: has been checked internally.
 def convert_TROPOMI_observations_to_csvs(date_range):
     '''This function will iterate over a date range, determine if the TROPOMI observation on this day is either
     "data-rich" or "data-poor", and then write the observations into the appropriate .csv file.
@@ -520,7 +528,7 @@ def convert_TROPOMI_observations_to_csvs(date_range):
     g.write("Total number of observations in range: " + str(num_data_poor_observations) + '\n')
     g.close()
 
-#TODO rename this function after it's been fully made and is successfully working
+#TODO this is used: has been checked internally.
 def make_all_directories(date_range):
     '''This function is for creating all the necessary directories needed to store processed TROPOMI observations as
     data and the directories needed to store the outputs.
@@ -553,6 +561,7 @@ def make_all_directories(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
 
+#TODO this is used: has been checked internally.
 def copy_data():
     '''This function is for copying over data-rich observations for the month of January to two new directories
     so that we can carry out some model comparison.'''
@@ -585,221 +594,222 @@ def copy_data():
     reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-data_rich/dataset.csv', index=False)
     reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-individual_error/dataset.csv', index=False)
 
-def create_dataset_data_poor_days(run_name):
-    # TODO Make docstring
+# def create_dataset_data_poor_days(run_name):
+#     # TODO Make docstring
+#
+#     start_date, end_date, model = run_name.split('-')
+#
+#     start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+#     end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
+#
+#     total_days         = 0
+#     data_poor_days     = 0
+#     total_observations = 0
+#
+#     # It should be okay to have some Day IDs be shared between data-rich and data poor days.
+#     # FittedResults will always be segregated between data-rich and data-poor days, and
+#     # the "plotables" csv file will let you know if a day was data-rich or data-poor, so as long as we remember
+#     # to check that parameter, we should always be able to load up posterior parameter estimates for the correct day.
+#     day_id = 1  # Stan starts counting from 1!
+#
+#     # Empty list to hold dataframes for each day's observations when checks are passed.
+#     daily_dfs = []
+#
+#     # A summary dataframe for overall metrics of for this run's data.
+#     summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
+#
+#     # Create the list of dates to iterate over.
+#     num_days  = (end_datetime - start_datetime).days + 1
+#     date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
+#
+#     # Read in the summary of the data-rich days so that we can skip days that were included in the data-rich model run.
+#     data_rich_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + start_date + '-' + end_date + '-data_rich/summary.csv')
+#     data_rich_date_list  = list(data_rich_summary_df.date)
+#
+#     # For every date in range for this model run:
+#     for date in tqdm(date_list, desc='Processing TROPOMI observations for data-poor days'):
+#         if date.strftime('%Y-%m-%d') not in data_rich_date_list:
+#
+#             total_days += 1
+#
+#             # Create string from the date datetime
+#             date_string = date.strftime("%Y%m%d")
+#
+#             # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+#             # that are a couple hours apart. Usually one overpass captures the whole study region.
+#             tropomi_overpasses = [file.split('/')[-1] for file in
+#                                   glob.glob(
+#                                       ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+#
+#             total_obs_CH4   = []
+#             total_sigma_C   = []
+#             total_obs_NO2   = []
+#             total_sigma_N   = []
+#             total_latitude  = []
+#             total_longitude = []
+#
+#             for overpass in tropomi_overpasses:
+#                 obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
+#
+#                 total_obs_CH4.extend(obs_CH4)
+#                 total_sigma_C.extend(sigma_C)
+#                 total_obs_NO2.extend(obs_NO2)
+#                 total_sigma_N.extend(sigma_N)
+#                 total_latitude.extend(latitude)
+#                 total_longitude.extend(longitude)
+#
+#             # If there are more than 2 co-located measurements on this day ... (Note: this may change)
+#             # Currently 2 because that's the minimum needed to determine correlation coefficient R
+#             if len(total_obs_NO2) >= 2:
+#
+#                 r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
+#
+#                 data_poor_days     += 1
+#                 total_observations += len(total_obs_NO2)
+#
+#                 # Append summary of this day to the summary dataframe.
+#                 summary_df = summary_df.append({'date': date,
+#                                                 'day_id': day_id,
+#                                                 'N': len(total_obs_NO2),
+#                                                 'R': round(r, 2)},
+#                                                ignore_index=True)
+#
+#                 # Create a dataframe containing the observations for this day.
+#                 day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),
+#                                                [date] * len(total_obs_NO2),
+#                                                total_obs_NO2,
+#                                                total_obs_CH4,
+#                                                total_sigma_N,
+#                                                total_sigma_C,
+#                                                total_latitude,
+#                                                total_longitude)),
+#                                       columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
+#                                                'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+#
+#                 # Append the dataframe to this day to the list of dataframes to later concatenate together.
+#                 daily_dfs.append(day_df)
+#
+#                 # Increment day_id
+#                 day_id += 1
+#
+#     # Sort the summary dataframe by date.
+#     summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
+#
+#     # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
+#     dataset_df = pd.concat(daily_dfs)
+#     dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
+#
+#     f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
+#     f.write("Total number of days in range: " + str(total_days) + '\n')
+#     f.write("Total number of data-rich days in range: " + str(data_poor_days) + '\n')
+#     f.write("Total number of observations in range: " + str(total_observations) + '\n')
+#     f.close()
+#
+# def create_dataset_data_rich_days(run_name):
+#     #TODO Make docstring
+#
+#     start_date, end_date, model = run_name.split('-')
+#
+#     start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
+#     end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
+#
+#     total_days         = 0
+#     data_rich_days     = 0
+#     total_observations = 0
+#
+#     day_id = 1 # Stan starts counting from 1!
+#
+#     # Empty list to hold dataframes for each day's observations when checks are passed.
+#     daily_dfs = []
+#
+#     # A summary dataframe for overall metrics of for this run's data.
+#     summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
+#
+#     # Create the list of dates to iterate over.
+#     num_days  = (end_datetime - start_datetime).days + 1
+#     date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
+#
+#     # For every date in range for this model run:
+#     for date in tqdm(date_list, desc='Processing TROPOMI observations for data-rich days'):
+#
+#         total_days += 1
+#
+#         # Create string from the date datetime
+#         date_string = date.strftime("%Y%m%d")
+#
+#         # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+#         # that are a couple hours apart. Usually one overpass captures the whole study region.
+#         tropomi_overpasses = [file.split('/')[-1] for file in
+#                                    glob.glob(
+#                                        ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+#
+#         total_obs_CH4   = []
+#         total_sigma_C   = []
+#         total_obs_NO2   = []
+#         total_sigma_N   = []
+#         total_latitude  = []
+#         total_longitude = []
+#
+#         for overpass in tropomi_overpasses:
+#
+#             obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
+#
+#             total_obs_CH4.extend(obs_CH4)
+#             total_sigma_C.extend(sigma_C)
+#             total_obs_NO2.extend(obs_NO2)
+#             total_sigma_N.extend(sigma_N)
+#             total_latitude.extend(latitude)
+#             total_longitude.extend(longitude)
+#
+#         # If there are more than 100 co-located measurements on this day ...
+#         if len(total_obs_NO2) >= 100:
+#
+#             r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
+#
+#             # if R >= 0.4 ...
+#             if r >= 0.4:
+#                 # Checks are passed, so write to the various datasets.
+#
+#                 data_rich_days += 1
+#                 total_observations += len(total_obs_NO2)
+#
+#                 # Append summary of this day to the summary dataframe.
+#                 summary_df = summary_df.append({'date': date, 'day_id': day_id, 'N': len(total_obs_NO2),
+#                                                 'R': round(r, 2)},
+#                                                ignore_index=True)
+#
+#                 # Create a dataframe containing the observations for this day.
+#                 day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),
+#                                                [date] * len(total_obs_NO2),
+#                                                total_obs_NO2,
+#                                                total_obs_CH4,
+#                                                total_sigma_N,
+#                                                total_sigma_C,
+#                                                total_latitude,
+#                                                total_longitude)),
+#                                       columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
+#                                                'sigma_N', 'sigma_C', 'latitude', 'longitude'))
+#
+#                 # Append the dataframe to this day to the list of dataframes to later concatenate together.
+#                 daily_dfs.append(day_df)
+#
+#                 # Increment day_id
+#                 day_id += 1
+#
+#     # Sort the summary dataframe by date.
+#     summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
+#
+#     # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
+#     dataset_df = pd.concat(daily_dfs)
+#     dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
+#
+#     f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
+#     f.write("Total number of days in range: " + str(total_days) + '\n')
+#     f.write("Total number of data-rich days in range: " + str(data_rich_days) + '\n')
+#     f.write("Total number of observations in range: " + str(total_observations) + '\n')
+#     f.close()
 
-    start_date, end_date, model = run_name.split('-')
-
-    start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
-    end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
-
-    total_days         = 0
-    data_poor_days     = 0
-    total_observations = 0
-
-    # It should be okay to have some Day IDs be shared between data-rich and data poor days.
-    # FittedResults will always be segregated between data-rich and data-poor days, and
-    # the "plotables" csv file will let you know if a day was data-rich or data-poor, so as long as we remember
-    # to check that parameter, we should always be able to load up posterior parameter estimates for the correct day.
-    day_id = 1  # Stan starts counting from 1!
-
-    # Empty list to hold dataframes for each day's observations when checks are passed.
-    daily_dfs = []
-
-    # A summary dataframe for overall metrics of for this run's data.
-    summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
-
-    # Create the list of dates to iterate over.
-    num_days  = (end_datetime - start_datetime).days + 1
-    date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
-
-    # Read in the summary of the data-rich days so that we can skip days that were included in the data-rich model run.
-    data_rich_summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + start_date + '-' + end_date + '-data_rich/summary.csv')
-    data_rich_date_list  = list(data_rich_summary_df.date)
-
-    # For every date in range for this model run:
-    for date in tqdm(date_list, desc='Processing TROPOMI observations for data-poor days'):
-        if date.strftime('%Y-%m-%d') not in data_rich_date_list:
-
-            total_days += 1
-
-            # Create string from the date datetime
-            date_string = date.strftime("%Y%m%d")
-
-            # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
-            # that are a couple hours apart. Usually one overpass captures the whole study region.
-            tropomi_overpasses = [file.split('/')[-1] for file in
-                                  glob.glob(
-                                      ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
-
-            total_obs_CH4   = []
-            total_sigma_C   = []
-            total_obs_NO2   = []
-            total_sigma_N   = []
-            total_latitude  = []
-            total_longitude = []
-
-            for overpass in tropomi_overpasses:
-                obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
-
-                total_obs_CH4.extend(obs_CH4)
-                total_sigma_C.extend(sigma_C)
-                total_obs_NO2.extend(obs_NO2)
-                total_sigma_N.extend(sigma_N)
-                total_latitude.extend(latitude)
-                total_longitude.extend(longitude)
-
-            # If there are more than 2 co-located measurements on this day ... (Note: this may change)
-            # Currently 2 because that's the minimum needed to determine correlation coefficient R
-            if len(total_obs_NO2) >= 2:
-
-                r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
-
-                data_poor_days     += 1
-                total_observations += len(total_obs_NO2)
-
-                # Append summary of this day to the summary dataframe.
-                summary_df = summary_df.append({'date': date,
-                                                'day_id': day_id,
-                                                'N': len(total_obs_NO2),
-                                                'R': round(r, 2)},
-                                               ignore_index=True)
-
-                # Create a dataframe containing the observations for this day.
-                day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),
-                                               [date] * len(total_obs_NO2),
-                                               total_obs_NO2,
-                                               total_obs_CH4,
-                                               total_sigma_N,
-                                               total_sigma_C,
-                                               total_latitude,
-                                               total_longitude)),
-                                      columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
-                                               'sigma_N', 'sigma_C', 'latitude', 'longitude'))
-
-                # Append the dataframe to this day to the list of dataframes to later concatenate together.
-                daily_dfs.append(day_df)
-
-                # Increment day_id
-                day_id += 1
-
-    # Sort the summary dataframe by date.
-    summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
-
-    # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
-    dataset_df = pd.concat(daily_dfs)
-    dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
-
-    f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
-    f.write("Total number of days in range: " + str(total_days) + '\n')
-    f.write("Total number of data-rich days in range: " + str(data_poor_days) + '\n')
-    f.write("Total number of observations in range: " + str(total_observations) + '\n')
-    f.close()
-
-def create_dataset_data_rich_days(run_name):
-    #TODO Make docstring
-
-    start_date, end_date, model = run_name.split('-')
-
-    start_datetime = datetime.datetime.strptime(start_date, "%Y%m%d").date()
-    end_datetime   = datetime.datetime.strptime(end_date, "%Y%m%d").date()
-
-    total_days         = 0
-    data_rich_days     = 0
-    total_observations = 0
-
-    day_id = 1 # Stan starts counting from 1!
-
-    # Empty list to hold dataframes for each day's observations when checks are passed.
-    daily_dfs = []
-
-    # A summary dataframe for overall metrics of for this run's data.
-    summary_df = pd.DataFrame(columns=(('date', 'day_id', 'N', 'R')))
-
-    # Create the list of dates to iterate over.
-    num_days  = (end_datetime - start_datetime).days + 1
-    date_list = [start_datetime + datetime.timedelta(days=x) for x in range(num_days)]
-
-    # For every date in range for this model run:
-    for date in tqdm(date_list, desc='Processing TROPOMI observations for data-rich days'):
-
-        total_days += 1
-
-        # Create string from the date datetime
-        date_string = date.strftime("%Y%m%d")
-
-        # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
-        # that are a couple hours apart. Usually one overpass captures the whole study region.
-        tropomi_overpasses = [file.split('/')[-1] for file in
-                                   glob.glob(
-                                       ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
-
-        total_obs_CH4   = []
-        total_sigma_C   = []
-        total_obs_NO2   = []
-        total_sigma_N   = []
-        total_latitude  = []
-        total_longitude = []
-
-        for overpass in tropomi_overpasses:
-
-            obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
-
-            total_obs_CH4.extend(obs_CH4)
-            total_sigma_C.extend(sigma_C)
-            total_obs_NO2.extend(obs_NO2)
-            total_sigma_N.extend(sigma_N)
-            total_latitude.extend(latitude)
-            total_longitude.extend(longitude)
-
-        # If there are more than 100 co-located measurements on this day ...
-        if len(total_obs_NO2) >= 100:
-
-            r, p_value = stats.pearsonr(total_obs_NO2, total_obs_CH4)
-
-            # if R >= 0.4 ...
-            if r >= 0.4:
-                # Checks are passed, so write to the various datasets.
-
-                data_rich_days += 1
-                total_observations += len(total_obs_NO2)
-
-                # Append summary of this day to the summary dataframe.
-                summary_df = summary_df.append({'date': date, 'day_id': day_id, 'N': len(total_obs_NO2),
-                                                'R': round(r, 2)},
-                                               ignore_index=True)
-
-                # Create a dataframe containing the observations for this day.
-                day_df = pd.DataFrame(list(zip([day_id] * len(total_obs_NO2),
-                                               [date] * len(total_obs_NO2),
-                                               total_obs_NO2,
-                                               total_obs_CH4,
-                                               total_sigma_N,
-                                               total_sigma_C,
-                                               total_latitude,
-                                               total_longitude)),
-                                      columns=('day_id', 'date', 'obs_NO2', 'obs_CH4',
-                                               'sigma_N', 'sigma_C', 'latitude', 'longitude'))
-
-                # Append the dataframe to this day to the list of dataframes to later concatenate together.
-                daily_dfs.append(day_df)
-
-                # Increment day_id
-                day_id += 1
-
-    # Sort the summary dataframe by date.
-    summary_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/summary.csv', index=False)
-
-    # Concatenate the daily dataframes together to make the dataset dataframe. Leave sorted by Day_ID.
-    dataset_df = pd.concat(daily_dfs)
-    dataset_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dataset.csv', index=False)
-
-    f = open(ct.FILE_PREFIX + "/data/" + run_name + "/summary.txt", "a")
-    f.write("Total number of days in range: " + str(total_days) + '\n')
-    f.write("Total number of data-rich days in range: " + str(data_rich_days) + '\n')
-    f.write("Total number of observations in range: " + str(total_observations) + '\n')
-    f.close()
-
+#TODO this is used: has been checked internally.
 def add_predictions(fitted_results):
     '''This function is for creating augmented .nc TROPOMI files that were part of the hierarchical model run
     using "data rich" days.
@@ -924,7 +934,7 @@ def add_predictions(fitted_results):
                 augmented_methane_mixing_ratio                    = np.full(ch4_pixel_values.shape, 1e32)
                 augmented_methane_mixing_ratio_precision          = np.full(ch4_pixel_precisions.shape, 1e32)
                 augmented_methane_predictor_pixel_qa_value        = np.full(ch4_pixel_values.shape, 1e32)
-                augmented_methane_predictor_pixel_outside_of_zero =  np.full(ch4_pixel_values.shape, 1e32)
+                augmented_methane_predictor_pixel_outside_of_zero = np.full(ch4_pixel_values.shape, 1e32)
 
                 # Iterate over the raw CH4 data, and calculate predictions and overwrite as necessary.
                 for i in range(ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
@@ -949,6 +959,7 @@ def add_predictions(fitted_results):
                 predictor_pixel_outside_of_zero[0,:,:] = augmented_methane_predictor_pixel_outside_of_zero
                 augmented_file.close()
 
+#TODO this is used: has been checked internally.
 def add_dry_air_column_densities(fitted_results):
     '''This function is for adding ERA5-calculated column densities of dry air at the location of the methane pixels.
 
@@ -1079,6 +1090,7 @@ def add_dry_air_column_densities(fitted_results):
             dacd[0, :, :] = dry_air_column_densities
             augmented_ch4_file.close()
 
+#TODO this is used: has been checked internally.
 def calculate_dry_air_column_density_residuals(fitted_results):
     '''This function is for calculating the residual between the ERA5-derived dry air column density and the dry air
     column density calculated from the TROPOMI CH4 product.
@@ -1153,6 +1165,7 @@ def calculate_dry_air_column_density_residuals(fitted_results):
 
     full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_density_residuals.csv', index=False)
 
+#TODO this is used.
 def calculate_pixel_area(latitudes, longitudes):
     '''A function for calculating the area of a pixel in square meters.
 
@@ -1176,6 +1189,7 @@ def calculate_pixel_area(latitudes, longitudes):
 
     return area
 
+#TODO this is used: has been checked internally.
 def calculate_final_results(fitted_results):
     '''This function is for writing a single large .csv file summarising all plotable quantities by date.
 
@@ -1189,34 +1203,34 @@ def calculate_final_results(fitted_results):
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', index_col=0)
 
     # Create the pandas dataframe that we will eventually save as a csv file.
-    plotable_quantities_df = pd.DataFrame(columns=('date',
-                                                   'day_id',
-                                                   'day_type',
-                                                   'N',
-                                                   'R',
-                                                   'flare_count',
-                                                   'noaa_background',
-                                                   'alpha_50',
-                                                   'alpha_16',
-                                                   'alpha_84',
-                                                   'beta_50',
-                                                   'beta_16',
-                                                   'beta_84',
-                                                   'gamma_50',
-                                                   'gamma_16',
-                                                   'gamma_84',
-                                                   'original_pixel_value_50',
-                                                   'augmented_pixel_value_50',
-                                                   'original_pixel_coverage',
-                                                   'augmented_pixel_coverage',
-                                                   'original_ch4_load',
-                                                   'original_ch4_load_precision',
-                                                   'fully_augmented_ch4_load',
-                                                   'fully_augmented_ch4_load_precision',
-                                                   'partially_augmented_ch4_load',
-                                                   'partially_augmented_ch4_load_precision',
-                                                   'original_no2_load',
-                                                   'original_no2_load_precision'))
+    final_results_df = pd.DataFrame(columns=('date',
+                                             'day_id',
+                                             'day_type',
+                                             'N',
+                                             'R',
+                                             'flare_count',
+                                             'noaa_background',
+                                             'alpha_50',
+                                             'alpha_16',
+                                             'alpha_84',
+                                             'beta_50',
+                                             'beta_16',
+                                             'beta_84',
+                                             'gamma_50',
+                                             'gamma_16',
+                                             'gamma_84',
+                                             'original_pixel_value_50',
+                                             'augmented_pixel_value_50',
+                                             'original_pixel_coverage',
+                                             'augmented_pixel_coverage',
+                                             'original_ch4_load',
+                                             'original_ch4_load_precision',
+                                             'fully_augmented_ch4_load',
+                                             'fully_augmented_ch4_load_precision',
+                                             'partially_augmented_ch4_load',
+                                             'partially_augmented_ch4_load_precision',
+                                             'original_no2_load',
+                                             'original_no2_load_precision'))
 
     # Open the .csv containing the residuals of the dry air column densities, and calculate the RMS that we will use
     # to propogate the error from the dry air column density as we calculate the methane column density.
@@ -1440,7 +1454,7 @@ def calculate_final_results(fitted_results):
             sum([precision ** 2 for precision in np.array(type3_mols_methane)[:, 1]]))
 
         # Append all quantities for this day as a new row in the dataframe.
-        plotable_quantities_df = plotable_quantities_df.append({'date': date,
+        final_results_df = final_results_df.append({'date': date,
                                                                 'day_id': day_id,
                                                                 'day_type': day_type,
                                                                 'N': N,
@@ -1470,116 +1484,109 @@ def calculate_final_results(fitted_results):
                                                                 'original_no2_load_precision': no2_load_precision},
                                                                ignore_index=True)
 
-        plotable_quantities_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
+        final_results_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
                                       index=False)
 
-def calculate_prediction_vs_heldout_pixel_value(fitted_results):
-    '''This function is for creating a csv file where one column is the heldout CH4 pixel, and then the predicted pixel value
-    from the dropout model for that location.
-
-    :param fitted_results: The results of the dropout model run.
-    :type fitted_results: FittedResults
-    '''
-
-    # Read in the dropout_dataset.csv file, index by date
-    dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/dropout_dataset.csv', header=0)
-
-    pixels_df = pd.DataFrame(columns=('Date', 'heldout_pixel_values', 'colocated_prediction_values', 'residuals'))
-
-    for i in tqdm(range(len(dropout_df.index)), desc='Comparing heldout pixels to predicted values'):
-        prediction, precision = fitted_results.predict_ch4(dropout_df.obs_NO2.iloc[i],
-                                                           dropout_df.sigma_N.iloc[i],
-                                                           dropout_df.Day_ID.iloc[i])
-
-        original_pixel = dropout_df.obs_CH4.iloc[i]
-
-        residual = original_pixel - prediction
-
-        pixels_df = pixels_df.append({'Date': dropout_df.Date.iloc[i],
-                                      'heldout_pixel_values': original_pixel,
-                                      'colocated_prediction_values': prediction,
-                                      'residual': residual},
-                                     ignore_index=True)
-
-    pixels_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name.split('/')[0] + '/heldout_pixels_and_colocated_predictions.csv')
-
-def calculate_prediction_vs_poor_pixel_value(fitted_results):
-    '''This function is for creating a csv file where one column is the CH4 pixel value for pixels with qa < 0.5, and
-    then the corresponding prediction at that location when possible from an NO2 pixel with qa >= 0.75.
-
-    :param fitted_results: The results of this model run
-    :type fitted_results: FittedResults
-    '''
-
-    # Read in the summary.csv file, index by date
-    summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
-                             index_col=0)
-
-    methane_pixel_dfs = []
-
-    for date in tqdm(summary_df.index, desc='Comparing poor methane pixels to predicted values'):
-
-        poor_pixel_values      = []
-        colocated_predictions  = []
-        residuals              = []
-
-        # Create string from the date datetime
-        date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
-
-        # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
-        # that are a couple hours apart. Usually one overpass captures the whole study region.
-        tropomi_overpasses = [file.split('/')[-1] for file in
-                              glob.glob(
-                                  ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
-
-        for filename in tropomi_overpasses:
-            # Open the original CH4 file.
-            original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
-            # Open the augmented CH4 file containing all the predictions.
-            augmented_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/'
-                                             + fitted_results.run_name + '/data_rich_days/' + filename, 'r')
-
-            # Generate the arrays of CH4 pixel centre latitudes and longitudes, same between both files.
-            pixel_centre_latitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['latitude'])[0]
-            pixel_centre_longitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['longitude'])[0]
-
-            # Get the arrays of the QA values
-            qa_values                = np.array(original_ch4_file.groups['PRODUCT'].variables['qa_value'])[0]
-            predicted_pixel_qa_value = np.array(augmented_ch4_file.groups['PRODUCT'].variables['prediction_pixel_qa_value'])[0]
-
-            # Get the arrays of the pixel values
-            original_pixel_values  = np.array(original_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
-            predicted_pixel_values = np.array(augmented_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
-
-
-            for i in range(original_ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
-                for j in range(original_ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
-                    if (ct.STUDY_REGION['Permian_Basin'][2] < pixel_centre_latitudes[i, j] <
-                        ct.STUDY_REGION['Permian_Basin'][
-                            3]) and \
-                            (ct.STUDY_REGION['Permian_Basin'][0] < pixel_centre_longitudes[i, j] <
-                             ct.STUDY_REGION['Permian_Basin'][1]):
-                        if (qa_values[i, j] < 0.5) and \
-                                (original_pixel_values[i, j] < 1e30) and \
-                                (predicted_pixel_qa_value[i, j] >= 0.75) and \
-                                (predicted_pixel_values[i, j] < 1e30):
-                            poor_pixel_values.append(original_pixel_values[i, j])
-                            colocated_predictions.append(predicted_pixel_values[i, j])
-                            residuals.append(original_pixel_values[i, j] - predicted_pixel_values[i, j])
-
-        date_df = pd.DataFrame(list(zip([date] * len(residuals), poor_pixel_values, colocated_predictions, residuals)),
-                               columns=['date', 'poor_pixel_values', 'colocated_prediction_value', 'residuals'])
-
-        methane_pixel_dfs.append(date_df)
-
-    full_df = pd.concat(methane_pixel_dfs, ignore_index=True)
-
-    full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/poor_pixels_and_colocated_predictions.csv',
-                   index=False)
-
-
-
-
-
-
-
+# def calculate_prediction_vs_heldout_pixel_value(fitted_results):
+#     '''This function is for creating a csv file where one column is the heldout CH4 pixel, and then the predicted pixel value
+#     from the dropout model for that location.
+#
+#     :param fitted_results: The results of the dropout model run.
+#     :type fitted_results: FittedResults
+#     '''
+#
+#     # Read in the dropout_dataset.csv file, index by date
+#     dropout_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/dropout_dataset.csv', header=0)
+#
+#     pixels_df = pd.DataFrame(columns=('Date', 'heldout_pixel_values', 'colocated_prediction_values', 'residuals'))
+#
+#     for i in tqdm(range(len(dropout_df.index)), desc='Comparing heldout pixels to predicted values'):
+#         prediction, precision = fitted_results.predict_ch4(dropout_df.obs_NO2.iloc[i],
+#                                                            dropout_df.sigma_N.iloc[i],
+#                                                            dropout_df.Day_ID.iloc[i])
+#
+#         original_pixel = dropout_df.obs_CH4.iloc[i]
+#
+#         residual = original_pixel - prediction
+#
+#         pixels_df = pixels_df.append({'Date': dropout_df.Date.iloc[i],
+#                                       'heldout_pixel_values': original_pixel,
+#                                       'colocated_prediction_values': prediction,
+#                                       'residual': residual},
+#                                      ignore_index=True)
+#
+#     pixels_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name.split('/')[0] + '/heldout_pixels_and_colocated_predictions.csv')
+#
+# def calculate_prediction_vs_poor_pixel_value(fitted_results):
+#     '''This function is for creating a csv file where one column is the CH4 pixel value for pixels with qa < 0.5, and
+#     then the corresponding prediction at that location when possible from an NO2 pixel with qa >= 0.75.
+#
+#     :param fitted_results: The results of this model run
+#     :type fitted_results: FittedResults
+#     '''
+#
+#     # Read in the summary.csv file, index by date
+#     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + fitted_results.run_name + '/summary.csv', header=0,
+#                              index_col=0)
+#
+#     methane_pixel_dfs = []
+#
+#     for date in tqdm(summary_df.index, desc='Comparing poor methane pixels to predicted values'):
+#
+#         poor_pixel_values      = []
+#         colocated_predictions  = []
+#         residuals              = []
+#
+#         # Create string from the date datetime
+#         date_string = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
+#
+#         # Create list of TROPOMI filenames that match this date. Sometimes there are two TROPOMI overpasses
+#         # that are a couple hours apart. Usually one overpass captures the whole study region.
+#         tropomi_overpasses = [file.split('/')[-1] for file in
+#                               glob.glob(
+#                                   ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+#
+#         for filename in tropomi_overpasses:
+#             # Open the original CH4 file.
+#             original_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
+#             # Open the augmented CH4 file containing all the predictions.
+#             augmented_ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/'
+#                                              + fitted_results.run_name + '/data_rich_days/' + filename, 'r')
+#
+#             # Generate the arrays of CH4 pixel centre latitudes and longitudes, same between both files.
+#             pixel_centre_latitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['latitude'])[0]
+#             pixel_centre_longitudes = np.array(original_ch4_file.groups['PRODUCT'].variables['longitude'])[0]
+#
+#             # Get the arrays of the QA values
+#             qa_values                = np.array(original_ch4_file.groups['PRODUCT'].variables['qa_value'])[0]
+#             predicted_pixel_qa_value = np.array(augmented_ch4_file.groups['PRODUCT'].variables['prediction_pixel_qa_value'])[0]
+#
+#             # Get the arrays of the pixel values
+#             original_pixel_values  = np.array(original_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
+#             predicted_pixel_values = np.array(augmented_ch4_file.groups['PRODUCT'].variables['methane_mixing_ratio'])[0]
+#
+#
+#             for i in range(original_ch4_file.groups['PRODUCT'].dimensions['scanline'].size):
+#                 for j in range(original_ch4_file.groups['PRODUCT'].dimensions['ground_pixel'].size):
+#                     if (ct.STUDY_REGION['Permian_Basin'][2] < pixel_centre_latitudes[i, j] <
+#                         ct.STUDY_REGION['Permian_Basin'][
+#                             3]) and \
+#                             (ct.STUDY_REGION['Permian_Basin'][0] < pixel_centre_longitudes[i, j] <
+#                              ct.STUDY_REGION['Permian_Basin'][1]):
+#                         if (qa_values[i, j] < 0.5) and \
+#                                 (original_pixel_values[i, j] < 1e30) and \
+#                                 (predicted_pixel_qa_value[i, j] >= 0.75) and \
+#                                 (predicted_pixel_values[i, j] < 1e30):
+#                             poor_pixel_values.append(original_pixel_values[i, j])
+#                             colocated_predictions.append(predicted_pixel_values[i, j])
+#                             residuals.append(original_pixel_values[i, j] - predicted_pixel_values[i, j])
+#
+#         date_df = pd.DataFrame(list(zip([date] * len(residuals), poor_pixel_values, colocated_predictions, residuals)),
+#                                columns=['date', 'poor_pixel_values', 'colocated_prediction_value', 'residuals'])
+#
+#         methane_pixel_dfs.append(date_df)
+#
+#     full_df = pd.concat(methane_pixel_dfs, ignore_index=True)
+#
+#     full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/poor_pixels_and_colocated_predictions.csv',
+#                    index=False)
