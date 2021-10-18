@@ -21,16 +21,9 @@
   <component name="ChangeListManager">
     <list default="true" id="80c71c98-34b5-4c56-a760-d86566ce5757" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dropout_tests.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/dropout_tests.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/fit_model.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/fit_model.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/model_comparison.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/model_comparison.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/real_analysis.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/results.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/results.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_analysis.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test_suite/functions.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/run_analysis.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/run_analysis.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/tropomi_processing.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/tropomi_processing.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/viirs_processing.py" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -477,7 +470,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/src/results.py</url>
-          <line>191</line>
+          <line>157</line>
           <option name="timeStamp" value="221" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
