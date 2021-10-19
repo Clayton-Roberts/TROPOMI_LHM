@@ -16,7 +16,6 @@ import glob
 import json
 import shutil
 
-#TODO this is used: has been checked internally.
 def make_directories(run_name):
     '''This function checks that all the relevant directories are made. If you re-use a run name, the directory and
     previous contents will be deleted, and the directory will be created again WITHOUT WARNING.
@@ -37,7 +36,6 @@ def make_directories(run_name):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + run_name)
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
 
-#TODO this is used
 def prepare_data_poor_dataset_for_cmdstanpy(date_range, date, dropout):
     #TODO make docstring
 
@@ -99,7 +97,6 @@ def prepare_data_poor_dataset_for_cmdstanpy(date_range, date, dropout):
     with open(ct.FILE_PREFIX + '/outputs/' + directory + '/dummy/data.json', 'w') as outfile:
         json.dump(data, outfile)
 
-#TODO this is used: has been checked internally.
 def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     '''This function takes the "dataset.cvs" file located at "data/run_name" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
@@ -152,7 +149,6 @@ def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     with open(ct.FILE_PREFIX + '/data/' + run_name + '/data.json', 'w') as outfile:
         json.dump(data, outfile)
 
-#TODO this is used: has been checked internally.
 def unpack_no2(filename):
     '''This function opens a "raw" TROPOMI observation file of :math:`\mathrm{NO}_2` and returns arrays of quantities
     of interest that we need for our analysis.
@@ -177,7 +173,6 @@ def unpack_no2(filename):
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes, qa_values
 
-#TODO this is used: has been checked internally.
 def unpack_ch4(filename):
     '''This function opens a "raw" TROPOMI observation file of :math:`\mathrm{CH}_4` and returns arrays of quantities
     of interest that we need for our analysis.
@@ -202,7 +197,6 @@ def unpack_ch4(filename):
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes, qa_values
 
-#TODO this is used.
 def reduce_no2(no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes,
                no2_qa_values):
     '''This function takes in arrays of data that have been unpacked from a TROPOMI observation file, and reduces
@@ -243,7 +237,6 @@ def reduce_no2(no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitude
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes
 
-#TODO this is used.
 def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes,
                ch4_qa_values):
     '''This function takes in arrays of data that have been unpacked from a TROPOMI observation file, and reduces
@@ -284,10 +277,9 @@ def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitude
 
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes
 
-#TODO this is used:
 def get_colocated_measurements(filename):
-    #TODO Make docstring, and eventually have arguments that control the date range to make the dataset for.
-    #   For now no arguments as I build the function.
+    #TODO Make docstring
+
 
     # Unpack the TROPOMI NO2 data for this day.
     no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes, no2_qa_values \
@@ -344,7 +336,6 @@ def get_colocated_measurements(filename):
 
     return obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude
 
-#TODO this is used: has been checked internally.
 def convert_TROPOMI_observations_to_csvs(date_range):
     '''This function will iterate over a date range, determine if the TROPOMI observation on this day is either
     "data-rich" or "data-poor", and then write the observations into the appropriate .csv file.
@@ -528,7 +519,6 @@ def convert_TROPOMI_observations_to_csvs(date_range):
     g.write("Total number of observations in range: " + str(num_data_poor_observations) + '\n')
     g.close()
 
-#TODO this is used: has been checked internally.
 def make_all_directories(date_range):
     '''This function is for creating all the necessary directories needed to store processed TROPOMI observations as
     data and the directories needed to store the outputs.
@@ -561,7 +551,6 @@ def make_all_directories(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor')
 
-#TODO this is used: has been checked internally.
 def copy_data():
     '''This function is for copying over data-rich observations for the month of January to two new directories
     so that we can carry out some model comparison.'''
@@ -594,7 +583,6 @@ def copy_data():
     reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-data_rich/dataset.csv', index=False)
     reduced_observations_df.to_csv(ct.FILE_PREFIX + '/data/20190101-20190131-individual_error/dataset.csv', index=False)
 
-#TODO this is used: has been checked internally.
 def add_predictions(fitted_results):
     '''This function is for creating augmented .nc TROPOMI files that were part of the hierarchical model run
     using "data rich" days.
@@ -744,7 +732,6 @@ def add_predictions(fitted_results):
                 predictor_pixel_outside_of_zero[0,:,:] = augmented_methane_predictor_pixel_outside_of_zero
                 augmented_file.close()
 
-#TODO this is used: has been checked internally.
 def add_dry_air_column_densities(fitted_results):
     '''This function is for adding ERA5-calculated column densities of dry air at the location of the methane pixels.
 
@@ -875,7 +862,6 @@ def add_dry_air_column_densities(fitted_results):
             dacd[0, :, :] = dry_air_column_densities
             augmented_ch4_file.close()
 
-#TODO this is used: has been checked internally.
 def calculate_dry_air_column_density_residuals(fitted_results):
     '''This function is for calculating the residual between the ERA5-derived dry air column density and the dry air
     column density calculated from the TROPOMI CH4 product.
@@ -950,7 +936,6 @@ def calculate_dry_air_column_density_residuals(fitted_results):
 
     full_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/dry_air_column_density_residuals.csv', index=False)
 
-#TODO this is used.
 def calculate_pixel_area(latitudes, longitudes):
     '''A function for calculating the area of a pixel in square meters.
 
@@ -974,7 +959,6 @@ def calculate_pixel_area(latitudes, longitudes):
 
     return area
 
-#TODO this is used: has been checked internally.
 def calculate_final_results(fitted_results):
     '''This function is for writing a single large .csv file summarising all plotable quantities by date.
 

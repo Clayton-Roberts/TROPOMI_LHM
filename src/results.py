@@ -12,7 +12,6 @@ class FittedResults:
     '''This class loads the results of a fitted model and organises the results in a useful way. When initialised it
     needs to be pointed towards the correct subdirectory in the /outputs folder.'''
 
-    #TODO this is used
     def elpd_i(self):
         '''This function calculates the expected log pointwise predictive density, per observation. Doing this as a
         function so that we don't have to wait for it to be done every single time a fitted model is loaded into this
@@ -74,7 +73,6 @@ class FittedResults:
 
         return elpd_i
 
-    #TODO this is used
     def write_residuals_csv(self):
         '''This function goes through all days fitted in the model and calculates the residual between what the model
         predicts and what the "actual" methane pixel value is. This is performed only as part of the dropout testing.
@@ -127,7 +125,6 @@ class FittedResults:
         residuals_df = pd.concat(daily_dfs)
         residuals_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/residuals.csv', index=False)
 
-    #TODO this is used
     def write_reduced_chi_squared_csv(self):
         '''
         This function goes through all days fitted in the model and calculates a reduced chi-squred statistic for that day,
@@ -191,7 +188,6 @@ class FittedResults:
             reduced_chi_squared_df.to_csv(ct.FILE_PREFIX + '/outputs/' + self.run_name + '/reduced_chi_squared.csv',
                                           index=False)
 
-    #TODO this is used
     def predict_ch4(self, obs_no2, sigma_N, day_id):
         '''
         This function is for predicting an observed value of CH4 with an associated standard deviation on the estimate.
@@ -231,7 +227,6 @@ class FittedResults:
 
         return mean_observation, standard_deviation
 
-    #TODO this is used
     def __init__(self, run_name):
         '''Constructor method.'''
 

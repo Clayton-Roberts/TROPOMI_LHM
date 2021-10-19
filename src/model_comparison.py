@@ -2,7 +2,6 @@ import constants as ct
 import numpy as np
 import time
 
-#TODO this is used
 def compare_models(individual_error_model, mean_error_model):
     '''A function to calculate expected log pointwise predictive density for each of the two models and compare
     the two.
