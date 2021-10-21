@@ -112,7 +112,7 @@ class PlotHelper:
                     data = filtered_precisions
 
             if include_predictions:
-                #TODO change this hardcoded model run name
+
                 g = nc4.Dataset(ct.FILE_PREFIX +
                                 '/augmented_observations/' + augmented_directory + '/' +
                                 filename,
@@ -167,7 +167,6 @@ class PlotHelper:
         self.latitudes = latitude_corners
         self.longitudes = longitude_corners
 
-# TODO this is used
 def make_directory(date_range):
     '''This function makes a sub-directory in the figures directory that will hold the figures of this run.
 
@@ -180,7 +179,6 @@ def make_directory(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/figures/' + date_range)
         os.makedirs(ct.FILE_PREFIX + '/figures/' + date_range)
 
-# TODO this is to be saved
 def tropomi_plot(date,
                  molecule,
                  plot_study_region=False,
@@ -302,7 +300,6 @@ def tropomi_plot(date,
     plt.tight_layout()
     plt.show()
 
-# TODO this is to be saved
 def trace(fitted_model,
           parameter,
           date=None,
@@ -413,7 +410,6 @@ def trace(fitted_model,
     plt.tight_layout()
     plt.show()
 
-#TODO this is to be saved
 def observations_scatterplot(date, run_name):
     '''
     This function is for plotting a simple scatterplot of observations. It will always include errorbars on the observations,
@@ -451,7 +447,6 @@ def observations_scatterplot(date, run_name):
     plt.tight_layout()
     plt.show()
 
-#TODO this is to be saved.
 def dropout_scatterplot(date, run_name):
     '''
     This function is for plotting a scatterplot showing which observations were dropped out on a given day.
@@ -481,7 +476,6 @@ def dropout_scatterplot(date, run_name):
     plt.tight_layout()
     plt.show()
 
-#TODO this is to be saved.
 def regression_scatterplot(date, fitted_model):
     '''This function is for plotting a scatterplot of observed values of NO2 and CH4 on a given date.
 
@@ -536,7 +530,6 @@ def regression_scatterplot(date, fitted_model):
     plt.tight_layout()
     plt.show()
 
-#TODO this is to be saved.
 def alpha_beta_scatterplot(fitted_model):
     '''This function is for plotting estimated values of :math:`\\alpha_d` vs :math:`\\beta_d` for a range of days
     :math:`d`.
@@ -614,7 +607,6 @@ def alpha_beta_scatterplot(fitted_model):
     plt.tight_layout()
     plt.show()
 
-# TODO this is used.
 def ellipse(correlation_coefficient, sigma_alpha, sigma_beta, mu_alpha, mu_beta, ax, n_std=3.0, facecolor='none', **kwargs):
     '''A function to add an ellipse to scatterplots (used only in plots of :math:`\\alpha_d` vs :math:`\\beta_d`).
 
@@ -659,7 +651,6 @@ def ellipse(correlation_coefficient, sigma_alpha, sigma_beta, mu_alpha, mu_beta,
     ellipse.set_transform(transf + ax.transData)
     return ax.add_patch(ellipse)
 
-#TODO this is to be saved
 def reduced_chi_squared(run_name):
     '''
     This function is for plotting a histogram of reduced :math:`\\chi^2` values for each day that was included in the model
@@ -682,7 +673,6 @@ def reduced_chi_squared(run_name):
     # Show the plot on-screen.
     plt.show()
 
-# TODO this is to be saved.
 def beta_flare_time_series(fitted_results):
     '''This function is for plotting two time series together of :math:`\\beta` values and flare stack counts for
     the specified run.
@@ -782,7 +772,6 @@ def beta_flare_time_series(fitted_results):
     plt.tight_layout()
     plt.show()
 
-# TODO this is definitely to be saved.
 def alpha_time_series(fitted_results):
     '''This function is for plotting a time series of alpha and some other quantities.
 
@@ -949,7 +938,6 @@ def alpha_time_series(fitted_results):
     # Show the plot on-screen.
     plt.show()
 
-#TODO this is to be saved.
 def dry_air_column_density_cross_plot(fitted_results):
     '''This function is for plotting the ERA5-derived dry air column densities against the column densities derived
     from the TROPOMI CH4 data product.
@@ -987,7 +975,6 @@ def dry_air_column_density_cross_plot(fitted_results):
 
     plt.show()
 
-#TODO this is to be saved
 #TODO make note in docstring about run_name not needing /dropout tacked onto it.
 def residuals(run_name):
     '''This function is for plotting heldout pixels of methane against predicted values at the same location from the
@@ -1027,7 +1014,6 @@ def residuals(run_name):
 
     plt.show()
 
-#TODO this is to be saved.
 def no2_ch4_flarestack_crossplot(run_name, molecule, show_augmented_load=False):
     '''This function is for plotting a cross plot of either CH4 loading or NO2 loading vs flare stack count in the study
     region.
@@ -1893,7 +1879,6 @@ def figure_6(date_range):
     # Create the datetime objects for all the dates we have calculated quantities for.
     all_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in all_plotables_df.index]
 
-    #TODO eventually get rid of this line.
     data_rich_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in data_rich_plotables_df.index]
     data_poor_datetimes = [datetime.datetime.strptime(date, "%Y-%m-%d").date() for date in data_poor_plotables_df.index]
 

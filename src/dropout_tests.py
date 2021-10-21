@@ -6,7 +6,6 @@ import pandas as pd
 import numpy as np
 import json
 
-#TODO this is used
 def make_all_directories(date_range):
     '''This function is for creating all the necessary directories needed to split the TROPOMI observations into holdout
     sets of data for both data-rich and data-poor days.
@@ -37,7 +36,6 @@ def make_all_directories(date_range):
         shutil.rmtree(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout')
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout')
 
-#TODO this is used
 def create_csvs(run_name):
     '''This function will open the file named "dataset.csv" located at data/run_name and then drop out 20% of observations
     for each day listed in "dataset.csv". This function then creates two .csv files: one containing the remaining 80%
@@ -98,7 +96,6 @@ def create_csvs(run_name):
     remaining_df = pd.concat(remaining_dfs)
     remaining_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv', index=False)
 
-#TODO this is used
 def prepare_dataset_for_cmdstanpy(run_name):
     '''This function takes the "remaining_dataset.csv" file located at "data/run_name/dropout" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
