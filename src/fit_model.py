@@ -32,7 +32,7 @@ def delete_console_printed_lines(num_lines):
     '''
 
     # Move up one line, clear current line and leave the cursor at its beginning, 32 times:
-    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 12)))
+    print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 13)))
 
 def set_data_poor_initial_values():
     '''This function sets the initial values for the sampler to something sensible.
@@ -199,7 +199,7 @@ def data_poor(date_range, dropout=False):
         reduced_df_renamed_indices = reduced_df.rename(index=lambda s: s + '[' + str(day_id) + ']')
         alpha_beta_gamma_df_list.append(reduced_df_renamed_indices)
 
-        day_ess_rhat_df = pd.DataFrame.from_dict({'date': date, 'day_id': day_id, 'ess': np.min(day_summary_df.N_Eff)})
+        day_ess_rhat_df = pd.DataFrame.from_dict({'date': [date], 'day_id': [day_id], 'ess': [np.min(day_summary_df.N_Eff)]})
         ess_rhat_df_list.append(day_ess_rhat_df)
 
         # Check the diagnostics.
