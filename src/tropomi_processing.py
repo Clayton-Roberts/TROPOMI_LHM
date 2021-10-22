@@ -37,7 +37,17 @@ def make_directories(run_name):
         os.makedirs(ct.FILE_PREFIX + '/outputs/' + run_name)
 
 def prepare_data_poor_dataset_for_cmdstanpy(date_range, date, dropout):
-    #TODO make docstring
+    '''This function prepares data by turning it into json. Data-poor days are fit individually and so we need to
+    not only indicate the date range of the analysis, but also the individual day that is being fit. We also need to
+    indicate whether or not these data-poor days are part of a dropout dataset or not.
+
+    :param date_range: The date range of the analysis. Must be of the format "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    :param date: The particular day that the model is going to be fit to. Must be of the format "%Y-%m-%d".
+    :type date: str
+    :param dropout: A flag to indicate whether these days are part of a dropout dataset or not.
+    :type dropout: bool
+    '''
 
     if not dropout:
         df = pd.read_csv(ct.FILE_PREFIX + '/data/' + date_range + '-data_poor/dataset.csv', delimiter=',',
@@ -102,7 +112,8 @@ def prepare_data_rich_dataset_for_cmdstanpy(run_name):
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
     fit our models).
 
-    :param run_name: Name of the model run.
+    :param run_name: Name of the model run. Must be of the format "%Y%m%d-%Y%m%d-X" where X is either "data_rich" or
+        "individual_error".
     :type run_name:str
     '''
 
@@ -278,8 +289,12 @@ def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitude
     return pixel_values, pixel_precisions, pixel_centre_latitudes, pixel_centre_longitudes
 
 def get_colocated_measurements(filename):
-    #TODO Make docstring
+    '''This function determines if two observations of NO2 and CH4 are co-located, and if they are, returns them in
+    a list of relevant quantities.
 
+    :param filename: The name of the file, should be in the format YYYYMMDDTHHMMSS.nc .
+    :type filename: string
+    '''
 
     # Unpack the TROPOMI NO2 data for this day.
     no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes, no2_qa_values \
