@@ -7,8 +7,9 @@ import numpy as np
 import json
 
 def make_all_directories(date_range):
-    '''This function is for creating all the necessary directories needed to split the TROPOMI observations into holdout
-    sets of data for both data-rich and data-poor days.
+    '''This function makes four directories. Two of the directories are for holding the withheld and remaining observations
+    for the dropout tests (one each for data-rich and data-poor days), and the other two are for holding the results
+    of the model fit to the remaining observations (one each for data-rich and data-poor days).
 
     :param date_range: The date range of the analysis. Must be a string formatted as "%Y%m%d-%Y%m%d".
     :type date_range: str
@@ -41,7 +42,8 @@ def create_csvs(run_name):
     for each day listed in "dataset.csv". This function then creates two .csv files: one containing the remaining 80%
     of observations, and the other containing the 10% that have been dropped out.
 
-    :param run_name: The name of this model run.
+    :param run_name: The name of this model run. Must be of the format "%Y%m%d-%Y%m%d-data_XXXX" where XXXX is either
+         "rich" or "poor".
     :type run_name: string
     '''
 
@@ -97,11 +99,12 @@ def create_csvs(run_name):
     remaining_df.to_csv(ct.FILE_PREFIX + '/data/' + run_name + '/dropout/remaining_dataset.csv', index=False)
 
 def prepare_dataset_for_cmdstanpy(run_name):
-    '''This function takes the "remaining_dataset.csv" file located at "data/run_name/dropout" and turns it into json
+    '''This function takes the "remaining_dataset.csv" file located at "data/run_name" and turns it into json
     that is suitable for usage by the cmdstanpy package (.csv files are unabled to be provided as data when we
     fit our models).
 
-    :param run_name: Name of the model run.
+    :param run_name: Name of the model run. Must be of the format "%Y%m%d-%Y%m%d-data_XXXX" where XXXX is either
+        "rich" or "poor".
     :type run_name:str
     '''
 
