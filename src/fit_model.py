@@ -23,21 +23,20 @@ def install_cmdstan():
 def delete_console_printed_lines(num_lines):
     '''This function deletes the output printed to the console when fitting data-poor days. NOTE: This clears the
     CmdStanPy automatic output of fitting a model, and we call this so that the console doesn't get messy when we fit the
-    data-poor days. This is slightly hardcoded and so if there are any automatically generated messages from Stan that
-    aren't either "good" messages or notifications about a few divergences, this the console will get messy. E.g., if you
-    have high split R-hat, then the script won't print pretty on the screen.
+    data-poor days. This doesn't really work perfectly but it's good enough for now, it stops the console from
+    getting absolutely massive.
 
-    :param check_for_divergences: A parameter to determine whether to remove an extra few lines.
-    :type check_for_divergences: bool
+    :param num_lines: A number passed in that's meant to indicate how many lines of the console to clear, but sometimes
+        this is slightly off and an extra line or two is deleted.
+    :type num_lines: int
     '''
 
-    # Move up one line, clear current line and leave the cursor at its beginning, 32 times:
+    # Move up one line, clear current line and leave the cursor at its beginning, num_lines + 13 times:
     print(''.join(["\033[F\x1b[2K\r"]*(num_lines + 13)))
 
 def set_data_poor_initial_values():
-    '''This function sets the initial values for the sampler to something sensible.
-    :param run_name: The name of the run.
-    :type run_name: string
+    '''This function sets the initial values for the sampler to something sensible for when we fit the model to data-poor
+    days. Initialised to quasi-random values.
     '''
 
     inits = {
@@ -47,7 +46,12 @@ def set_data_poor_initial_values():
     return inits
 
 def set_data_rich_initial_values(directory):
-    #TODO make docstring
+    '''This function sets the initial values for the sampler to something sensible for when we fit the model to data-poor
+    days. Initialised to quasi-random values.
+
+    :param directory: The directory to look for the summary data csv file. Must be of the format "%Y%m%d-%Y%m%d-data_rich".
+    :type directory: str
+    '''
 
     # Open the summary dataframe
     summary_df = pd.read_csv(ct.FILE_PREFIX + '/data/' + directory + '/summary.csv')
@@ -65,7 +69,8 @@ def set_data_rich_initial_values(directory):
 
 def write_and_print_data_poor_summary(date_range, elapsed_time, dropout):
     '''This function is for writing a summary of how fitting the model to data-poor days went (and printing it to the
-    screen), and can be used for either dropout or full fits.
+    screen), and can be used for either dropout or full fits. This is meant to mirror what is returned automatically
+    for when we fit the model to data-rich days.
 
     :param date_range: The date range of the analysis. Must be of format "%Y%m%d-%Y%m%d".
     :type date_range: str
@@ -126,10 +131,11 @@ def write_and_print_data_poor_summary(date_range, elapsed_time, dropout):
 def data_poor(date_range, dropout=False):
     '''This function is for fitting the model to all the data poor days in the indicated date range.
 
-    :param
-
+    :param date_range: The date range of the analysis, must be of the format "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    :param dropout: A boolean to indicate whether this model is being fit to a full dataset or a dropout dataset.
+    :type dropout: bool
     '''
-    #TODO docstring.
 
     # Record the start time in order to write elapsed time for fitting to the output file.
     start_time = time.time()
@@ -298,7 +304,16 @@ def data_poor(date_range, dropout=False):
     write_and_print_data_poor_summary(date_range, elapsed_time, dropout)
 
 def data_rich(date_range, error_type, dropout=False):
-    #TODO make docstring
+    '''This function is for fitting the model to all the data rich days in the indicated date range.
+
+    :param date_range: The date range of the analysis, must be of the format "%Y%m%d-%Y%m%d".
+    :type date_range: str
+    :param error_type: A flag to indicate whether we're going to use the daily averaged error model or not. Must be
+        either "averaged" or "individual".
+    :type error_type: str
+    :param dropout: A boolean to indicate whether this model is being fit to a full dataset or a dropout dataset.
+    :type dropout: bool
+    '''
 
     directory  = date_range
 
