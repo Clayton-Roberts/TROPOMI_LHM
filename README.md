@@ -1,6 +1,6 @@
 # Enhanced monitoring of atmospheric methane
  
-This repository contains the code used to conduct the analysis and generate the plots found in the paper titled "Enhanced monitoring of atmospheric methane from space with hierarchical Bayesian inference". This paper can be found on arXiv here (add link later) and is currently under review at Nature Communications. 
+This repository contains the code used to conduct the analysis and generate the plots found in the paper titled "Enhanced monitoring of atmospheric methane from space with hierarchical Bayesian inference". This paper is currently under review at Nature Communications. 
 
 If you have any questions or are having trouble with the code, feel free to contact me at cnr31@ast.cam.ac.uk . 
 
