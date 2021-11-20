@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Ellipse
@@ -21,8 +22,13 @@ import shutil
 import constants as ct
 import results
 
+# Update some defaults
+matplotlib.rc('font', family='sans-serif')
+matplotlib.rc('font', serif='Helvetica Neue')
+matplotlib.rc('text', usetex='false')
+matplotlib.rcParams.update({'font.size': 7})
+
 class PlotHelper:
-    #TODO make the docstring
     def __init__(self, filename, quantity,
                  qa_only=False,
                  include_predictions=False,
@@ -811,7 +817,7 @@ def alpha_time_series(fitted_results):
 
     # Plot the text of panel B, right hand side
     ax_1.text(0.03, 0.95,
-              'B',
+              'b',
               color='red',
               transform=ax_1.transAxes,
               fontsize=20,
@@ -906,7 +912,7 @@ def alpha_time_series(fitted_results):
 
     # Plot the text of panel A
     ax_2.text(0.05, 0.95,
-              'A',
+              'a',
               color='red',
               transform=ax_2.transAxes,
               fontsize=20,
@@ -1086,6 +1092,9 @@ def figure_1(date_range, date):
     :type date: str
     '''
 
+
+    #helvetiva_font = {'fontname': 'Helvetica'}
+
     # Get the relevant .nc4 files of the TROPOMI observations using the date.
     file_date_prefix = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
     potential_tropomi_files = [file.split('/')[-1] for file in
@@ -1126,8 +1135,8 @@ def figure_1(date_range, date):
     colors.set_bad('grey', 1.0)
 
     # Create figure, use gridspec to divide it up into subplots. 2-column subplot, each molecule gets a column.
-    plt.figure(figsize=(10, 4))
-    G = gridspec.GridSpec(1, 2, wspace=0.03)
+    plt.figure(figsize=(7.2, 4))
+    G = gridspec.GridSpec(1, 2, wspace=0.12)
 
     # ax_1 is the subplot for the CH4 observation, left hand side (first column), set projection here.
     ax_1 = plt.subplot(G[0, 0],
@@ -1135,18 +1144,24 @@ def figure_1(date_range, date):
                        extent=ch4_plot_helper.extent)
 
     # Set the ticks for the CH4 subplot.
-    ax_1.set_xlabel('Longitude', labelpad=0)
+    ax_1.set_xlabel('Longitude',
+                    labelpad=0,
+                    fontsize=7,
+                    fontname='Helvetica')
     ax_1.set_xticks(ch4_plot_helper.xticks)
     ax_1.set_yticks(ch4_plot_helper.yticks)
     ax_1.yaxis.tick_right()
+    ax_1.tick_params(axis='both', which='major', labelsize=7)
 
     # Add the latitude label, this will be for both subplots.
-    ax_1.text(1.05, 0.85,
+    ax_1.text(1.06, 0.85,
               'Latitude',
               horizontalalignment='center',
               verticalalignment='center',
+              fontsize=7,
               rotation=90,
-              transform=ax_1.transAxes)
+              transform=ax_1.transAxes,
+              fontname='Helvetica')
 
     # Plot the CH4 data.
     ch4_im = ax_1.pcolormesh(ch4_plot_helper.longitudes,
@@ -1164,23 +1179,26 @@ def figure_1(date_range, date):
                             cax=ch4_cbar_ax,
                             orientation='horizontal')
     ch4_cbar.set_ticks([])
-    ch4_cbar_ax.text(1830, 1830, '1830', ha='center')
-    ch4_cbar_ax.text(1860, 1830, '1860', ha='center')
-    ch4_cbar_ax.text(1890, 1830, '1890', ha='center')
+    ch4_cbar_ax.text(1830, 1837, '1830', ha='center', fontsize=7, fontname='Helvetica')
+    ch4_cbar_ax.text(1860, 1837, '1860', ha='center', fontsize=7, fontname='Helvetica')
+    ch4_cbar_ax.text(1890, 1837, '1890', ha='center', fontsize=7, fontname='Helvetica')
 
     # Add the borders to the CH4 subplot.
     ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
-    ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]', fontsize=10)
+    ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]',
+                   fontsize=7,
+                   fontname='Helvetica')
 
     # Plot the text of panel B
     ax_1.text(0.04, 0.94,
-              'A',
+              'a',
               color='red',
+              weight='bold',
               transform=ax_1.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
-              verticalalignment='center', )
+              verticalalignment='center')
 
     # ax_2 is the subplot for the NO2 observation, right hand side (second column), set projection here.
     ax_2 = plt.subplot(G[0, 1],
@@ -1189,11 +1207,15 @@ def figure_1(date_range, date):
                        extent=ch4_plot_helper.extent)
 
     # Set the ticks for the NO2 subplot, have ticks on left, but don't show the numbers.
-    ax_2.set_xlabel('Longitude', labelpad=0)
+    ax_2.set_xlabel('Longitude',
+                    labelpad=0,
+                    fontsize=7,
+                    fontname='Helvetica')
     ax_2.set_xticks(no2_plot_helper.xticks)
     ax_2.set_yticks(no2_plot_helper.yticks)
     ax_2.tick_params(axis='y',
                      labelleft=False)
+    ax_2.tick_params(axis='both', which='major', labelsize=7)
 
     # Plot the NO2 data.
     no2_im = ax_2.pcolormesh(no2_plot_helper.longitudes,
@@ -1220,9 +1242,9 @@ def figure_1(date_range, date):
                             cax=no2_cbar_ax,
                             orientation='horizontal')
     no2_cbar.set_ticks([])
-    no2_cbar_ax.text(0.01, 0.02, '0.01', ha='center')
-    no2_cbar_ax.text(0.05, 0.02, '0.05', ha='center')
-    no2_cbar_ax.text(0.09, 0.02, '0.09', ha='center')
+    no2_cbar_ax.text(0.01, 0.023, '0.01', ha='center', fontsize=7, fontname='Helvetica')
+    no2_cbar_ax.text(0.05, 0.023, '0.05', ha='center', fontsize=7, fontname='Helvetica')
+    no2_cbar_ax.text(0.09, 0.023, '0.09', ha='center', fontsize=7, fontname='Helvetica')
 
     # Add the borders to the NO2 subplot.
     ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
@@ -1233,22 +1255,26 @@ def figure_1(date_range, date):
                                   box[1] - box[0],
                                   box[3] - box[2],
                                   linewidth=2,
+                                  linestyle='dashed',
                                   edgecolor='r',
                                   fill=False,
                                   zorder=2)
     ax_2.add_patch(rectangle)
 
     # Plot the title for the NO2 plot.
-    ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]', fontsize=10)
+    ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]',
+                   fontsize=7,
+                   fontname='Helvetica')
 
     # Plot the text of panel B
     ax_2.text(0.04, 0.94,
-              'B',
+              'b',
               color='red',
               transform=ax_2.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
-              verticalalignment='center', )
+              verticalalignment='center',
+              fontweight='bold')
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
     plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_1.png',
@@ -1256,9 +1282,10 @@ def figure_1(date_range, date):
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-def figure_2(date_range):
+def figure_3(date_range):
     '''This figure is for creating a two-panel figure, left panel is a histogram of reduced chi-squared values,
-    the right panel is a scatterplot of predictions vs observations. Will include both data-poor and data-rich days.
+    the right panel is a scatterplot of predictions vs observations. This is Figure 3 of the paper.
+    Will include both data-poor and data-rich days.
 
     :param date_range: The date range we want to plot this for.'''
 
@@ -1295,6 +1322,9 @@ def figure_2(date_range):
     ax_1.set_yticklabels(['1840', '1880', '1920', '1960'],
                          rotation=90,
                          va='center')
+    ax_1.set_xticks([1840, 1880, 1920, 1960])
+    ax_1.set_xticklabels(['1840', '1880', '1920', '1960'],
+                         ha='center')
     ax_1.set_xlabel(r'$\mathrm{CH}_4^{\mathrm{obs}}$ [ppbv]')
     ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
     ax_1.grid(color='grey',
@@ -1303,12 +1333,13 @@ def figure_2(date_range):
 
     # Plot the text of panel A
     ax_1.text(0.05, 0.94,
-              'A',
+              'a',
+              fontweight='bold',
               color='red',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_1.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     # -------------------------------------------------------------------------------------------
 
@@ -1317,9 +1348,8 @@ def figure_2(date_range):
     combined_chi_squared_df = pd.concat([data_rich_chi_squared_df, data_poor_chi_squared_df])
 
     sns.distplot(combined_chi_squared_df.reduced_chi_squared,
-                kde=True,
+                 kde=True,
                  ax=ax_2)
-
 
     ax_2.set_yticks([0.5, 1, 1.5, 2])
     ax_2.set_yticklabels(['0.5', '1.0', '1.5', '2.0'],
@@ -1334,20 +1364,21 @@ def figure_2(date_range):
 
     # Plot the text of panel A
     ax_2.text(0.05, 0.94,
-              'B',
+              'b',
               color='red',
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_2.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     # -------------------------------------------------------------------------------------------
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_2.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_3.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-def figure_3(fitted_results, date):
+def figure_2(fitted_results, date):
     '''This function is for creating and saving Figure 2 of the paper. Figure 2 will be a page-wide, two-panel figure.
     Left hand panel is a scatterplot of observations with errorbars and a subset of regression lines. Right hand panel
     is an alpha-beta cross plot with errorbars in both dimensions, with a 95% CI ellipse plotted underneath using the
@@ -1362,7 +1393,7 @@ def figure_3(fitted_results, date):
     start_date, end_date, model = fitted_results.run_name.split('-')
 
     # Set up the figure. Page-wide, two-panel figure.
-    plt.figure(figsize=(7.2, 4.45))
+    plt.figure(figsize=(7.2, 3.45))
     G = gridspec.GridSpec(1, 2, wspace=0.05)
 
     # ax_1 is the subplot for the scatterplot of observations, left hand side (first column).
@@ -1436,26 +1467,31 @@ def figure_3(fitted_results, date):
               r'$\alpha={}\pm{}$'.format(round(median_alpha),
                                          '{' + str(round(alpha_diff)) + '}'),
               transform=ax_1.transAxes,
-              fontsize=10)
+              fontsize=7)
 
     # Add the letter A to plot 1.
     ax_1.text(0.05, 0.95,
-              'A',
+              'a',
               color='red',
+              fontweight='bold',
               transform=ax_1.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
               verticalalignment='center',)
 
     # Customise ticks for the left hand panel.
+    ax_1.tick_params(axis='both', labelsize=7)
     ax_1.set_yticks([1840, 1880, 1920, 1960])
     plt.setp(ax_1.yaxis.get_majorticklabels(),
              rotation=90,
              va='center')
 
-    ax_1.set_xlabel(r'NO$_{2}^{\mathrm{obs}}$ [mmol m$^{-2}$]')
-    ax_1.set_ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
-    ax_1.title.set_text(datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%b %-d, %Y'))
+    ax_1.set_xlabel(r'NO$_{2}^{\mathrm{obs}}$ [mmol m$^{-2}$]',
+                    fontsize=7)
+    ax_1.set_ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]',
+                    fontsize=7)
+    ax_1.set_title(datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%b %-d, %Y'),
+                        fontsize=7)
 
     ax_1.grid(which='both',
               linestyle='dashed',
@@ -1497,16 +1533,21 @@ def figure_3(fitted_results, date):
 
     ax_2.set_ylabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]',
                     rotation=270,
-                    labelpad=20)
-    ax_2.set_xlabel(r'$\alpha$ [ppbv]')
+                    labelpad=10,
+                    fontsize=7)
+    ax_2.set_xlabel(r'$\alpha$ [ppbv]',
+                    fontsize=7)
 
     # Set the title of the right hand subplot.
     start_date, end_date, model = fitted_results.run_name.split('-')
-    ax_2.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%b %-d') + ' - ' +
-                    datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%b %-d, %Y'))
+    ax_2.set_title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%b %-d') + ' - ' +
+                    datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%b %-d, %Y'),
+                   fontsize=7)
 
     # Customise ticks for the right hand panel.
+    ax_2.tick_params(axis='both', labelsize=7)
     ax_2.set_yticks([400, 800, 1200, 1600])
+    ax_2.set_xticks([1830, 1850, 1870, 1890])
     ax_2.yaxis.tick_right()
     ax_2.yaxis.set_label_position("right")
     plt.setp(ax_2.yaxis.get_majorticklabels(),
@@ -1519,15 +1560,16 @@ def figure_3(fitted_results, date):
               alpha=0.5)
 
     ax_2.text(0.05, 0.95,
-              'B',
+              'b',
               color='red',
+              fontweight='bold',
               transform=ax_2.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
               verticalalignment='center', )
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_3.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_2.pdf',
                 bbox_inches='tight',
                 pad_inches=0.01)
 
@@ -1581,7 +1623,7 @@ def figure_4(fitted_results):
 
     # Plot the text of panel A
     ax_1.text(0.03, 0.95,
-              'B',
+              'b',
               color='red',
               transform=ax_1.transAxes,
               fontsize=20,
@@ -1659,7 +1701,7 @@ def figure_4(fitted_results):
 
     # Plot the text of panel B
     ax_2.text(0.05, 0.95,
-              'A',
+              'a',
               color='red',
               transform=ax_2.transAxes,
               fontsize=20,
@@ -1754,7 +1796,7 @@ def figure_5(directory, date):
 
     # Plot the text of panel A
     ax_1.text(0.04, 0.94,
-              'A',
+              'a',
               color='red',
               horizontalalignment='center',
               verticalalignment='center',
@@ -1840,7 +1882,7 @@ def figure_5(directory, date):
 
     # Add the text of panel B
     ax_2.text(0.04, 0.94,
-              'B',
+              'b',
               color='red',
               horizontalalignment='center',
               verticalalignment='center',
@@ -1928,7 +1970,7 @@ def figure_6(date_range):
 
     # Plot the text of panel A
     ax_1.text(0.02, 0.94,
-              'A',
+              'a',
               color='red',
               horizontalalignment='center',
               verticalalignment='center',
@@ -2040,7 +2082,7 @@ def figure_6(date_range):
 
     # Plot the text of panel B
     ax_2.text(0.02, 0.94,
-              'B',
+              'b',
               color='red',
               horizontalalignment='center',
               verticalalignment='center',
@@ -2144,7 +2186,7 @@ def figure_6(date_range):
 
     # Plot the text of panel C
     ax_3.text(0.02, 0.94,
-              'C',
+              'c',
               color='red',
               horizontalalignment='center',
               verticalalignment='center',

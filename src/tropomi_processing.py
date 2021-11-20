@@ -212,7 +212,6 @@ def reduce_no2(no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitude
                no2_qa_values):
     '''This function takes in arrays of data that have been unpacked from a TROPOMI observation file, and reduces
     them to arrays of data that are contained within the study region. It also masks pixels that don't pass the QA threshold.'''
-    # TODO augment docstring.
 
     # Cut the NO2 data down to what is within the Permian Basin box. Need empty lists to hold things in.
     pixel_values            = []
@@ -252,7 +251,6 @@ def reduce_ch4(ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitude
                ch4_qa_values):
     '''This function takes in arrays of data that have been unpacked from a TROPOMI observation file, and reduces
     them to arrays of data that are contained within the study region. It also masks pixels that don't pass the QA threshold.'''
-    # TODO augment docstring.
 
     # Cut the NO2 data down to what is within the Permian Basin box. Need empty lists to hold things in.
     pixel_values            = []
