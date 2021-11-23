@@ -1267,7 +1267,7 @@ def figure_1(date_range, date):
               verticalalignment='center')
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_1.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_1.jpeg',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
@@ -1456,8 +1456,9 @@ def figure_2(fitted_results, date):
               verticalalignment='center', )
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_2.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_2.jpeg',
                 bbox_inches='tight',
+                dpi=300,
                 pad_inches=0.01)
 
 def figure_3(date_range):
@@ -1554,8 +1555,9 @@ def figure_3(date_range):
 
     # -------------------------------------------------------------------------------------------
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_3.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_3.jpeg',
                 bbox_inches='tight',
+                dpi=300,
                 pad_inches=0.01)
 
 def figure_4(fitted_results):
@@ -1714,8 +1716,9 @@ def figure_4(fitted_results):
               color='grey')
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_4.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_4.jpeg',
                 bbox_inches='tight',
+                dpi=300,
                 pad_inches=0.01)
 
 def figure_5(directory, date):
@@ -1873,7 +1876,7 @@ def figure_5(directory, date):
     start_date, end_date, model = directory.split('-')
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_5.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_5.jpeg',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
@@ -2177,6 +2180,7 @@ def figure_6(date_range):
               fontsize=8)
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.jpeg',
+                dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
