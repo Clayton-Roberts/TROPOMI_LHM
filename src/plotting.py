@@ -1,4 +1,5 @@
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import matplotlib.gridspec as gridspec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.patches import Ellipse
@@ -21,8 +22,16 @@ import shutil
 import constants as ct
 import results
 
+# Update some defaults to be in line with journal requirements
+mpl.rcParams.update({'font.family': 'sans-serif'})
+mpl.rcParams.update({'font.size': 7})
+mpl.rcParams.update({'axes.titlesize': 7})
+mpl.rcParams.update({'axes.labelsize': 7})
+mpl.rcParams.update({'xtick.labelsize': 7})
+mpl.rcParams.update({'ytick.labelsize': 7})
+mpl.rcParams.update({'lines.linewidth': 1})
+
 class PlotHelper:
-    #TODO make the docstring
     def __init__(self, filename, quantity,
                  qa_only=False,
                  include_predictions=False,
@@ -811,7 +820,7 @@ def alpha_time_series(fitted_results):
 
     # Plot the text of panel B, right hand side
     ax_1.text(0.03, 0.95,
-              'B',
+              'b',
               color='red',
               transform=ax_1.transAxes,
               fontsize=20,
@@ -906,7 +915,7 @@ def alpha_time_series(fitted_results):
 
     # Plot the text of panel A
     ax_2.text(0.05, 0.95,
-              'A',
+              'a',
               color='red',
               transform=ax_2.transAxes,
               fontsize=20,
@@ -1086,6 +1095,8 @@ def figure_1(date_range, date):
     :type date: str
     '''
 
+    #helvetiva_font = {'fontname': 'Helvetica'}
+
     # Get the relevant .nc4 files of the TROPOMI observations using the date.
     file_date_prefix = datetime.datetime.strptime(date, "%Y-%m-%d").strftime("%Y%m%d")
     potential_tropomi_files = [file.split('/')[-1] for file in
@@ -1126,8 +1137,8 @@ def figure_1(date_range, date):
     colors.set_bad('grey', 1.0)
 
     # Create figure, use gridspec to divide it up into subplots. 2-column subplot, each molecule gets a column.
-    plt.figure(figsize=(10, 4))
-    G = gridspec.GridSpec(1, 2, wspace=0.03)
+    plt.figure(figsize=(7.2, 4))
+    G = gridspec.GridSpec(1, 2, wspace=0.12)
 
     # ax_1 is the subplot for the CH4 observation, left hand side (first column), set projection here.
     ax_1 = plt.subplot(G[0, 0],
@@ -1135,18 +1146,20 @@ def figure_1(date_range, date):
                        extent=ch4_plot_helper.extent)
 
     # Set the ticks for the CH4 subplot.
-    ax_1.set_xlabel('Longitude', labelpad=0)
+    ax_1.set_xlabel('Longitude',
+                    labelpad=0)
     ax_1.set_xticks(ch4_plot_helper.xticks)
     ax_1.set_yticks(ch4_plot_helper.yticks)
     ax_1.yaxis.tick_right()
+    ax_1.tick_params(axis='both', which='major')
 
     # Add the latitude label, this will be for both subplots.
-    ax_1.text(1.05, 0.85,
+    ax_1.text(1.06, 0.85,
               'Latitude',
               horizontalalignment='center',
               verticalalignment='center',
               rotation=90,
-              transform=ax_1.transAxes)
+              transform=ax_1.transAxes,)
 
     # Plot the CH4 data.
     ch4_im = ax_1.pcolormesh(ch4_plot_helper.longitudes,
@@ -1164,23 +1177,24 @@ def figure_1(date_range, date):
                             cax=ch4_cbar_ax,
                             orientation='horizontal')
     ch4_cbar.set_ticks([])
-    ch4_cbar_ax.text(1830, 1830, '1830', ha='center')
-    ch4_cbar_ax.text(1860, 1830, '1860', ha='center')
-    ch4_cbar_ax.text(1890, 1830, '1890', ha='center')
+    ch4_cbar_ax.text(1830, 1837, '1830', ha='center')
+    ch4_cbar_ax.text(1860, 1837, '1860', ha='center')
+    ch4_cbar_ax.text(1890, 1837, '1890', ha='center')
 
     # Add the borders to the CH4 subplot.
     ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
-    ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]', fontsize=10)
+    ax_1.set_title(r'CH$_4$ column-average mixing ratio [ppbv]')
 
     # Plot the text of panel B
-    ax_1.text(0.04, 0.94,
-              'A',
-              color='red',
+    ax_1.text(0.02, 0.965,
+              'a',
+              color='#d73027',
+              fontweight='heavy',
               transform=ax_1.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
-              verticalalignment='center', )
+              verticalalignment='center')
 
     # ax_2 is the subplot for the NO2 observation, right hand side (second column), set projection here.
     ax_2 = plt.subplot(G[0, 1],
@@ -1189,7 +1203,8 @@ def figure_1(date_range, date):
                        extent=ch4_plot_helper.extent)
 
     # Set the ticks for the NO2 subplot, have ticks on left, but don't show the numbers.
-    ax_2.set_xlabel('Longitude', labelpad=0)
+    ax_2.set_xlabel('Longitude',
+                    labelpad=0)
     ax_2.set_xticks(no2_plot_helper.xticks)
     ax_2.set_yticks(no2_plot_helper.yticks)
     ax_2.tick_params(axis='y',
@@ -1220,9 +1235,9 @@ def figure_1(date_range, date):
                             cax=no2_cbar_ax,
                             orientation='horizontal')
     no2_cbar.set_ticks([])
-    no2_cbar_ax.text(0.01, 0.02, '0.01', ha='center')
-    no2_cbar_ax.text(0.05, 0.02, '0.05', ha='center')
-    no2_cbar_ax.text(0.09, 0.02, '0.09', ha='center')
+    no2_cbar_ax.text(0.01, 0.023, '0.01', ha='center')
+    no2_cbar_ax.text(0.05, 0.023, '0.05', ha='center')
+    no2_cbar_ax.text(0.09, 0.023, '0.09', ha='center')
 
     # Add the borders to the NO2 subplot.
     ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
@@ -1232,122 +1247,32 @@ def figure_1(date_range, date):
     rectangle = patches.Rectangle((box[0], box[2]),
                                   box[1] - box[0],
                                   box[3] - box[2],
-                                  linewidth=2,
-                                  edgecolor='r',
+                                  linestyle='dashed',
+                                  edgecolor='#d73027',
                                   fill=False,
                                   zorder=2)
     ax_2.add_patch(rectangle)
 
     # Plot the title for the NO2 plot.
-    ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]', fontsize=10)
+    ax_2.set_title(r'NO$_2$ column density [mmol m$^{-2}$]')
 
     # Plot the text of panel B
-    ax_2.text(0.04, 0.94,
-              'B',
-              color='red',
+    ax_2.text(0.02, 0.965,
+              'b',
+              color='#d73027',
+              fontweight='bold',
               transform=ax_2.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
-              verticalalignment='center', )
+              verticalalignment='center')
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_1.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_1.jpeg',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
 
-def figure_2(date_range):
-    '''This figure is for creating a two-panel figure, left panel is a histogram of reduced chi-squared values,
-    the right panel is a scatterplot of predictions vs observations. Will include both data-poor and data-rich days.
-
-    :param date_range: The date range we want to plot this for.'''
-
-    # Read the csv files we need.
-    data_rich_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/reduced_chi_squared.csv')
-    data_poor_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout/reduced_chi_squared.csv')
-    data_rich_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
-    data_poor_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
-
-    # Set up the figure. Page-wide, two-panel figure.
-    plt.figure(figsize=(7.2, 3.45))
-    G = gridspec.GridSpec(1, 2, wspace=0.05)
-
-    # -------------------------------------------------------------------------------------------
-    ax_1 = plt.subplot(G[0, 0])
-
-    combined_residuals_df = pd.concat([data_poor_residuals_df, data_rich_residuals_df])
-
-    ax_1.scatter(combined_residuals_df.actual_value,
-                 combined_residuals_df.predicted_value,
-                 alpha=0.2,
-                 s=8,
-                 zorder=1)
-
-    x_values = np.arange(np.min(combined_residuals_df.actual_value), np.max(combined_residuals_df.actual_value))
-    y_values = x_values
-
-    ax_1.plot(x_values,
-              y_values,
-              color='red',
-              zorder=2)
-
-    ax_1.set_yticks([1840, 1880, 1920, 1960])
-    ax_1.set_yticklabels(['1840', '1880', '1920', '1960'],
-                         rotation=90,
-                         va='center')
-    ax_1.set_xlabel(r'$\mathrm{CH}_4^{\mathrm{obs}}$ [ppbv]')
-    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
-    ax_1.grid(color='grey',
-              linestyle='dashed',
-              zorder=0)
-
-    # Plot the text of panel A
-    ax_1.text(0.05, 0.94,
-              'A',
-              color='red',
-              horizontalalignment='center',
-              verticalalignment='center',
-              transform=ax_1.transAxes,
-              fontsize=20)
-
-    # -------------------------------------------------------------------------------------------
-
-    ax_2 = plt.subplot(G[0, 1])
-
-    combined_chi_squared_df = pd.concat([data_rich_chi_squared_df, data_poor_chi_squared_df])
-
-    sns.distplot(combined_chi_squared_df.reduced_chi_squared,
-                kde=True,
-                 ax=ax_2)
-
-
-    ax_2.set_yticks([0.5, 1, 1.5, 2])
-    ax_2.set_yticklabels(['0.5', '1.0', '1.5', '2.0'],
-                         rotation=270,
-                         va='center')
-    ax_2.yaxis.tick_right()
-    ax_2.set_ylabel('Density',
-                    rotation=270,
-                    labelpad=15)
-    ax_2.yaxis.set_label_position("right")
-    ax_2.set_xlabel(r'$\chi^{2}_{\nu}$')
-
-    # Plot the text of panel A
-    ax_2.text(0.05, 0.94,
-              'B',
-              color='red',
-              horizontalalignment='center',
-              verticalalignment='center',
-              transform=ax_2.transAxes,
-              fontsize=20)
-
-    # -------------------------------------------------------------------------------------------
-    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_2.pdf',
-                bbox_inches='tight',
-                pad_inches=0.01)
-
-def figure_3(fitted_results, date):
+def figure_2(fitted_results, date):
     '''This function is for creating and saving Figure 2 of the paper. Figure 2 will be a page-wide, two-panel figure.
     Left hand panel is a scatterplot of observations with errorbars and a subset of regression lines. Right hand panel
     is an alpha-beta cross plot with errorbars in both dimensions, with a 95% CI ellipse plotted underneath using the
@@ -1362,7 +1287,7 @@ def figure_3(fitted_results, date):
     start_date, end_date, model = fitted_results.run_name.split('-')
 
     # Set up the figure. Page-wide, two-panel figure.
-    plt.figure(figsize=(7.2, 4.45))
+    plt.figure(figsize=(7.2, 3.45))
     G = gridspec.GridSpec(1, 2, wspace=0.05)
 
     # ax_1 is the subplot for the scatterplot of observations, left hand side (first column).
@@ -1420,11 +1345,11 @@ def figure_3(fitted_results, date):
 
     # Plot the observations with TROPOMI errors.
     ax_1.errorbar(date_df.obs_NO2, date_df.obs_CH4, yerr=date_df.sigma_C, xerr=date_df.sigma_N,
-                 ecolor="blue",
-                 capsize=3,
+                 ecolor="#4575b4",
+                 capsize=2,
                  fmt='D',
                  mfc='w',
-                 color='red',
+                 color='#d73027',
                  ms=3.5,
                  zorder=1,
                  alpha=0.5)
@@ -1435,19 +1360,20 @@ def figure_3(fitted_results, date):
                                          '{' + str(round(beta_diff)) + '}') + '\n' +
               r'$\alpha={}\pm{}$'.format(round(median_alpha),
                                          '{' + str(round(alpha_diff)) + '}'),
-              transform=ax_1.transAxes,
-              fontsize=10)
+              transform=ax_1.transAxes)
 
     # Add the letter A to plot 1.
-    ax_1.text(0.05, 0.95,
-              'A',
-              color='red',
+    ax_1.text(0.02, 0.97,
+              'a',
+              color='black',
+              fontweight='bold',
               transform=ax_1.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
               verticalalignment='center',)
 
     # Customise ticks for the left hand panel.
+    ax_1.tick_params(axis='both', labelsize=7)
     ax_1.set_yticks([1840, 1880, 1920, 1960])
     plt.setp(ax_1.yaxis.get_majorticklabels(),
              rotation=90,
@@ -1455,7 +1381,7 @@ def figure_3(fitted_results, date):
 
     ax_1.set_xlabel(r'NO$_{2}^{\mathrm{obs}}$ [mmol m$^{-2}$]')
     ax_1.set_ylabel(r'CH$_{4}^{\mathrm{obs}}$ [ppbv]')
-    ax_1.title.set_text(datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%b %-d, %Y'))
+    ax_1.set_title(datetime.datetime.strptime(date, '%Y-%m-%d').strftime('%b %-d, %Y'))
 
     ax_1.grid(which='both',
               linestyle='dashed',
@@ -1470,11 +1396,11 @@ def figure_3(fitted_results, date):
                   beta_values,
                   yerr=np.array(beta_error_bounds).T,
                   xerr=np.array(alpha_error_bounds).T,
-                  ecolor="blue",
-                  capsize=3.5,
+                  ecolor="#4575b4",
+                  capsize=2,
                   fmt='D',
                   mfc='w',
-                  color='red',
+                  color="#d73027",
                   ms=3)
 
     # Add in the 95% CI ellipse using mode estimated values of the hyperparameters.
@@ -1491,22 +1417,24 @@ def figure_3(fitted_results, date):
             mu_beta,
             ax_2,
             n_std=2.0,
-            edgecolor='red',
-            facecolor='red',
+            edgecolor='#a50026',
+            facecolor='#d73027',
             alpha=0.3)
 
     ax_2.set_ylabel(r'$\beta$ [ppbv / (mmol m$^{-2}$)]',
                     rotation=270,
-                    labelpad=20)
+                    labelpad=10)
     ax_2.set_xlabel(r'$\alpha$ [ppbv]')
 
     # Set the title of the right hand subplot.
     start_date, end_date, model = fitted_results.run_name.split('-')
-    ax_2.title.set_text(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%b %-d') + ' - ' +
+    ax_2.set_title(datetime.datetime.strptime(start_date, '%Y%m%d').strftime('%b %-d') + ' - ' +
                     datetime.datetime.strptime(end_date, '%Y%m%d').strftime('%b %-d, %Y'))
 
     # Customise ticks for the right hand panel.
+    ax_2.tick_params(axis='both', labelsize=7)
     ax_2.set_yticks([400, 800, 1200, 1600])
+    ax_2.set_xticks([1830, 1850, 1870, 1890])
     ax_2.yaxis.tick_right()
     ax_2.yaxis.set_label_position("right")
     plt.setp(ax_2.yaxis.get_majorticklabels(),
@@ -1518,21 +1446,122 @@ def figure_3(fitted_results, date):
               color='grey',
               alpha=0.5)
 
-    ax_2.text(0.05, 0.95,
-              'B',
-              color='red',
+    ax_2.text(0.02, 0.97,
+              'b',
+              color='black',
+              fontweight='bold',
               transform=ax_2.transAxes,
-              fontsize=20,
+              fontsize=8,
               horizontalalignment='center',
               verticalalignment='center', )
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_3.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_2.jpeg',
                 bbox_inches='tight',
+                dpi=300,
+                pad_inches=0.01)
+
+def figure_3(date_range):
+    '''This figure is for creating a two-panel figure, left panel is a histogram of reduced chi-squared values,
+    the right panel is a scatterplot of predictions vs observations. This is Figure 3 of the paper.
+    Will include both data-poor and data-rich days.
+
+    :param date_range: The date range we want to plot this for.'''
+
+    # Read the csv files we need.
+    data_rich_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/reduced_chi_squared.csv')
+    data_poor_chi_squared_df = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_poor/dropout/reduced_chi_squared.csv')
+    data_rich_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
+    data_poor_residuals_df   = pd.read_csv(ct.FILE_PREFIX + '/outputs/' + date_range + '-data_rich/dropout/residuals.csv')
+
+    # Set up the figure. Page-wide, two-panel figure.
+    plt.figure(figsize=(7.2, 3.45))
+    G = gridspec.GridSpec(1, 2, wspace=0.05)
+
+    # -------------------------------------------------------------------------------------------
+    ax_1 = plt.subplot(G[0, 0])
+
+    combined_residuals_df = pd.concat([data_poor_residuals_df, data_rich_residuals_df])
+
+    ax_1.scatter(combined_residuals_df.actual_value,
+                 combined_residuals_df.predicted_value,
+                 alpha=0.2,
+                 s=8,
+                 color='#4575b4',
+                 zorder=1)
+
+    x_values = np.arange(np.min(combined_residuals_df.actual_value), np.max(combined_residuals_df.actual_value))
+    y_values = x_values
+
+    ax_1.plot(x_values,
+              y_values,
+              color='#d73027',
+              zorder=2)
+
+    ax_1.set_yticks([1840, 1880, 1920, 1960])
+    ax_1.set_yticklabels(['1840', '1880', '1920', '1960'],
+                         rotation=90,
+                         va='center')
+    ax_1.set_xticks([1840, 1880, 1920, 1960])
+    ax_1.set_xticklabels(['1840', '1880', '1920', '1960'],
+                         ha='center')
+    ax_1.set_xlabel(r'$\mathrm{CH}_4^{\mathrm{obs}}$ [ppbv]')
+    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
+    ax_1.grid(color='grey',
+              linestyle='dashed',
+              zorder=0)
+
+    # Plot the text of panel A
+    ax_1.text(0.02, 0.97,
+              'a',
+              fontweight='bold',
+              color='black',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes,
+              fontsize=8)
+
+    # -------------------------------------------------------------------------------------------
+
+    ax_2 = plt.subplot(G[0, 1])
+
+    combined_chi_squared_df = pd.concat([data_rich_chi_squared_df, data_poor_chi_squared_df])
+
+    sns.distplot(combined_chi_squared_df.reduced_chi_squared,
+                 kde=True,
+                 color='#4575b4',
+                 ax=ax_2)
+
+    ax_2.set_yticks([0.5, 1, 1.5, 2])
+    ax_2.set_yticklabels(['0.5', '1.0', '1.5', '2.0'],
+                         rotation=270,
+                         va='center')
+    ax_2.yaxis.tick_right()
+    ax_2.set_ylabel('Density',
+                    rotation=270,
+                    labelpad=15)
+    ax_2.yaxis.set_label_position("right")
+    ax_2.set_xlabel(r'$\chi^{2}_{\nu}$')
+
+    # Plot the text of panel A
+    ax_2.text(0.02, 0.97,
+              'b',
+              color='black',
+              fontweight='bold',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes,
+              fontsize=8)
+
+    # -------------------------------------------------------------------------------------------
+    # Save the figure as a pdf, no need to set dpi, trim the whitespace.
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_3.jpeg',
+                bbox_inches='tight',
+                dpi=300,
                 pad_inches=0.01)
 
 def figure_4(fitted_results):
-    '''This function is for plotting Figure 4 of the paper. Figure 3 is a page-wide figure of two time series together
+    '''This function is for plotting Figure 4 of the paper. Figure 4 is a page-wide figure of two time series together
     of :math:`\\beta` values and flare stack counts for the specified run. There is also an extra panel on the right
     showing a cross plot of :math:`\\beta` and flare stack counts.
 
@@ -1557,34 +1586,35 @@ def figure_4(fitted_results):
     #           for i in beta_df.index]
 
     # Create figure, use gridspec to divide it up into subplots. 3-column subplot where first plot spans two columns.
-    plt.figure(figsize=(12.0, 4.45))
+    plt.figure(figsize=(7.2, 3.45))
     G    = gridspec.GridSpec(1, 3)
     # Need just a little bit of space between the subplots to have y-axis tick marks in between.
-    G.update(wspace=0.19)
+    G.update(wspace=0.27)
 
     # Left hand side plot (the time series). Needs to span the first two columns.
     ax_1 = plt.subplot(G[0, 1:])
-    ax_1.set_xlabel("Date", fontsize=12)
+    ax_1.set_xlabel("Date")
 
     # Plot the time series of beta.
     ax_1.errorbar(beta_datetimes,
                   beta_values,
                   yerr=np.array(errors).T,
                   linestyle="None",
-                  ecolor="black",
+                  ecolor="#4575b4",
                   fmt='D',
                   mfc='w',
-                  color='black',
-                  capsize=3,
+                  color='#4575b4',
+                  capsize=2,
                   ms=4,
                   elinewidth=0.7)
 
-    # Plot the text of panel A
-    ax_1.text(0.03, 0.95,
-              'B',
-              color='red',
+    # Plot the text of panel b
+    ax_1.text(0.015, 0.97,
+              'b',
+              color='black',
+              fontsize=8,
+              fontweight='bold',
               transform=ax_1.transAxes,
-              fontsize=20,
               horizontalalignment='center',
               verticalalignment='center', )
 
@@ -1594,18 +1624,17 @@ def figure_4(fitted_results):
     # Plot the time series of flare count on this twin axes object.
     ax_twin.scatter(beta_datetimes,
                     plotables_df.flare_count,
-                    color="red",
+                    color="#d73027",
                     marker="x",
                     s=30,
                     alpha=0.7)
 
     # Make the tick marks on the y axis of the flare count time series red, but don't include the numbers.
-    ax_twin.tick_params(axis='y', colors='red', labelright=True)
+    ax_twin.tick_params(axis='y', colors='#d73027', labelright=True)
     ax_twin.set_ylabel('Flare count',
-                       color='red',
+                       color='#d73027',
                        rotation=270,
-                       labelpad=15,
-                       fontsize=12)
+                       labelpad=15)
 
     # Move the time series of beta on top of the time series of flare count.
     ax_1.set_zorder(2)
@@ -1641,7 +1670,7 @@ def figure_4(fitted_results):
                      colors='black',
                      labelleft=False)
     ax_2.tick_params(axis='x',
-                     colors='red')
+                     colors='#d73027')
     ax_2.yaxis.tick_right()
 
     # Plot the cross plot of beta and flare count, including 95% CI on beta.
@@ -1649,28 +1678,27 @@ def figure_4(fitted_results):
                   beta_values,
                   yerr=np.array(errors).T,
                   linestyle="None",
-                  ecolor="black",
+                  ecolor="#4575b4",
                   fmt='D',
                   mfc='w',
-                  color='black',
-                  capsize=3,
+                  color='#4575b4',
+                  capsize=2,
                   ms=4,
                   elinewidth=0.7)
 
-    # Plot the text of panel B
-    ax_2.text(0.05, 0.95,
-              'A',
-              color='red',
+    # Plot the text of panel a
+    ax_2.text(0.06, 0.97,
+              'a',
+              color='black',
               transform=ax_2.transAxes,
-              fontsize=20,
+              fontsize=8,
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center', )
 
     # Set the x-axis label on the cross plot.
     ax_2.set_xlabel('Flare count',
-                    fontsize=12,
-                    labelpad=0,
-                    color='red')
+                    color='#d73027')
 
     ax_2.tick_params(axis='y', colors='black', labelright=False)
 
@@ -1680,8 +1708,7 @@ def figure_4(fitted_results):
               color='black',
               horizontalalignment='center',
               verticalalignment='center',
-              transform=ax_2.transAxes,
-              fontsize=12)
+              transform=ax_2.transAxes)
 
     ax_2.grid(which='both',
               linestyle='dashed',
@@ -1689,8 +1716,9 @@ def figure_4(fitted_results):
               color='grey')
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_4.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_4.jpeg',
                 bbox_inches='tight',
+                dpi=300,
                 pad_inches=0.01)
 
 def figure_5(directory, date):
@@ -1717,6 +1745,7 @@ def figure_5(directory, date):
                                                   'CH4',
                                                   qa_only=True,
                                                   include_predictions=True,
+                                                  good_predictions_only=True,
                                                   augmented_directory=directory)
 
     # Get the outlines of counties, these will be used in both plots.
@@ -1728,9 +1757,9 @@ def figure_5(directory, date):
     colors = copy.copy(cm.RdYlBu_r)
     colors.set_bad('grey', 1.0)
 
-    # Create figure, use gridspec to divide it up into subplots. 2-column subplot, each molecule gets a column.
-    plt.figure(figsize=(10, 4.5))
-    G = gridspec.GridSpec(1, 2, wspace=0.09, hspace=0.00)
+    # Create figure, use gridspec to divide it up into subplots.
+    plt.figure(figsize=(7.2, 4))
+    G = gridspec.GridSpec(1, 2, wspace=0.12)
 
     #------------------------------------------------------------------------------------------------------------
     # ax_1 is the subplot for the 'good' pixels TROPOMI observation, first row, first column, set projection here.
@@ -1753,13 +1782,14 @@ def figure_5(directory, date):
     ax_1.yaxis.tick_right()
 
     # Plot the text of panel A
-    ax_1.text(0.04, 0.94,
-              'A',
-              color='red',
+    ax_1.text(0.02, 0.965,
+              'a',
+              color='#d73027',
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_1.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     # Add a colorbar to the methane plot, show it inside the plot towards the bottom.
     good_cbar_ax = ax_1.inset_axes([0.25, 0.02, 0.73, 0.05],  # x0, y0, width, height
@@ -1768,15 +1798,15 @@ def figure_5(directory, date):
                             cax=good_cbar_ax,
                             orientation='horizontal')
     good_cbar.set_ticks([])
-    good_cbar_ax.text(1830, 1830, '1830', ha='center')
-    good_cbar_ax.text(1860, 1830, '1860', ha='center')
-    good_cbar_ax.text(1890, 1830, '1890', ha='center')
+    good_cbar_ax.text(1830, 1835, '1830', ha='center')
+    good_cbar_ax.text(1860, 1835, '1860', ha='center')
+    good_cbar_ax.text(1890, 1835, '1890', ha='center')
 
     # Add the borders to the CH4 subplot.
     ax_1.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
     # Add the latitude label, this will be for both subplots 1 and 2.
-    ax_1.text(1.05, 0.85,
+    ax_1.text(1.06, 0.85,
               'Latitude',
               horizontalalignment='center',
               verticalalignment='center',
@@ -1789,9 +1819,6 @@ def figure_5(directory, date):
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_1.transAxes)
-
-    # Set title
-    # ax_1.set_title(r'TROPOMI pixels with $\mathrm{QA}\geq 0.5$', pad=0)
 
     #------------------------------------------------------------------------------------------------------------
     # ax_2 is the subplot for all pixels TROPOMI observation, first row, second column, set projection here.
@@ -1821,15 +1848,13 @@ def figure_5(directory, date):
                             cax=all_cbar_ax,
                             orientation='horizontal')
     all_cbar.set_ticks([])
-    all_cbar_ax.text(1830, 1830, '1830', ha='center')
-    all_cbar_ax.text(1860, 1830, '1860', ha='center')
-    all_cbar_ax.text(1890, 1830, '1890', ha='center')
+    all_cbar_ax.text(1830, 1835, '1830', ha='center')
+    all_cbar_ax.text(1860, 1835, '1860', ha='center')
+    all_cbar_ax.text(1890, 1835, '1890', ha='center')
 
     # Add the borders to the CH4 subplot.
     ax_2.add_feature(COUNTIES, facecolor='none', edgecolor='lightgray', zorder=1)
 
-    # Set title
-    # ax_2.set_title('All TROPOMI pixels', pad=0)
 
     # Add the longitude label, this will be for both subplots 1 and 3.
     ax_2.text(0.9, -0.05,
@@ -1839,18 +1864,19 @@ def figure_5(directory, date):
               transform=ax_2.transAxes)
 
     # Add the text of panel B
-    ax_2.text(0.04, 0.94,
-              'B',
-              color='red',
+    ax_2.text(0.02, 0.965,
+              'b',
+              color='#d73027',
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_2.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     start_date, end_date, model = directory.split('-')
 
     # Save the figure as a png, too large otherwise, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_5.png',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + start_date + '-' + end_date + '/figure_5.jpeg',
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
@@ -1884,7 +1910,7 @@ def figure_6(date_range):
 
 
     # Create figure, use gridspec to divide it up into subplots. 3-row subplot.
-    plt.figure(figsize=(10.0, 12.0))
+    plt.figure(figsize=(7.2, 9.7))
     G = gridspec.GridSpec(3, 3)
     # Need just a little bit of space between the subplots to have y-axis tick marks in between.
     G.update(hspace=0.05)
@@ -1896,44 +1922,45 @@ def figure_6(date_range):
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_1.plot(all_datetimes,
               all_plotables_df.original_pixel_coverage * 100,
-              color='darkorange',
+              color='#4575b4',
               linestyle='solid',
               zorder=0)
     ax_1.scatter(data_poor_datetimes,
                  data_poor_plotables_df.original_pixel_coverage * 100,
-                 color='darkorange',
+                 color='#4575b4',
                  facecolor='white',
                  s=20,
                  zorder=1)
     ax_1.scatter(data_rich_datetimes,
                  data_rich_plotables_df.original_pixel_coverage * 100,
-                 color='darkorange',
+                 color='#4575b4',
                  zorder=2)
 
     ax_1.plot(all_datetimes,
               all_plotables_df.augmented_pixel_coverage * 100,
-              color='green',
+              color='#d73027',
               linestyle='dotted',
               zorder=0)
     ax_1.scatter(data_poor_datetimes,
                  data_poor_plotables_df.augmented_pixel_coverage * 100,
-                 color='green',
+                 color='#d73027',
                  facecolor='white',
                  s=20,
                  zorder=1)
     ax_1.scatter(data_rich_datetimes,
                  data_rich_plotables_df.augmented_pixel_coverage * 100,
-                 color='green',
+                 color='#d73027',
                  zorder=2)
 
     # Plot the text of panel A
-    ax_1.text(0.02, 0.94,
-              'A',
-              color='red',
+    ax_1.text(0.01, 0.97,
+              'a',
+              color='black',
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_1.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     # Set the ylabel
     ax_1.set_ylabel('% Pixel coverage of study region')
@@ -1953,7 +1980,7 @@ def figure_6(date_range):
     sns.kdeplot(all_plotables_df.augmented_pixel_coverage * 100,
                 vertical=True,
                 ax=ax_6,
-                color='green',
+                color='#d73027',
                 fill=True)
     ax_6.invert_xaxis()
     ax_6.patch.set_alpha(0.0)
@@ -1969,7 +1996,7 @@ def figure_6(date_range):
     sns.kdeplot(all_plotables_df.original_pixel_coverage * 100,
                 vertical=True,
                 ax=ax_7,
-                color='darkorange',
+                color='#4575b4',
                 fill=True)
     ax_7.invert_xaxis()
     ax_7.patch.set_alpha(0.0)
@@ -1986,12 +2013,12 @@ def figure_6(date_range):
     # Plot the three quantities, all same color, but different markers and line styles.
     ax_2.plot(all_datetimes,
               all_plotables_df.original_pixel_value_50,
-              color='darkorange',
+              color='#4575b4',
               linestyle='solid',
               zorder=0)
     ax_2.scatter(data_poor_datetimes,
                  data_poor_plotables_df.original_pixel_value_50,
-                 color='darkorange',
+                 color='#4575b4',
                  marker='o',
                  facecolor='white',
                  label='Original, data-poor',
@@ -1999,27 +2026,26 @@ def figure_6(date_range):
                  zorder=1)
     ax_2.scatter(data_rich_datetimes,
                  data_rich_plotables_df.original_pixel_value_50,
-                 color='darkorange',
+                 color='#4575b4',
                  marker='o',
                  label='Original, data-rich',
                  zorder=2)
 
-
     ax_2.plot(all_datetimes,
               all_plotables_df.augmented_pixel_value_50,
-              color='green',
+              color='#d73027',
               linestyle='dotted',
               zorder=0)
     ax_2.scatter(data_poor_datetimes,
                  data_poor_plotables_df.augmented_pixel_value_50,
-                 color='green',
+                 color='#d73027',
                  facecolor='white',
                  label='With predictions, data-poor',
                  s=20,
                  zorder=1)
     ax_2.scatter(data_rich_datetimes,
                  data_rich_plotables_df.augmented_pixel_value_50,
-                 color='green',
+                 color='#d73027',
                  label='With predictions, data-rich',
                  zorder=2)
 
@@ -2039,13 +2065,14 @@ def figure_6(date_range):
               alpha=0.5)
 
     # Plot the text of panel B
-    ax_2.text(0.02, 0.94,
-              'B',
-              color='red',
+    ax_2.text(0.01, 0.97,
+              'b',
+              color='black',
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_2.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     # ------------------------------------------------------------------------------------------------------
     ax_3 = plt.subplot(G[2, :], sharex=ax_1)
@@ -2053,34 +2080,34 @@ def figure_6(date_range):
     # We have methane load saved in the .csv file in mols of CH4, we will plot in kilotonnes
     ax_3.plot(all_datetimes,
               all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3, # Convert to grams, convert to tonnes, convert to kilotonnes
-              color='darkorange',
+              color='#4575b4',
               linestyle="solid",
               zorder=0)
     ax_3.scatter(data_poor_datetimes,
                  data_poor_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
-                 color='darkorange',
+                 color='#4575b4',
                  facecolor='white',
                  s=20,
                  zorder=1)
     ax_3.scatter(data_rich_datetimes,
                  data_rich_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
-                 color='darkorange',
+                 color='#4575b4',
                  zorder=2)
 
     ax_3.plot(all_datetimes,
               all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
-              color='green',
+              color='#d73027',
               linestyle='dotted',
               zorder=0)
     ax_3.scatter(data_poor_datetimes,
                  data_poor_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
-                 color='green',
+                 color='#d73027',
                  facecolor='white',
                  s=20,
                  zorder=1)
     ax_3.scatter(data_rich_datetimes,
                  data_rich_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
-                 color='green',
+                 color='#d73027',
                  zorder=2)
 
     # ------------------------------------------------------------------------------------------------------
@@ -2088,7 +2115,7 @@ def figure_6(date_range):
     sns.kdeplot(all_plotables_df.partially_augmented_ch4_load * 16.04 / 1e6 / 1e3,
                 vertical=True,
                 ax=ax_4,
-                color='green',
+                color='#d73027',
                 fill=True)
     ax_4.invert_xaxis()
     ax_4.patch.set_alpha(0.0)
@@ -2104,7 +2131,7 @@ def figure_6(date_range):
     sns.kdeplot(all_plotables_df.original_ch4_load * 16.04 / 1e6 / 1e3,
                 vertical=True,
                 ax=ax_5,
-                color='darkorange',
+                color='#4575b4',
                 fill=True)
     ax_5.invert_xaxis()
     ax_5.patch.set_alpha(0.0)
@@ -2143,15 +2170,17 @@ def figure_6(date_range):
               alpha=0.5)
 
     # Plot the text of panel C
-    ax_3.text(0.02, 0.94,
-              'C',
-              color='red',
+    ax_3.text(0.01, 0.97,
+              'c',
+              color='black',
+              fontweight='bold',
               horizontalalignment='center',
               verticalalignment='center',
               transform=ax_3.transAxes,
-              fontsize=20)
+              fontsize=8)
 
     # Save the figure as a pdf, no need to set dpi, trim the whitespace.
-    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.pdf',
+    plt.savefig(ct.FILE_PREFIX + '/figures/' + date_range + '/figure_6.jpeg',
+                dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
