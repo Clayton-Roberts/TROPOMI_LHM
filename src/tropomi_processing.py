@@ -169,7 +169,7 @@ def unpack_no2(filename):
     '''
 
     # Open the NO2 file.
-    file = nc4.Dataset(ct.FILE_PREFIX + '/observations/NO2/' + filename,'r')
+    file = nc4.Dataset(ct.PERMIAN_OBSERVATIONS + '/NO2/' + filename,'r')
 
     # Generate the arrays of NO2 pixel centre latitudes and longitudes.
     pixel_centre_latitudes  = np.array(file.groups['PRODUCT'].variables['latitude'])[0]
@@ -193,7 +193,7 @@ def unpack_ch4(filename):
     '''
 
     # Open the CH4 file.
-    ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
+    ch4_file = nc4.Dataset(ct.PERMIAN_OBSERVATIONS + '/CH4/' + filename, 'r')
 
     # Generate the arrays of CH4 pixel centre latitudes and longitudes.
     pixel_centre_latitudes  = np.array(ch4_file.groups['PRODUCT'].variables['latitude'])[0]
@@ -395,7 +395,7 @@ def convert_TROPOMI_observations_to_csvs(date_range):
         # that are a couple hours apart. Usually one overpass captures the whole study region.
         tropomi_overpasses = [file.split('/')[-1] for file in
                               glob.glob(
-                                  ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+                                  ct.PERMIAN_OBSERVATIONS + '/NO2/' + date_string + '*.nc')]
 
         total_obs_CH4   = []
         total_sigma_C   = []
@@ -405,7 +405,11 @@ def convert_TROPOMI_observations_to_csvs(date_range):
         total_longitude = []
 
         for overpass in tropomi_overpasses:
-            obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
+            try:
+                obs_CH4, sigma_C, obs_NO2, sigma_N, latitude, longitude = get_colocated_measurements(overpass)
+            #TODO need to fix the file not found error as that's more to do with slight differences in minutes in filename
+            except (ValueError, FileNotFoundError):
+                continue
 
             total_obs_CH4.extend(obs_CH4)
             total_sigma_C.extend(sigma_C)
@@ -643,7 +647,7 @@ def add_predictions(fitted_results):
             # that are a couple hours apart. Usually one overpass captures the whole study region.
             tropomi_overpasses = [file.split('/')[-1] for file in
                                   glob.glob(
-                                      ct.FILE_PREFIX + '/observations/NO2/' + date_string + '*.nc')]
+                                      ct.PERMIAN_OBSERVATIONS + '/NO2/' + date_string + '*.nc')]
 
             for filename in tropomi_overpasses:
 
@@ -651,11 +655,14 @@ def add_predictions(fitted_results):
                 no2_pixel_values, no2_pixel_precisions, no2_pixel_centre_latitudes, no2_pixel_centre_longitudes, no2_qa_values \
                     = unpack_no2(filename)
 
-                ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes, ch4_qa_values \
-                    = unpack_ch4(filename)
+                try:
+                    ch4_pixel_values, ch4_pixel_precisions, ch4_pixel_centre_latitudes, ch4_pixel_centre_longitudes, ch4_qa_values \
+                        = unpack_ch4(filename)
+                except FileNotFoundError:
+                    continue
 
                 # Open the original CH4 file again to access some dimensions
-                ch4_file = nc4.Dataset(ct.FILE_PREFIX + '/observations/CH4/' + filename, 'r')
+                ch4_file = nc4.Dataset(ct.PERMIAN_OBSERVATIONS + '/CH4/' + filename, 'r')
 
                 # Created the augmented netCDF4 dataset
                 augmented_file = nc4.Dataset(ct.FILE_PREFIX + '/augmented_observations/' + fitted_results.run_name +
@@ -1268,3 +1275,241 @@ def calculate_final_results(fitted_results):
 
         final_results_df.to_csv(ct.FILE_PREFIX + '/outputs/' + fitted_results.run_name + '/final_results.csv',
                                       index=False)
+
+def parse_tropomi_values(file_name):
+    '''This function is for opening an original and augmented tropomi observation, determining if there is an
+    original observation or augmented observation at that location and returning some lists.
+
+    :param file_name: The filename.
+    :type file_name: str
+    '''
+
+    augmented_ch4_dataset = nc4.Dataset(ct.AUGMENTED_PERMIAN_OBSERVATIONS + '/CH4/' + file_name, 'r')
+
+    prediction_pixel_values     = np.array(augmented_ch4_dataset.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+    prediction_precision_values = np.array(augmented_ch4_dataset.groups['PRODUCT'].variables['methane_mixing_ratio_precision'][0])
+    prediction_pixel_qa_values  = np.array(augmented_ch4_dataset.groups['PRODUCT'].variables['prediction_pixel_qa_value'][0])
+
+    original_ch4_dataset = nc4.Dataset(ct.PERMIAN_OBSERVATIONS + '/CH4/' + file_name, 'r')
+
+    original_pixel_values     = np.array(original_ch4_dataset.groups['PRODUCT'].variables['methane_mixing_ratio'][0])
+    original_precision_values = np.array(original_ch4_dataset.groups['PRODUCT'].variables['methane_mixing_ratio_precision'][0])
+    original_pixel_qa_values  = np.array(original_ch4_dataset.groups['PRODUCT'].variables['qa_value'][0])
+    scanline = original_ch4_dataset.groups["PRODUCT"].variables["scanline"].size
+    ground_pixel = original_ch4_dataset.groups["PRODUCT"].variables["ground_pixel"].size
+    latitudes = np.array(original_ch4_dataset.groups["PRODUCT"].variables["latitude"])[0]
+    longitudes = np.array(original_ch4_dataset.groups["PRODUCT"].variables["longitude"])[0]
+
+    reduced_original_latitudes = []
+    reduced_original_longitudes = []
+    reduced_original_ch4_values = []
+    reduced_original_ch4_precisions = []
+    reduced_prediction_latitudes = []
+    reduced_prediction_longitudes = []
+    reduced_prediction_ch4_values = []
+    reduced_prediction_ch4_precisions = []
+
+    for i in range(scanline):
+        for j in range(ground_pixel):
+            if ct.STUDY_REGION["Permian_Basin"][2] < latitudes[i, j] < ct.STUDY_REGION["Permian_Basin"][3]:
+                if ct.STUDY_REGION["Permian_Basin"][0] < longitudes[i, j] < ct.STUDY_REGION["Permian_Basin"][1]:
+                    if original_pixel_qa_values[i, j] >= 0.5:
+                        reduced_original_latitudes.append(latitudes[i, j])
+                        reduced_original_longitudes.append(longitudes[i, j])
+                        reduced_original_ch4_values.append(original_pixel_values[i, j])
+                        reduced_original_ch4_precisions.append(original_precision_values[i, j])
+
+                    elif 1. >= prediction_pixel_qa_values[i, j] >= 0.75:
+                        reduced_prediction_latitudes.append(latitudes[i, j])
+                        reduced_prediction_longitudes.append(longitudes[i, j])
+                        reduced_prediction_ch4_values.append(prediction_pixel_values[i, j])
+                        reduced_prediction_ch4_precisions.append(prediction_precision_values[i, j])
+
+    parsed_quantitues = {
+        "reduced_original_latitudes": reduced_original_latitudes,
+        "reduced_original_longitudes": reduced_original_longitudes,
+        "reduced_original_ch4_values": reduced_original_ch4_values,
+        "reduced_original_ch4_precisions": reduced_original_ch4_precisions,
+        "reduced_prediction_latitudes": reduced_prediction_latitudes,
+        "reduced_prediction_longitudes": reduced_prediction_longitudes,
+        "reduced_prediction_ch4_values": reduced_prediction_ch4_values,
+        "reduced_prediction_ch4_precisions": reduced_prediction_ch4_precisions
+    }
+
+    return parsed_quantitues
+
+
+def compare_with_bremen(start_date, end_date):
+    '''This function is for creating a few .csv files that are comparing the TROPOMI, Bremen and augmented TROPOMI
+    observations with one another.
+
+    :param start_date: The start date of the date range that we want to compare values for. Formatted as %Y-%m-%d
+    :type start_date: str
+    :param end_date: The end date of the date range that we want to compare values for. Formatted as %Y-%m-%d
+    :type end_date: str
+    '''
+
+    # Create a list to hold pandas dataframes that you will eventually concatenate together?
+    original_dfs = []
+    prediction_dfs = []
+
+    # Create the range of dates that we want to iterate over
+    date_range = pd.date_range(start=start_date, end=end_date)
+
+    for date in tqdm(date_range, desc="Iterating over days in range"):
+
+        # Open the Bremen file and reduce it to values that are contained within the study region.
+        # Screen according to qa value and mask values to 1e32 that are not "good".
+        date_string = date.strftime("%Y%m%d")
+        bremen_filename = "ESACCI-GHG-L2-CH4-CO-TROPOMI-WFMD-" + date_string + "-fv2.nc"
+
+        # Open the Bremen file
+        bremen_file = nc4.Dataset(ct.BREMEN_OBSERVATIONS + '/' + bremen_filename, 'r')
+
+        latitudes = np.array(bremen_file.variables["latitude"])
+        longitudes = np.array(bremen_file.variables["longitude"])
+        ch4 = np.array(bremen_file.variables["xch4"])
+        ch4_precisions = np.array(bremen_file.variables["xch4_uncertainty"])
+        qa_value = np.array(bremen_file.variables["xch4_quality_flag"])
+
+        # Reduce the values to what is in the study region on this day
+        reduced_bremen_latitudes = []
+        reduced_bremen_longitudes = []
+        reduced_bremen_ch4 = []
+        reduced_bremen_ch4_precisions = []
+
+        for i in range(len(latitudes)):
+            if ct.STUDY_REGION["Permian_Basin"][2] < latitudes[i] < ct.STUDY_REGION["Permian_Basin"][3]:
+                if ct.STUDY_REGION["Permian_Basin"][0] < longitudes[i] < ct.STUDY_REGION["Permian_Basin"][1]:
+                    reduced_bremen_latitudes.append(latitudes[i])
+                    reduced_bremen_longitudes.append(longitudes[i])
+
+                    # 0 is good, 1 is bad
+                    if qa_value[i] == 0:
+                        reduced_bremen_ch4.append(ch4[i])
+                        reduced_bremen_ch4_precisions.append(ch4_precisions[i])
+                    elif qa_value[i] == 1:
+                        reduced_bremen_ch4.append(1e32)
+                        reduced_bremen_ch4_precisions.append(1e32)
+
+        # Check if reduced ch4 list is not empty
+        if reduced_bremen_ch4:
+
+            tropomi_filenames = [file.split("/")[-1] for file in
+                                 glob.glob(ct.PERMIAN_OBSERVATIONS + '/CH4/' + date_string + '*.nc')]
+
+            reduced_original_latitudes = []
+            reduced_original_longitudes = []
+            reduced_original_ch4_values = []
+            reduced_original_ch4_precisions = []
+            reduced_prediction_latitudes = []
+            reduced_prediction_longitudes = []
+            reduced_prediction_ch4_values = []
+            reduced_prediction_ch4_precisions = []
+
+
+            for filename in tropomi_filenames:
+                try:
+                    parsed_quantities = parse_tropomi_values(filename)
+                except FileNotFoundError:
+                    continue
+
+                reduced_original_latitudes.extend(parsed_quantities.get("reduced_original_latitudes"))
+                reduced_original_longitudes.extend(parsed_quantities.get("reduced_original_longitudes"))
+                reduced_original_ch4_values.extend(parsed_quantities.get("reduced_original_ch4_values"))
+                reduced_original_ch4_precisions.extend(parsed_quantities.get("reduced_original_ch4_precisions"))
+                reduced_prediction_latitudes.extend(parsed_quantities.get("reduced_prediction_latitudes"))
+                reduced_prediction_longitudes.extend(parsed_quantities.get("reduced_prediction_longitudes"))
+                reduced_prediction_ch4_values.extend(parsed_quantities.get("reduced_prediction_ch4_values"))
+                reduced_prediction_ch4_precisions.extend(parsed_quantities.get("reduced_prediction_ch4_precisions"))
+
+            # Check if there were any original TROPOMI values
+            if reduced_original_ch4_values:
+
+                #TODO add in all this stuff but also for predictions
+
+                bremen_values_colocated_with_original = []
+                bremen_precisions_colocated_with_original = []
+                original_values_colocated_with_bremen = []
+                original_precisions_colocated_with_bremen = []
+
+                bremen_values_colocated_with_predictions = []
+                bremen_precisions_colocated_with_predictions = []
+                prediction_values_colocated_with_bremen = []
+                prediction_precisions_colocated_with_bremen = []
+
+
+                # Interpolate the Bremen data to the original TROPOMI observations:
+                bremen_values_interpolated_to_original = griddata((reduced_bremen_longitudes,
+                                                                   reduced_bremen_latitudes),
+                                                                  reduced_bremen_ch4,
+                                                                  (reduced_original_longitudes,
+                                                                   reduced_original_latitudes),
+                                                                  method='linear')
+
+                bremen_precisions_interpolated_to_original = griddata((reduced_bremen_longitudes,
+                                                                       reduced_bremen_latitudes),
+                                                                       reduced_bremen_ch4_precisions,
+                                                                      (reduced_original_longitudes,
+                                                                        reduced_original_latitudes),
+                                                                      method='linear')
+                # Interpolate the Bremen data to the predicted TROPOMI observations:
+                bremen_values_interpolated_to_predictions = griddata((reduced_bremen_longitudes,
+                                                                      reduced_bremen_latitudes),
+                                                                     reduced_bremen_ch4,
+                                                                     (reduced_prediction_longitudes,
+                                                                      reduced_prediction_latitudes),
+                                                                     method='linear')
+
+                bremen_precisions_interpolated_to_predictions = griddata((reduced_bremen_longitudes,
+                                                                          reduced_bremen_latitudes),
+                                                                         reduced_bremen_ch4_precisions,
+                                                                         (reduced_prediction_longitudes,
+                                                                          reduced_prediction_latitudes),
+                                                                         method='linear')
+
+
+                for i in range(len(reduced_original_ch4_values)):
+
+                    # Check if the Bremen data passed the qa threshold here, janky way of doing it
+                    if bremen_values_interpolated_to_original[i] < 3000.:
+                        bremen_values_colocated_with_original.append(bremen_values_interpolated_to_original[i])
+                        bremen_precisions_colocated_with_original.append(bremen_precisions_interpolated_to_original[i])
+                        original_values_colocated_with_bremen.append(reduced_original_ch4_values[i])
+                        original_precisions_colocated_with_bremen.append(reduced_original_ch4_precisions[i])
+
+                for i in range(len(reduced_prediction_ch4_values)):
+
+                    # Check if the Bremen data passed the qa threshold here, janky way of doing it
+                    if bremen_values_interpolated_to_predictions[i] < 3000.:
+                        bremen_values_colocated_with_predictions.append(bremen_values_interpolated_to_predictions[i])
+                        bremen_precisions_colocated_with_predictions.append(bremen_precisions_interpolated_to_predictions[i])
+                        prediction_values_colocated_with_bremen.append(reduced_prediction_ch4_values[i])
+                        prediction_precisions_colocated_with_bremen.append(reduced_prediction_ch4_values[i])
+
+                original_df = pd.DataFrame(list(zip(original_values_colocated_with_bremen,
+                                                    original_precisions_colocated_with_bremen,
+                                                    bremen_values_colocated_with_original,
+                                                    bremen_precisions_colocated_with_original)),
+                                       columns=["Original_TROPOMI",
+                                                "Original_TROPOMI_precision",
+                                                "Bremen",
+                                                "Bremen_precision"])
+
+                prediction_df = pd.DataFrame(list(zip(prediction_values_colocated_with_bremen,
+                                                      prediction_precisions_colocated_with_bremen,
+                                                      bremen_values_colocated_with_predictions,
+                                                      bremen_precisions_colocated_with_predictions)),
+                                             columns=["Predicted_TROPOMI",
+                                                      "Predicted_TROPOMI_precision",
+                                                      "Bremen",
+                                                      "Bremen_precision"])
+
+                original_dfs.append(original_df)
+                prediction_dfs.append(prediction_df)
+
+    all_original_dfs = pd.concat(original_dfs, ignore_index=True)
+    all_prediction_dfs = pd.concat(prediction_dfs, ignore_index=True)
+
+    all_original_dfs.to_csv("Bremen_comparision_with_original.csv", index=False)
+    all_prediction_dfs.to_csv("Bremen_comparison_with_predictions.csv", index=False)

@@ -2184,3 +2184,57 @@ def figure_6(date_range):
                 dpi=300,
                 bbox_inches='tight',
                 pad_inches=0.01)
+
+def bremen_comparison():
+
+    # Set up the figure. Page-wide, two-panel figure.
+    plt.figure(figsize=(3.5, 3.45))
+    G = gridspec.GridSpec(1, 1)
+
+    # -------------------------------------------------------------------------------------------
+    ax_1 = plt.subplot(G[0, 0])
+
+    bremen_df = pd.read_csv("Bremen_comparison_with_predictions.csv")
+
+    x = bremen_df.Bremen
+    y = bremen_df.Predicted_TROPOMI
+
+    xmin = np.min(x)
+    xmax = np.max(x)
+
+    dummy = np.linspace(xmin, xmax, 100)
+
+    ax_1.scatter(x,
+                 y,
+                 s=8,
+                 alpha=0.2,
+                 color='#4575b4',
+                 zorder=1)
+
+    ax_1.plot(dummy,
+              dummy,
+              color='#d73027',
+              zorder=2)
+
+    ax_1.set_yticks([1760, 1800, 1840, 1880, 1920, 1960])
+    ax_1.set_yticklabels(['1760', '1800', '1840', '1880', '1920', '1960'],
+                         rotation=90,
+                         va='center')
+    ax_1.set_xticks([1760, 1800, 1840, 1880, 1920, 1960])
+    ax_1.set_xticklabels(['1760', '1800', '1840', '1880', '1920', '1960'],
+                         ha='center')
+
+    ax_1.grid(color='grey',
+              linestyle='dashed',
+              zorder=0)
+
+    ax_1.set_xlim([1730, 1980])
+    ax_1.set_ylim([1730, 1980])
+
+    ax_1.set_xlabel(r'$\mathrm{CH}_4$ WFMD [ppbv]')
+    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
+
+    plt.savefig(ct.FILE_PREFIX + '/figures/bremen.jpeg',
+                bbox_inches='tight',
+                dpi=300,
+                pad_inches=0.01)
