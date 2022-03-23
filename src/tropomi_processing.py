@@ -1338,7 +1338,6 @@ def parse_tropomi_values(file_name):
 
     return parsed_quantitues
 
-
 def compare_with_bremen(start_date, end_date):
     '''This function is for creating a few .csv files that are comparing the TROPOMI, Bremen and augmented TROPOMI
     observations with one another.
@@ -1354,7 +1353,10 @@ def compare_with_bremen(start_date, end_date):
     prediction_dfs = []
 
     # Create the range of dates that we want to iterate over
-    date_range = pd.date_range(start=start_date, end=end_date)
+    #date_range = pd.date_range(start=start_date, end=end_date)
+    # Just use the data-rich days
+    data_rich_df = pd.read_csv("data/20190101-20191231-data_rich/summary.csv")
+    date_range = [datetime.datetime.strptime(date, "%Y-%m-%d") for date in data_rich_df.date]
 
     for date in tqdm(date_range, desc="Iterating over days in range"):
 
@@ -1513,3 +1515,4 @@ def compare_with_bremen(start_date, end_date):
 
     all_original_dfs.to_csv("Bremen_comparision_with_original.csv", index=False)
     all_prediction_dfs.to_csv("Bremen_comparison_with_predictions.csv", index=False)
+

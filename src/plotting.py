@@ -7,6 +7,8 @@ import matplotlib.transforms as transforms
 import matplotlib.patches as patches
 from tqdm import tqdm
 import matplotlib.cm as cm
+from matplotlib.colors import Normalize
+from scipy.interpolate import interpn
 import seaborn as sns
 import pandas as pd
 import numpy as np
@@ -2188,53 +2190,163 @@ def figure_6(date_range):
 def bremen_comparison():
 
     # Set up the figure. Page-wide, two-panel figure.
-    plt.figure(figsize=(3.5, 3.45))
-    G = gridspec.GridSpec(1, 1)
+    plt.figure(figsize=(7.2, 3.45))
+    G = gridspec.GridSpec(1, 2, wspace=0.05)
 
     # -------------------------------------------------------------------------------------------
     ax_1 = plt.subplot(G[0, 0])
 
-    bremen_df = pd.read_csv("Bremen_comparison_with_predictions.csv")
+    original_df = pd.read_csv("Bremen_comparison_with_original.csv")
 
-    x = bremen_df.Bremen
-    y = bremen_df.Predicted_TROPOMI
+    x = original_df.Bremen
+    y = original_df.Original_TROPOMI
 
-    xmin = np.min(x)
-    xmax = np.max(x)
+    coef      = np.polyfit(x, y, 1)
+    poly1d_fn = np.poly1d(coef)
 
-    dummy = np.linspace(xmin, xmax, 100)
+    dummy = np.linspace(1730, 2000, 100)
 
+    data, x_e, y_e = np.histogram2d(x, y, bins=20, density=True)
+    z = interpn((0.5 * (x_e[1:] + x_e[:-1]), 0.5 * (y_e[1:] + y_e[:-1])),
+                data,
+                np.vstack([x, y]).T,
+                method="splinef2d",
+                bounds_error=False)
+
+    z[np.where(np.isnan(z))] = 0.0
+
+    idx = z.argsort()
+    x, y, z = x[idx], y[idx], z[idx]
     ax_1.scatter(x,
                  y,
+                 c=z,
                  s=8,
-                 alpha=0.2,
-                 color='#4575b4',
                  zorder=1)
+
+    ax_1.plot(dummy,
+              poly1d_fn(dummy),
+              linestyle="dashed",
+              color='#d73027',
+              zorder=2)
 
     ax_1.plot(dummy,
               dummy,
               color='#d73027',
               zorder=2)
 
-    ax_1.set_yticks([1760, 1800, 1840, 1880, 1920, 1960])
-    ax_1.set_yticklabels(['1760', '1800', '1840', '1880', '1920', '1960'],
+    ax_1.set_yticks([1800, 1840, 1880, 1920, 1960])
+    ax_1.set_yticklabels(['1800', '1840', '1880', '1920', '1960'],
                          rotation=90,
                          va='center')
-    ax_1.set_xticks([1760, 1800, 1840, 1880, 1920, 1960])
-    ax_1.set_xticklabels(['1760', '1800', '1840', '1880', '1920', '1960'],
+    ax_1.set_xticks([1800, 1840, 1880, 1920, 1960])
+    ax_1.set_xticklabels(['1800', '1840', '1880', '1920', '1960'],
                          ha='center')
 
     ax_1.grid(color='grey',
               linestyle='dashed',
               zorder=0)
 
-    ax_1.set_xlim([1730, 1980])
-    ax_1.set_ylim([1730, 1980])
+    ax_1.set_xlim([1760, 2000])
+    ax_1.set_ylim([1760, 2000])
 
     ax_1.set_xlabel(r'$\mathrm{CH}_4$ WFMD [ppbv]')
-    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]')
+    ax_1.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{obs}}$ [ppbv]')
 
-    plt.savefig(ct.FILE_PREFIX + '/figures/bremen.jpeg',
+    # Plot the text of panel A
+    ax_1.text(0.02, 0.97,
+              'a',
+              fontweight='bold',
+              color='black',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_1.transAxes,
+              fontsize=8)
+
+    # -------------------------------------------------------------------------------------------
+    ax_2 = plt.subplot(G[0, 1])
+
+    prediction_df = pd.read_csv("Bremen_comparison_with_predictions.csv")
+
+    x = prediction_df.Bremen
+    y = prediction_df.Predicted_TROPOMI
+
+    dummy = np.linspace(1760, 2000, 100)
+
+    data, x_e, y_e = np.histogram2d(x, y, bins=20, density=True)
+    z = interpn((0.5 * (x_e[1:] + x_e[:-1]), 0.5 * (y_e[1:] + y_e[:-1])),
+                data,
+                np.vstack([x, y]).T,
+                method="splinef2d",
+                bounds_error=False)
+
+    z[np.where(np.isnan(z))] = 0.0
+
+    idx = z.argsort()
+    x, y, z = x[idx], y[idx], z[idx]
+    ax_2.scatter(x,
+                 y,
+                 c=z,
+                 s=8,
+                 zorder=1)
+
+    ax_2.plot(dummy,
+              dummy,
+              color='#d73027',
+              zorder=2)
+
+    ax_2.plot(dummy,
+              poly1d_fn(dummy),
+              linestyle="dashed",
+              color='#d73027',
+              zorder=2)
+
+    ax_2.set_yticks([1800, 1840, 1880, 1920, 1960])
+    ax_2.set_yticklabels(['1800', '1840', '1880', '1920', '1960'],
+                         rotation=90,
+                         va='center')
+    ax_2.set_xticks([1800, 1840, 1880, 1920, 1960])
+    ax_2.set_xticklabels(['1800', '1840', '1880', '1920', '1960'],
+                         ha='center')
+
+    ax_2.grid(color='grey',
+              linestyle='dashed',
+              zorder=0)
+
+    ax_2.set_xlim([1760, 2000])
+    ax_2.set_ylim([1760, 2000])
+
+    ax_2.set_xlabel(r'$\mathrm{CH}_4$ WFMD [ppbv]')
+    ax_2.set_ylabel(r'$\mathrm{CH}_4^{\mathrm{pred}}$ [ppbv]',
+                    rotation=270,
+                    labelpad=15
+                    )
+
+    ax_2.yaxis.tick_right()
+    ax_2.yaxis.set_label_position("right")
+    plt.setp(ax_2.yaxis.get_majorticklabels(),
+             rotation=270,
+             va='center')
+
+    # Plot the text of panel A
+    ax_2.text(0.02, 0.97,
+              'b',
+              fontweight='bold',
+              color='black',
+              horizontalalignment='center',
+              verticalalignment='center',
+              transform=ax_2.transAxes,
+              fontsize=8)
+
+    plt.savefig(ct.FILE_PREFIX + '/figures/bremen_comparison.jpeg',
                 bbox_inches='tight',
                 dpi=300,
                 pad_inches=0.01)
+
+    rmsd_original  = np.sqrt(np.mean([(original - wfmd)**2 for original, wfmd in
+                                      zip(original_df.Original_TROPOMI, original_df.Bremen)]))
+
+    rmsd_prediction = np.sqrt(np.mean([(prediction - wfmd)**2 for prediction, wfmd in
+                                      zip(prediction_df.Predicted_TROPOMI, prediction_df.Bremen)]))
+
+    print(rmsd_original)
+    print(rmsd_prediction)
