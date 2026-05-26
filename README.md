@@ -1,8 +1,8 @@
 # Enhanced monitoring of atmospheric methane
  
-This repository contains the code used to conduct the analysis and generate the plots found in the paper titled "Enhanced monitoring of atmospheric methane from space with hierarchical Bayesian inference". This paper is currently under review and is available on <a href="https://arxiv.org/abs/2111.12486">arXiv</a>.
+This repository contains the code used to conduct the analysis and generate the plots found in the paper titled "Enhanced monitoring of atmospheric methane from space with hierarchical Bayesian inference". This paper is published at Environmental Research Letters and is available at <a href="https://iopscience.iop.org/article/10.1088/1748-9326/ac7062">here</a>.
 
-If you have any questions or are having trouble with the code, feel free to contact me at cnr31@ast.cam.ac.uk . 
+If you have any questions or are having trouble with the code, feel free to contact me at cnr31@cantab.ac.uk . 
 
 # Directions for usage/replication
 1. [Cloning the repository](#cloning_the_repository)
@@ -21,7 +21,7 @@ If you have any questions or are having trouble with the code, feel free to cont
 Clone this repository into a local folder via
 
 ```bash
-git clone https://github.com/Clayton-Roberts/TROPOMI_LHM <local_folder_name>
+git clone https://github.com/Clayton-Roberts/TROPOMI_LHM.git <local_folder_name>
 ```
 
 ## Conda environment setup <a name="conda_environment_setup"></a>
